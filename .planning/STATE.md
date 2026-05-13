@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "01-04 Tasks 1-3 complete — awaiting Task 4 physical iPhone verification"
-last_updated: "2026-05-13T16:09:00Z"
-last_activity: 2026-05-13
+status: planning
+stopped_at: ""01-04 Tasks 1-3 committed (167a7ab, 7e51f33, a1389de). Task 4 = checkpoint:human-verify on physical iPhone.""
+last_updated: "2026-05-13T16:17:48.779Z"
+last_activity: 2026-05-13 — Phase 01 LEARNINGS.md extracted (16 decisions, 8 lessons, 12 patterns, 7 surprises)
 progress:
   total_phases: 7
   completed_phases: 0
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 Phase: 01 (onboarding-data-ingest) — COMPLETE (4/4 plans, device-verified)
 Plan: 4 of 4 ✓ (01-04 Task 4 approved 2026-05-13 — synthetic / manual / csv / monobank all reach dashboard within budget; VoiceOver pass; cold-start persistence confirmed)
 Status: Phase 1 closed — ready for `/gsd-verify-work` audit then Phase 2 planning
-Last activity: 2026-05-13 — Phase 1 device-verified by user. 12+ commits since Phase 1 start. tsc/lint exit 0, 51+ tests pass.
+Last activity: 2026-05-13 — Phase 01 LEARNINGS.md extracted (16 decisions, 8 lessons, 12 patterns, 7 surprises)
 
 Progress: [█████░░░░░] ~31% (8 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..04 fully done. P0 cloud device init items still outstanding but non-blocking for Phase 2 planning.)
 
