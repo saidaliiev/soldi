@@ -11,6 +11,9 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/eb-garamond": "^0.4.2",
+    "@expo-google-fonts/manrope": "^0.4.2",
+    "@expo-google-fonts/oswald": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@op-engineering/op-sqlite": "^15.2.12",
     "@react-navigation/bottom-tabs": "^7.4.0",
