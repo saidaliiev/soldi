@@ -10,11 +10,23 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 ## Current Position
 
 Phase: 0 of 6 (Foundation)
-Plan: 1 of 4 in current phase
-Status: In progress
-Last activity: 2026-05-13 — Bootstrapped .planning/ directory and ROADMAP.md
+Plan: 4 of 4 in current phase — scaffold complete; remaining: device + cloud verification
+Status: Code complete, waiting on device/cloud verification
+Last activity: 2026-05-13 — Committed P0 scaffold (`956ad98`). tsc + lint exit 0.
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] ~7% (one of 26 plans complete; P0 device verification pending)
+
+## P0 Outstanding (device/cloud-dependent — user action required)
+
+1. **Run on physical iPhone**: `cd apps/mobile && npx expo start`, open Expo Go on iPhone, scan QR. Confirms app launches and fonts load. (Counts as P0 Success Criterion #3.)
+2. **Create GitHub remote** (private repo `soldi` recommended), push `main`, confirm CI yellow → green. (P0 Success Criterion #4.)
+3. **Apple Developer Program enrollment** (€99/yr, 24-48h activation). Required before EAS Build can sign iOS builds.
+4. **EAS project init**: `cd apps/mobile && eas login && eas init`. Records EAS project ID into `app.json` `extra.eas.projectId`. Required before `eas build --platform ios --profile preview` (P0 Success Criterion #5).
+5. **Supabase project**: create free Frankfurt-region project. Save URL + anon key to `apps/mobile/.env.example`. Required for Phase 3 Edge Function work.
+6. **Anthropic API key**: create + save. Required for Phase 3 categorization + chat.
+7. **Sentry project (EU)** + **PostHog project (EU)**: free tiers. Saving DSN/key to `.env` enables crash + analytics from P5 onward.
+8. **Domain**: buy `soldi.app` (~€20/yr via Cloudflare Registrar). Required for App Store metadata, privacy policy URL.
+9. **App name trademark / App Store conflict check**: search App Store for "SOLDI" — if conflict, pick alt name before logo/Figma work.
 
 ## Performance Metrics
 
