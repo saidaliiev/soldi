@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Position
 
-Phase: 01 (onboarding-data-ingest) — EXECUTING
-Plan: 4 of 4 (Tasks 1-3 complete, Task 4 awaiting human verify)
-Status: Checkpoint — human verification required
-Last activity: 2026-05-13
+Phase: 01 (onboarding-data-ingest) — CHECKPOINT (3 plans + 3/4 tasks of 01-04 complete)
+Plan: 4 of 4 (01-04 Tasks 1-3 ✓; Task 4 = physical iPhone <90s timing test, BLOCKED on user)
+Status: Awaiting device verification — see `01-04-SUMMARY.md` for test recipe
+Last activity: 2026-05-13 — Wave 1 (01-01) + Wave 2 (01-02, 01-03) + Wave 3 Tasks 1-3 (01-04) all green. 11 commits since Phase 1 start. tsc/lint exit 0, 26+ tests pass.
 
-Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete; Phase 1 plans locked but not executed; P0 device/cloud verification still pending)
+Progress: [████░░░░░░] ~27% (7 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..03 fully done + 01-04 3/4 tasks. P0 device/cloud and Phase 1 Task 4 device test still pending.)
 
 ## P0 Outstanding (device/cloud-dependent — user action required)
 
