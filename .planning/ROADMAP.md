@@ -41,9 +41,10 @@ Plans:
 
 ### Phase 1: Onboarding + Data Ingest
 **Goal**: A new user picks a language, picks a data source, and lands on a populated dashboard within 90 seconds.
-**Mode**: mvp
+**Mode**: mvp (Walking Skeleton — first phase of new project)
 **Depends on**: Phase 0
 **Requirements**: ONBD-01, ONBD-02, ONBD-03, DATA-01, DATA-02, DATA-03, DATA-04
+**Wave Structure**: Wave 1 → 01-01 (scaffold + Welcome). Wave 2 (parallel) → 01-02 (data-source pick) + 01-03 (synthetic generator). Wave 3 → 01-04 (monobank + CSV + manual + 90s device checkpoint).
 **Success Criteria** (what must be TRUE):
   1. User completes onboarding flow from launch to dashboard in under 90 seconds (timed)
   2. User can paste a monobank token and see real transactions appear in the local DB

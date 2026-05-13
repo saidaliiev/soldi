@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** A consumer installs SOLDI from the App Store and within 90 seconds sees their own spending visualized with care — without exposing real banking credentials.
-**Current focus:** Phase 1 — Onboarding + Data Ingest (Phase 0 code-complete in parallel)
+**Current focus:** Phase 1 — Onboarding + Data Ingest (plans locked, awaiting execution)
 
 ## Current Position
 
-Phase: 1 of 6 (Onboarding + Data Ingest) — planning
-Plan: 0 of 4 in Phase 1 — `/gsd-plan-phase 1` orchestration running
-Status: Phase 0 code-complete (3/4 plans + 00-04 partial); Phase 1 planning in flight
-Last activity: 2026-05-13 — `/gsd-plan-phase 1` invoked. STATE+ROADMAP retro-updated for P0 code-complete status.
+Phase: 1 of 6 (Onboarding + Data Ingest) — plans locked
+Plan: 0 of 4 executed (4 plans + 1 SKELETON written, verified, committed)
+Status: Phase 1 plans complete; ready for `/gsd-execute-phase 1`
+Last activity: 2026-05-13 — `/gsd-plan-phase 1` finished (plan→check→revise→re-check). Plan-checker PASSED iteration 2/3 (4 blockers + 5 warnings resolved). Plans written to `.planning/phases/01-onboarding-data-ingest/`.
 
-Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete + Phase 1 planning in flight; P0 device/cloud verification still pending)
+Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete; Phase 1 plans locked but not executed; P0 device/cloud verification still pending)
 
 ## P0 Outstanding (device/cloud-dependent — user action required)
 
