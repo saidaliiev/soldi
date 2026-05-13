@@ -7,9 +7,9 @@
 
 ### Onboarding
 
-- [ ] **ONBD-01**: User picks language (English or Ukrainian) during first launch
+- [x] **ONBD-01**: User picks language (English or Ukrainian) during first launch
 - [ ] **ONBD-02**: User chooses a data source: synthetic, manual entry, monobank token, or CSV
-- [ ] **ONBD-03**: User completes the full onboarding flow in under 90 seconds
+- [x] **ONBD-03**: User completes the full onboarding flow in under 90 seconds
 - [ ] **ONBD-04**: User can opt into the FaceID/TouchID app-open gate during onboarding
 
 ### Data
@@ -120,9 +120,9 @@ Deferred to post-launch milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ONBD-01 | Phase 1 | Pending |
+| ONBD-01 | Phase 1 | Complete |
 | ONBD-02 | Phase 1 | Pending |
-| ONBD-03 | Phase 1 | Pending |
+| ONBD-03 | Phase 1 | Complete |
 | ONBD-04 | Phase 5 | Pending |
 | DATA-01 | Phase 1 | Pending |
 | DATA-02 | Phase 1 | Pending |

@@ -54,7 +54,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01: Welcome + language pick screen with Reanimated transitions
+- [x] 01-01: Welcome + language pick screen with Reanimated transitions
 - [ ] 01-02: Data-source pick screen (synthetic / manual / monobank / CSV) with paths branching
 - [ ] 01-03: Synthetic transaction generator (Irish + Ukrainian merchants, MCC-aware, 90 days)
 - [ ] 01-04: monobank token paste + CSV import + manual entry data adapters with op-sqlite persistence
@@ -161,7 +161,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Foundation | 3/4 + 1 partial | Code complete; device/cloud pending | 2026-05-13 (code) |
-| 1. Onboarding + Data Ingest | 0/4 | Planning | - |
+| 1. Onboarding + Data Ingest | 1/4 | In Progress|  |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 0/3 | Not started | - |
 | 4. Jars + i18n + Accessibility | 0/4 | Not started | - |
