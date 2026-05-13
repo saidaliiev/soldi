@@ -48,6 +48,7 @@
         }
       ],
       "expo-secure-store",
+      "@op-engineering/op-sqlite",
       "expo-localization",
       [
         "expo-local-authentication",
