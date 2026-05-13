@@ -22,7 +22,13 @@
     "source_monobank_title": "monobank",
     "source_monobank_body": "Paste your personal token. EU and Ukraine.",
     "source_csv_title": "Import CSV",
-    "source_csv_body": "From your bank's web export."
+    "source_csv_body": "From your bank's web export.",
+    "synthetic_loading_title": "Loading 90 days of sample data"
+  },
+  "dashboard": {
+    "this_month": "This month",
+    "transactions_count": "{{n}} transactions",
+    "empty": "No transactions yet"
   },
   "categories": {
     "groceries": "Groceries",

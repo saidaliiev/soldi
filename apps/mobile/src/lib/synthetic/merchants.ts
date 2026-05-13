@@ -40,7 +40,7 @@ export type MerchantSeed = {
 // Irish (IE) merchant list
 // ---------------------------------------------------------------------------
 
-export const IE_MERCHANTS: ReadonlyArray<MerchantSeed> = [
+export const IE_MERCHANTS: readonly MerchantSeed[] = [
   // --- Groceries ---
   { name: 'Tesco', mcc: 5411, min: 8, max: 90, currency: 'EUR', region: 'IE', weight: 3 },
   { name: 'Dunnes Stores', mcc: 5411, min: 5, max: 120, currency: 'EUR', region: 'IE', weight: 3 },
@@ -84,7 +84,7 @@ export const IE_MERCHANTS: ReadonlyArray<MerchantSeed> = [
 // Ukrainian (UA) merchant list
 // ---------------------------------------------------------------------------
 
-export const UA_MERCHANTS: ReadonlyArray<MerchantSeed> = [
+export const UA_MERCHANTS: readonly MerchantSeed[] = [
   // --- Groceries ---
   { name: 'Сільпо', mcc: 5411, min: 80, max: 1500, currency: 'UAH', region: 'UA', weight: 3 },
   { name: 'АТБ', mcc: 5411, min: 50, max: 1200, currency: 'UAH', region: 'UA', weight: 3 },

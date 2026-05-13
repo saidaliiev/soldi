@@ -1,98 +1,164 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+/**
+ * SOLDI Phase 1 minimal dashboard.
+ *
+ * Intentionally austere — proves the full data path works end-to-end:
+ *   onboarding → synthetic generator → op-sqlite → read back → display.
+ *
+ * Phase 2 replaces this with the full SOLDI design (Skia charts, FlashList,
+ * category breakdown, etc.). Do NOT add Skia, FlashList, or chart code here.
+ *
+ * Design rules:
+ * - Oswald TYPE.displayL for the section title
+ * - TYPE.displayXL for the monthly total (hero number)
+ * - Manrope TYPE.uiLabel for counts and labels
+ * - COLORS.expense for expense total, COLORS.textMuted for empty state
+ * - No hardcoded hex. No inline style objects except for dynamic values.
+ * - Minimum tap targets: N/A (no interactive elements in Phase 1 dashboard)
+ */
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+} from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
-export default function HomeScreen() {
+import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { TYPE } from '@design/typography';
+import { formatMoney } from '@lib/money';
+import { countTransactions, sumLastNDays } from '@data/transactionsRepo';
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function DashboardScreen(): React.JSX.Element {
+  const { t } = useTranslation();
+
+  const [count, setCount] = useState<number>(0);
+  const [sumLast30Cents, setSumLast30Cents] = useState<number>(0);
+
+  // ---------------------------------------------------------------------------
+  // Data load — re-fetches whenever this tab comes into focus
+  // ---------------------------------------------------------------------------
+
+  useFocusEffect(
+    useCallback(() => {
+      try {
+        const txCount = countTransactions();
+        const expenseSum = sumLastNDays(30);
+        setCount(txCount);
+        setSumLast30Cents(expenseSum);
+      } catch {
+        // On error: show empty state (count stays 0)
+        setCount(0);
+        setSumLast30Cents(0);
+      }
+    }, [])
+  );
+
+  // ---------------------------------------------------------------------------
+  // Derived display values
+  // ---------------------------------------------------------------------------
+
+  const formattedTotal = formatMoney(
+    { amountCents: -sumLast30Cents, currency: 'EUR' },
+    'en-IE'
+  );
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView
+      style={styles.safeArea}
+      accessibilityLabel="Dashboard screen"
+    >
+      <View style={styles.container}>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Text
+          style={styles.title}
+          accessibilityRole="header"
+        >
+          {t('dashboard.this_month')}
+        </Text>
+
+        {count === 0 ? (
+          // Empty state
+          <View
+            style={styles.emptyContainer}
+            accessibilityLabel="No transactions loaded yet"
+          >
+            <Text style={styles.emptyText}>
+              {t('dashboard.empty')}
+            </Text>
+          </View>
+        ) : (
+          // Summary card
+          <View style={styles.card} accessibilityLabel="Monthly summary card">
+            <Text
+              style={styles.totalAmount}
+              accessibilityLabel={`Monthly expenses: ${formattedTotal}`}
+            >
+              {formattedTotal}
+            </Text>
+            <Text style={styles.txCount}>
+              {t('dashboard.transactions_count', { n: count })}
+            </Text>
+          </View>
+        )}
+
+      </View>
+    </SafeAreaView>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xxl,
+  },
+  title: {
+    ...TYPE.displayL,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.lg,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    ...SHADOWS.card,
+  },
+  totalAmount: {
+    ...TYPE.displayXL,
+    color: COLORS.expense,
+    marginBottom: SPACING.sm,
+  },
+  txCount: {
+    ...TYPE.uiLabel,
+    color: COLORS.textSecondary,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  emptyText: {
+    ...TYPE.editorialLead,
+    color: COLORS.textMuted,
+    textAlign: 'center',
   },
 });

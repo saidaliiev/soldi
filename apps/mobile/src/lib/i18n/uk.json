@@ -22,7 +22,13 @@
     "source_monobank_title": "monobank",
     "source_monobank_body": "Встав свій персональний токен. ЄС та Україна.",
     "source_csv_title": "Імпорт CSV",
-    "source_csv_body": "З веб-експорту твого банку."
+    "source_csv_body": "З веб-експорту твого банку.",
+    "synthetic_loading_title": "Завантажуємо 90 днів прикладу"
+  },
+  "dashboard": {
+    "this_month": "Цього місяця",
+    "transactions_count": "{{n}} транзакцій",
+    "empty": "Транзакцій поки немає"
   },
   "categories": {
     "groceries": "Продукти",

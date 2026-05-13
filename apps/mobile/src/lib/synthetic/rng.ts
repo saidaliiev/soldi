@@ -50,7 +50,7 @@ export function mulberry32(seed: number): RngFn {
  *
  * @throws {RangeError} If the array is empty.
  */
-export function pick<T>(rng: RngFn, arr: ReadonlyArray<T>): T {
+export function pick<T>(rng: RngFn, arr: readonly T[]): T {
   if (arr.length === 0) {
     throw new RangeError('pick: array must be non-empty');
   }
