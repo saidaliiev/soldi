@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** A consumer installs SOLDI from the App Store and within 90 seconds sees their own spending visualized with care — without exposing real banking credentials.
-**Current focus:** Phase 0 — Foundation
+**Current focus:** Phase 1 — Onboarding + Data Ingest (Phase 0 code-complete in parallel)
 
 ## Current Position
 
-Phase: 0 of 6 (Foundation)
-Plan: 4 of 4 in current phase — scaffold complete; remaining: device + cloud verification
-Status: Code complete, waiting on device/cloud verification
-Last activity: 2026-05-13 — Committed P0 scaffold (`956ad98`). tsc + lint exit 0.
+Phase: 1 of 6 (Onboarding + Data Ingest) — planning
+Plan: 0 of 4 in Phase 1 — `/gsd-plan-phase 1` orchestration running
+Status: Phase 0 code-complete (3/4 plans + 00-04 partial); Phase 1 planning in flight
+Last activity: 2026-05-13 — `/gsd-plan-phase 1` invoked. STATE+ROADMAP retro-updated for P0 code-complete status.
 
-Progress: [█░░░░░░░░░] ~7% (one of 26 plans complete; P0 device verification pending)
+Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete + Phase 1 planning in flight; P0 device/cloud verification still pending)
 
 ## P0 Outstanding (device/cloud-dependent — user action required)
 

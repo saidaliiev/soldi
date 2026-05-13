@@ -10,7 +10,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - Integer phases (0, 1, 2, ...): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 0: Foundation** — Expo scaffold, design tokens, CI, EAS, Supabase + Anthropic accounts
+- [~] **Phase 0: Foundation** — Expo scaffold, design tokens, CI, EAS, Supabase + Anthropic accounts (code complete; device/cloud verification outstanding — see STATE.md)
 - [ ] **Phase 1: Onboarding + Data Ingest** — User onboards in <90s and lands on dashboard with seeded data
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
 - [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet
@@ -34,10 +34,10 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 **Plans**: 4 plans
 
 Plans:
-- [ ] 00-01: Initialize Expo SDK 52 project with TypeScript strict + expo-router skeleton
-- [ ] 00-02: Install core dependencies (zustand, tanstack-query, op-sqlite, reanimated, skia, gesture-handler, secure-store, local-authentication, font, mmkv, sentry-expo, posthog-react-native, i18next, expo-localization)
-- [ ] 00-03: Create design system (tokens.ts, typography.ts, shadows.ts) + load Oswald/EBGaramond/Manrope fonts
-- [ ] 00-04: Configure EAS Build profiles + GitHub Actions CI + Sentry/PostHog initialization
+- [x] 00-01: Initialize Expo SDK 52 project with TypeScript strict + expo-router skeleton (built on SDK 54 — newer LTS; commit 956ad98)
+- [x] 00-02: Install core dependencies (zustand, tanstack-query, op-sqlite, reanimated, skia, gesture-handler, secure-store, local-authentication, font, sentry-expo, posthog-react-native, i18next, expo-localization) — mmkv deferred; victory-native added; commit 956ad98
+- [x] 00-03: Create design system (tokens.ts, typography.ts) + load Oswald/EBGaramond/Manrope fonts (commits 956ad98 + 14bd96e). shadows.ts deferred to Phase 1.
+- [~] 00-04: Configure EAS Build profiles + GitHub Actions CI (done; commit 956ad98) + Sentry/PostHog initialization (deferred to Phase 5 — needs EU project DSN/keys from user)
 
 ### Phase 1: Onboarding + Data Ingest
 **Goal**: A new user picks a language, picks a data source, and lands on a populated dashboard within 90 seconds.
@@ -159,8 +159,8 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Foundation | 0/4 | In progress | - |
-| 1. Onboarding + Data Ingest | 0/4 | Not started | - |
+| 0. Foundation | 3/4 + 1 partial | Code complete; device/cloud pending | 2026-05-13 (code) |
+| 1. Onboarding + Data Ingest | 0/4 | Planning | - |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 0/3 | Not started | - |
 | 4. Jars + i18n + Accessibility | 0/4 | Not started | - |
