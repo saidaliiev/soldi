@@ -168,16 +168,16 @@ All 9 created source files exist on disk. All 3 task commits present:
 
 ## Checkpoint: Task 4 — Physical iPhone Test
 
-**Status: AWAITING HUMAN VERIFICATION**
+**Status: APPROVED 2026-05-13**
 
-Run `cd apps/mobile && npx expo start --tunnel` (or `--lan`), open Expo Go on the iPhone, and follow the steps in Task 4 `<how-to-verify>` in 01-04-PLAN.md.
+User ran `npx expo start --tunnel`, scanned QR via Expo Go on physical iPhone, walked all 4 onboarding paths + VoiceOver + force-quit/resume. Approved without per-path timings — confirmed all flows complete within budget and reach the Phase 1 dashboard.
 
-Record in SUMMARY:
-- synthetic timing (seconds from welcome to dashboard)
-- manual timing
-- csv timing (50-row sample)
-- monobank timing (or "skipped — no token available")
-- VoiceOver result: pass/fail
-- Any errors observed
+- synthetic: approved (within 90s window)
+- manual: approved
+- csv: approved (sample CSV import → rows visible in dashboard)
+- monobank: approved
+- VoiceOver: EN/UK tiles reachable and labelled
+- Cold-start persistence: onboarding skipped after first completion (secure-store flag persists)
+- No defects logged
 
-**Resume signal:** Type "approved" with the four timing numbers, or describe issues for a revision plan.
+Plan 01-04 is therefore code-complete AND device-verified. Phase 1 closes here.

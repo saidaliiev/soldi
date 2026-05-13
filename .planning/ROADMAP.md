@@ -11,7 +11,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [~] **Phase 0: Foundation** — Expo scaffold, design tokens, CI, EAS, Supabase + Anthropic accounts (code complete; device/cloud verification outstanding — see STATE.md)
-- [ ] **Phase 1: Onboarding + Data Ingest** — User onboards in <90s and lands on dashboard with seeded data
+- [x] **Phase 1: Onboarding + Data Ingest** — User onboards in <90s and lands on dashboard with seeded data (4/4 plans, device-verified 2026-05-13)
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
 - [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet
 - [ ] **Phase 4: Jars + i18n + Accessibility** — monobank-style jars + full Ukrainian + WCAG AA pass
@@ -57,7 +57,7 @@ Plans:
 - [x] 01-01: Welcome + language pick screen with Reanimated transitions
 - [x] 01-02: Data-source pick screen (synthetic / manual / monobank / CSV) with paths branching
 - [x] 01-03: Synthetic transaction generator (Irish + Ukrainian merchants, MCC-aware, 90 days)
-- [ ] 01-04: monobank token paste + CSV import + manual entry data adapters with op-sqlite persistence
+- [x] 01-04: monobank token paste + CSV import + manual entry data adapters with op-sqlite persistence (device-verified 2026-05-13)
 
 ### Phase 2: Dashboard + Transactions + Categories
 **Goal**: User sees a beautifully designed monthly overview and scrolls 5000 transactions at 60fps while editing categories.
@@ -161,7 +161,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Foundation | 3/4 + 1 partial | Code complete; device/cloud pending | 2026-05-13 (code) |
-| 1. Onboarding + Data Ingest | 3/4 | In Progress|  |
+| 1. Onboarding + Data Ingest | 4/4 | Complete (device-verified) | 2026-05-13 |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 0/3 | Not started | - |
 | 4. Jars + i18n + Accessibility | 0/4 | Not started | - |

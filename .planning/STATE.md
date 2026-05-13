@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Position
 
-Phase: 01 (onboarding-data-ingest) — CHECKPOINT (3 plans + 3/4 tasks of 01-04 complete)
-Plan: 4 of 4 (01-04 Tasks 1-3 ✓; Task 4 = physical iPhone <90s timing test, BLOCKED on user)
-Status: Awaiting device verification — see `01-04-SUMMARY.md` for test recipe
-Last activity: 2026-05-13 — Wave 1 (01-01) + Wave 2 (01-02, 01-03) + Wave 3 Tasks 1-3 (01-04) all green. 11 commits since Phase 1 start. tsc/lint exit 0, 26+ tests pass.
+Phase: 01 (onboarding-data-ingest) — COMPLETE (4/4 plans, device-verified)
+Plan: 4 of 4 ✓ (01-04 Task 4 approved 2026-05-13 — synthetic / manual / csv / monobank all reach dashboard within budget; VoiceOver pass; cold-start persistence confirmed)
+Status: Phase 1 closed — ready for `/gsd-verify-work` audit then Phase 2 planning
+Last activity: 2026-05-13 — Phase 1 device-verified by user. 12+ commits since Phase 1 start. tsc/lint exit 0, 51+ tests pass.
 
-Progress: [████░░░░░░] ~27% (7 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..03 fully done + 01-04 3/4 tasks. P0 device/cloud and Phase 1 Task 4 device test still pending.)
+Progress: [█████░░░░░] ~31% (8 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..04 fully done. P0 cloud device init items still outstanding but non-blocking for Phase 2 planning.)
 
 ## P0 Outstanding (device/cloud-dependent — user action required)
 
