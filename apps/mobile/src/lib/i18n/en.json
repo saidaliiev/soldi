@@ -1,0 +1,47 @@
+{
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "skip": "Skip",
+    "cancel": "Cancel",
+    "done": "Done"
+  },
+  "onboarding": {
+    "welcome_title": "Money, slower.",
+    "welcome_subtitle": "A quieter way to see where your money goes.",
+    "language_en": "English",
+    "language_uk": "Ukrainian / Українська",
+    "pick_language": "Choose your language",
+    "pick_source_title": "Where should we get your data?",
+    "pick_source_subtitle": "Pick one. You can change this later.",
+    "source_synthetic_title": "Try with sample data",
+    "source_synthetic_body": "90 days of realistic spending. Best for first look.",
+    "source_manual_title": "Add manually",
+    "source_manual_body": "Type transactions in. Most private.",
+    "source_monobank_title": "monobank",
+    "source_monobank_body": "Paste your personal token. EU and Ukraine.",
+    "source_csv_title": "Import CSV",
+    "source_csv_body": "From your bank's web export."
+  },
+  "categories": {
+    "groceries": "Groceries",
+    "transport": "Transport",
+    "eating_out": "Eating out",
+    "coffee": "Coffee",
+    "rent": "Rent",
+    "utilities": "Utilities",
+    "mobile": "Mobile",
+    "entertainment": "Entertainment",
+    "health": "Health",
+    "clothing": "Clothing",
+    "gifts": "Gifts",
+    "transfers": "Transfers",
+    "salary": "Salary",
+    "refunds": "Refunds",
+    "savings": "Savings",
+    "kids": "Kids",
+    "pets": "Pets",
+    "misc": "Other"
+  }
+}

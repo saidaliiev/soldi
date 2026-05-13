@@ -1,0 +1,47 @@
+{
+  "common": {
+    "back": "Назад",
+    "next": "Далі",
+    "continue": "Продовжити",
+    "skip": "Пропустити",
+    "cancel": "Скасувати",
+    "done": "Готово"
+  },
+  "onboarding": {
+    "welcome_title": "Гроші, повільніше.",
+    "welcome_subtitle": "Тихіший спосіб бачити, куди йдуть твої гроші.",
+    "language_en": "English",
+    "language_uk": "Українська",
+    "pick_language": "Обери мову",
+    "pick_source_title": "Звідки візьмемо твої дані?",
+    "pick_source_subtitle": "Обери одне. Зможеш змінити пізніше.",
+    "source_synthetic_title": "Спробувати з прикладом",
+    "source_synthetic_body": "90 днів реалістичних витрат. Найкращий перший погляд.",
+    "source_manual_title": "Додавати вручну",
+    "source_manual_body": "Вводь транзакції самостійно. Найбільш приватно.",
+    "source_monobank_title": "monobank",
+    "source_monobank_body": "Встав свій персональний токен. ЄС та Україна.",
+    "source_csv_title": "Імпорт CSV",
+    "source_csv_body": "З веб-експорту твого банку."
+  },
+  "categories": {
+    "groceries": "Продукти",
+    "transport": "Транспорт",
+    "eating_out": "Заклади",
+    "coffee": "Кава",
+    "rent": "Оренда",
+    "utilities": "Комуналка",
+    "mobile": "Мобільний",
+    "entertainment": "Розваги",
+    "health": "Здоров'я",
+    "clothing": "Одяг",
+    "gifts": "Подарунки",
+    "transfers": "Перекази",
+    "salary": "Зарплата",
+    "refunds": "Повернення",
+    "savings": "Заощадження",
+    "kids": "Діти",
+    "pets": "Тварини",
+    "misc": "Інше"
+  }
+}
