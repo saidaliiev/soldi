@@ -5,7 +5,9 @@
     "continue": "Продовжити",
     "skip": "Пропустити",
     "cancel": "Скасувати",
-    "done": "Готово"
+    "done": "Готово",
+    "invalid_amount": "Введи коректну суму",
+    "required": "Обов'язково"
   },
   "onboarding": {
     "welcome_title": "Гроші, повільніше.",
@@ -23,7 +25,15 @@
     "source_monobank_body": "Встав свій персональний токен. ЄС та Україна.",
     "source_csv_title": "Імпорт CSV",
     "source_csv_body": "З веб-експорту твого банку.",
-    "synthetic_loading_title": "Завантажуємо 90 днів прикладу"
+    "synthetic_loading_title": "Завантажуємо 90 днів прикладу",
+    "manual_amount": "Сума",
+    "manual_merchant": "Де",
+    "manual_date": "Дата",
+    "manual_category": "Категорія",
+    "manual_today": "Сьогодні",
+    "manual_yesterday": "Вчора",
+    "manual_2_days_ago": "2 дні тому",
+    "manual_submit": "Додати транзакцію"
   },
   "dashboard": {
     "this_month": "Цього місяця",

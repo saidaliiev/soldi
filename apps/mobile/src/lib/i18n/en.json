@@ -5,7 +5,9 @@
     "continue": "Continue",
     "skip": "Skip",
     "cancel": "Cancel",
-    "done": "Done"
+    "done": "Done",
+    "invalid_amount": "Enter a valid amount",
+    "required": "Required"
   },
   "onboarding": {
     "welcome_title": "Money, slower.",
@@ -23,7 +25,15 @@
     "source_monobank_body": "Paste your personal token. EU and Ukraine.",
     "source_csv_title": "Import CSV",
     "source_csv_body": "From your bank's web export.",
-    "synthetic_loading_title": "Loading 90 days of sample data"
+    "synthetic_loading_title": "Loading 90 days of sample data",
+    "manual_amount": "Amount",
+    "manual_merchant": "Where",
+    "manual_date": "Date",
+    "manual_category": "Category",
+    "manual_today": "Today",
+    "manual_yesterday": "Yesterday",
+    "manual_2_days_ago": "2 days ago",
+    "manual_submit": "Add transaction"
   },
   "dashboard": {
     "this_month": "This month",
