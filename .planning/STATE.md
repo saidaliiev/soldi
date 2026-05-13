@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 0 Plan 00-01 in flight — Expo template scaffolded via `create-expo-app@latest mobile --template default --no-install --yes`. Actual versions resolved: Expo SDK 54, React Native 0.81.5, React 19.1.0, expo-router 6.0, react-native-reanimated 4.1.1, react-native-gesture-handler 2.28, react-native-worklets 0.5.1. NEWER than plan's stated SDK 52 / RN 0.76 / Reanimated 3 — proceed with current latest. npm install running in background."
-last_updated: "2026-05-13T15:27:10.397Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-05-13T15:43:15.251Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 ## Current Position
 
 Phase: 01 (onboarding-data-ingest) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -64,6 +64,7 @@ Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete; Phase 1
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-onboarding-data-ingest P03 | 40m | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - Init: Dropped PSD2 / TrueLayer integration — bootstrap budget incompatible
 - Init: Supabase Edge Functions for backend, free tier
 - Init: Ship free in v1 (no paywall) — App Store Review simplicity + portfolio focus
+- [Phase 01-onboarding-data-ingest]: slug→name_en resolved at query time in getCategoryIdBySlug — no hardcoded category ids
+- [Phase 01-onboarding-data-ingest]: readonly T[] over ReadonlyArray<T> — project ESLint @typescript-eslint/array-type rule
+- [Phase 01-onboarding-data-ingest]: Phase 1 dashboard EUR-only rollup for 30-day total — UAH rows in DB but excluded from sum (SKELETON Out-of-Scope)
 
 ### Pending Todos
 
@@ -99,8 +103,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-13T15:27:10.395Z
-Stopped at: Phase 0 Plan 00-01 in flight — Expo template scaffolded via `create-expo-app@latest mobile --template default --no-install --yes`. Actual versions resolved: Expo SDK 54, React Native 0.81.5, React 19.1.0, expo-router 6.0, react-native-reanimated 4.1.1, react-native-gesture-handler 2.28, react-native-worklets 0.5.1. NEWER than plan's stated SDK 52 / RN 0.76 / Reanimated 3 — proceed with current latest. npm install running in background.
+Last session: 2026-05-13T15:43:15.248Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
 
 ## Version Note (2026-05-13)

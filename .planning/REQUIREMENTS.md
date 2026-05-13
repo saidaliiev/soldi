@@ -17,7 +17,7 @@
 - [ ] **DATA-01**: User can import transactions from a CSV file via the document picker
 - [ ] **DATA-02**: User can paste a monobank personal token and have transactions synced from the monobank API
 - [ ] **DATA-03**: User can manually add an individual transaction with merchant, amount, date, and category
-- [ ] **DATA-04**: App seeds 90 days of realistic synthetic transactions when the user has no other data source
+- [x] **DATA-04**: App seeds 90 days of realistic synthetic transactions when the user has no other data source
 
 ### Dashboard
 
@@ -127,7 +127,7 @@ Deferred to post-launch milestones.
 | DATA-01 | Phase 1 | Pending |
 | DATA-02 | Phase 1 | Pending |
 | DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Complete |
 | DASH-01 | Phase 2 | Pending |
 | DASH-02 | Phase 2 | Pending |
 | DASH-03 | Phase 2 | Pending |
