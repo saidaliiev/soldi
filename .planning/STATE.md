@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-05-13T15:43:15.251Z"
+stopped_at: "01-04 Tasks 1-3 complete — awaiting Task 4 physical iPhone verification"
+last_updated: "2026-05-13T16:09:00Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 7
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 ## Current Position
 
 Phase: 01 (onboarding-data-ingest) — EXECUTING
-Plan: 3 of 4
-Status: Ready to execute
+Plan: 4 of 4 (Tasks 1-3 complete, Task 4 awaiting human verify)
+Status: Checkpoint — human verification required
 Last activity: 2026-05-13
 
 Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete; Phase 1 plans locked but not executed; P0 device/cloud verification still pending)
@@ -65,6 +65,7 @@ Progress: [██░░░░░░░░] ~15% (3 of 26 plans complete; Phase 1
 
 *Updated after each plan completion*
 | Phase 01-onboarding-data-ingest P03 | 40m | 2 tasks | 12 files |
+| Phase 01-onboarding-data-ingest P04 (Tasks 1-3) | 12m | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,9 @@ Recent decisions affecting current work:
 - [Phase 01-onboarding-data-ingest]: slug→name_en resolved at query time in getCategoryIdBySlug — no hardcoded category ids
 - [Phase 01-onboarding-data-ingest]: readonly T[] over ReadonlyArray<T> — project ESLint @typescript-eslint/array-type rule
 - [Phase 01-onboarding-data-ingest]: Phase 1 dashboard EUR-only rollup for 30-day total — UAH rows in DB but excluded from sum (SKELETON Out-of-Scope)
+- [Phase 01-onboarding-data-ingest P04]: Token saved to secure-store AFTER all API calls succeed — prevents bad token from persisting
+- [Phase 01-onboarding-data-ingest P04]: monobank syncs client.accounts[0] only (B3 scope reduction; multi-account picker → Phase 5)
+- [Phase 01-onboarding-data-ingest P04]: description column null for all ingest paths (monobank/csv/manual) — Phase 3 AI safety contract
 
 ### Pending Todos
 
@@ -103,9 +107,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-13T15:43:15.248Z
-Stopped at: Completed 01-03-PLAN.md
-Resume file: None
+Last session: 2026-05-13T16:09:00Z
+Stopped at: "01-04 Tasks 1-3 committed (167a7ab, 7e51f33, a1389de). Task 4 = checkpoint:human-verify on physical iPhone."
+Resume file: .planning/phases/01-onboarding-data-ingest/01-04-SUMMARY.md
 
 ## Version Note (2026-05-13)
 
