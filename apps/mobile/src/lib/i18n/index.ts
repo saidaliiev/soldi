@@ -6,7 +6,7 @@
  * falls back to English if locale is neither 'uk' nor 'en'.
  */
 
-import i18next from 'i18next';
+import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 
@@ -17,7 +17,7 @@ import uk from './uk.json';
 // Singleton instance — exported for use in screens via useTranslation()
 // ---------------------------------------------------------------------------
 
-export const i18n = i18next.createInstance();
+export const i18n = createInstance();
 
 // ---------------------------------------------------------------------------
 // Resources

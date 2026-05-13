@@ -23,7 +23,7 @@ export type Migration = {
  * Ordered list of all migrations. runMigrations() iterates this array and
  * applies each entry whose version exceeds the current PRAGMA user_version.
  */
-export const MIGRATIONS: ReadonlyArray<Migration> = [
+export const MIGRATIONS: readonly Migration[] = [
   {
     version: 1,
     sql: SCHEMA_001 + ';\n' + SEED_DEFAULT_CATEGORIES,
