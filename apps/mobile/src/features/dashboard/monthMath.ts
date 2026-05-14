@@ -65,6 +65,23 @@ export function clampMonth(target: MonthKey, earliest: MonthKey, latestPlusOne: 
 }
 
 // ---------------------------------------------------------------------------
+// isSameMonth
+// ---------------------------------------------------------------------------
+
+/**
+ * True iff `key` matches the calendar month of `today` (UTC).
+ *
+ * Used by the dashboard to gate the DigestCard render — the "yesterday in
+ * money" copy only makes sense when the selected month IS the current month.
+ */
+export function isSameMonth(key: MonthKey, today: Date): boolean {
+  return (
+    key.year === today.getUTCFullYear() &&
+    key.month === today.getUTCMonth() + 1
+  );
+}
+
+// ---------------------------------------------------------------------------
 // isFutureMonth
 // ---------------------------------------------------------------------------
 

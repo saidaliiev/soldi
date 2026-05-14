@@ -31,8 +31,10 @@ import { MonthlyTotalHero } from '@/src/features/dashboard/MonthlyTotalHero';
 import { DonutChart } from '@/src/features/dashboard/DonutChart';
 import { CategoryRow } from '@/src/features/dashboard/CategoryRow';
 import { EmptyState } from '@/src/features/dashboard/EmptyState';
+import { DigestCard } from '@/src/features/dashboard/DigestCard';
 import { useMonthData } from '@/src/features/dashboard/useMonthData';
-import { addMonths, isFutureMonth } from '@/src/features/dashboard/monthMath';
+import { useDigestData } from '@/src/features/dashboard/useDigestData';
+import { addMonths, isFutureMonth, isSameMonth } from '@/src/features/dashboard/monthMath';
 import type { MonthKey } from '@/src/features/dashboard/types';
 
 function currentMonthKey(today: Date = new Date()): MonthKey {
@@ -78,8 +80,10 @@ export default function DashboardScreen(): React.JSX.Element {
   // ---------------------------------------------------------------------------
 
   const data = useMonthData(selected);
+  const digest = useDigestData();
 
   const isFuture = useMemo(() => isFutureMonth(selected, today), [selected, today]);
+  const showDigest = useMemo(() => isSameMonth(selected, today), [selected, today]);
 
   const maxAmount = useMemo(() => {
     if (data.breakdown.top.length === 0) return 0;
@@ -136,6 +140,11 @@ export default function DashboardScreen(): React.JSX.Element {
         ) : (
           <>
             <DonutChart breakdown={data.breakdown} />
+            {showDigest && (
+              <View style={styles.digestWrap}>
+                <DigestCard data={digest} />
+              </View>
+            )}
             <View style={styles.rows}>
               {data.breakdown.top.map((slice) => (
                 <CategoryRow
@@ -182,5 +191,9 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: SPACING.sm,
+  },
+  digestWrap: {
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
 });
