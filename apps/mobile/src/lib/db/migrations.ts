@@ -12,7 +12,12 @@
  *   CREATE INDEX IF NOT EXISTS patterns (already satisfied by schema.sql.ts).
  */
 
-import { SCHEMA_001, SCHEMA_002, SEED_DEFAULT_CATEGORIES } from './schema.sql';
+import {
+  SCHEMA_001,
+  SCHEMA_002,
+  SCHEMA_004_MERCHANT_OVERRIDES_V2,
+  SEED_DEFAULT_CATEGORIES,
+} from './schema.sql';
 
 export type Migration = {
   readonly version: number;
@@ -33,5 +38,14 @@ export const MIGRATIONS: readonly Migration[] = [
     // + backfill of the 18 seeded rows. See SCHEMA_002 in schema.sql.ts.
     version: 2,
     sql: SCHEMA_002,
+  },
+  // NOTE: version 3 is owned by Plan 03-01 (transactions AI columns) and lands at
+  // merge time. The two waves ship in parallel; 03-01 inserts its `{ version: 3,
+  // sql: SCHEMA_003_* }` entry between this comment and the version 4 entry below.
+  {
+    // Phase 3 plan 03-02 — merchant_overrides rewrite: substring-match → exact-match
+    // on a normalized merchant_key. See SCHEMA_004_MERCHANT_OVERRIDES_V2.
+    version: 4,
+    sql: SCHEMA_004_MERCHANT_OVERRIDES_V2,
   },
 ] as const;

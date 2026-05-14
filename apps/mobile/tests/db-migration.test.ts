@@ -16,6 +16,11 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import { MIGRATIONS } from '../src/lib/db/migrations.js';
+
+// The highest version registered in MIGRATIONS at the time this test runs.
+// We assert the runner advances to this value rather than a hard-coded version
+// so the test survives subsequent migration additions (Phase 2+ schema).
+const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 1;
 import { splitStatements } from '../src/lib/db/index.js';
 
 // ---------------------------------------------------------------------------
@@ -193,7 +198,11 @@ test('db-migration: migration 001 applies cleanly and is idempotent', async (t) 
     runMigrationsOn(db);
 
     const version = getSchemaVersionFrom(db);
-    assert.strictEqual(version, 1, `Expected schema version 1, got ${version}`);
+    assert.strictEqual(
+      version,
+      LATEST_VERSION,
+      `Expected schema version ${LATEST_VERSION}, got ${version}`,
+    );
 
     // 18 default categories seeded
     const categoryCount = queryInt(db, 'SELECT COUNT(*) FROM categories');
@@ -217,7 +226,11 @@ test('db-migration: migration 001 applies cleanly and is idempotent', async (t) 
     // Idempotency: second run must not throw, version stays at 1
     runMigrationsOn(db);
     const versionAfterRepeat = getSchemaVersionFrom(db);
-    assert.strictEqual(versionAfterRepeat, 1, 'Version should still be 1 after repeated runMigrations');
+    assert.strictEqual(
+      versionAfterRepeat,
+      LATEST_VERSION,
+      `Version should still be ${LATEST_VERSION} after repeated runMigrations`,
+    );
   } finally {
     db.close?.();
     const tmpPath = path.join(os.tmpdir(), dbName);
