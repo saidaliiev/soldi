@@ -1,164 +1,186 @@
 /**
- * SOLDI Phase 1 minimal dashboard.
+ * SOLDI Phase 2 Dashboard.
  *
- * Intentionally austere — proves the full data path works end-to-end:
- *   onboarding → synthetic generator → op-sqlite → read back → display.
+ * Replaces the Phase 1 minimal dashboard with the editorial composition
+ * per D-01:
+ *   MonthSwiper → MonthlyTotalHero → DonutChart + CategoryRows → EmptyState
  *
- * Phase 2 replaces this with the full SOLDI design (Skia charts, FlashList,
- * category breakdown, etc.). Do NOT add Skia, FlashList, or chart code here.
+ * Implementation notes:
+ *   - Synchronous data read via useFocusEffect (D-27, Phase 1 pattern).
+ *   - Past-lock = month of earliest transaction (from getMonthsWithTransactions).
+ *   - Future-lock = today + 1 month inclusive (D-02).
+ *   - Future month → EmptyState 'future-month'. Empty current month → 'current-month'.
+ *   - The digest card + sparkline + dynamic month-change donut interpolation
+ *     are deferred to plan 02-02 (per scope in 02-01-PLAN).
  *
- * Design rules:
- * - Oswald TYPE.displayL for the section title
- * - TYPE.displayXL for the monthly total (hero number)
- * - Manrope TYPE.uiLabel for counts and labels
- * - COLORS.expense for expense total, COLORS.textMuted for empty state
- * - No hardcoded hex. No inline style objects except for dynamic values.
- * - Minimum tap targets: N/A (no interactive elements in Phase 1 dashboard)
+ * Security (T-02-01-03): no transaction details ever logged. The dev-only
+ * `console.time('donut-first-frame')` instrumentation is the only console
+ * call in this path.
  */
 
-import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-} from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { SafeAreaView, ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { formatMoney } from '@lib/money';
-import { countTransactions, sumLastNDays } from '@data/transactionsRepo';
+import { getMonthsWithTransactions } from '@data/dashboardRepo';
+import { MonthSwiper } from '@/src/features/dashboard/MonthSwiper';
+import { MonthlyTotalHero } from '@/src/features/dashboard/MonthlyTotalHero';
+import { DonutChart } from '@/src/features/dashboard/DonutChart';
+import { CategoryRow } from '@/src/features/dashboard/CategoryRow';
+import { EmptyState } from '@/src/features/dashboard/EmptyState';
+import { useMonthData } from '@/src/features/dashboard/useMonthData';
+import { addMonths, isFutureMonth } from '@/src/features/dashboard/monthMath';
+import type { MonthKey } from '@/src/features/dashboard/types';
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+function currentMonthKey(today: Date = new Date()): MonthKey {
+  return {
+    year: today.getUTCFullYear(),
+    month: today.getUTCMonth() + 1,
+  };
+}
 
 export default function DashboardScreen(): React.JSX.Element {
   const { t } = useTranslation();
 
-  const [count, setCount] = useState<number>(0);
-  const [sumLast30Cents, setSumLast30Cents] = useState<number>(0);
+  const [today] = useState<Date>(() => new Date());
+  const [selected, setSelected] = useState<MonthKey>(() => currentMonthKey(today));
 
   // ---------------------------------------------------------------------------
-  // Data load — re-fetches whenever this tab comes into focus
+  // Month bounds (re-read on focus so a fresh import bumps the past-lock).
   // ---------------------------------------------------------------------------
+
+  const [bounds, setBounds] = useState<{ earliest: MonthKey; latestPlusOne: MonthKey }>(() => ({
+    earliest: currentMonthKey(today),
+    latestPlusOne: addMonths(currentMonthKey(today), 1),
+  }));
 
   useFocusEffect(
     useCallback(() => {
       try {
-        const txCount = countTransactions();
-        const expenseSum = sumLastNDays(30);
-        setCount(txCount);
-        setSumLast30Cents(expenseSum);
+        const months = getMonthsWithTransactions();
+        const cm = currentMonthKey(today);
+        const earliest = months.length > 0 ? months[0]! : cm;
+        const latestPlusOne = addMonths(cm, 1);
+        setBounds({ earliest, latestPlusOne });
       } catch {
-        // On error: show empty state (count stays 0)
-        setCount(0);
-        setSumLast30Cents(0);
+        // Defensive — never crash dashboard on bounds lookup failure.
+        const cm = currentMonthKey(today);
+        setBounds({ earliest: cm, latestPlusOne: addMonths(cm, 1) });
       }
-    }, [])
+    }, [today])
   );
 
   // ---------------------------------------------------------------------------
-  // Derived display values
+  // Selected-month data (auto-refresh on focus).
   // ---------------------------------------------------------------------------
 
-  const formattedTotal = formatMoney(
-    { amountCents: -sumLast30Cents, currency: 'EUR' },
-    'en-IE'
-  );
+  const data = useMonthData(selected);
+
+  const isFuture = useMemo(() => isFutureMonth(selected, today), [selected, today]);
+
+  const maxAmount = useMemo(() => {
+    if (data.breakdown.top.length === 0) return 0;
+    return Math.max(...data.breakdown.top.map((s) => s.amountCents));
+  }, [data.breakdown.top]);
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
+
+  const goAddTransaction = useCallback(() => {
+    // Phase 1 manual-entry route — kept available for the empty-state CTA.
+    router.push('/onboarding/manual');
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
 
   return (
-    <SafeAreaView
-      style={styles.safeArea}
-      accessibilityLabel="Dashboard screen"
-    >
-      <View style={styles.container}>
+    <SafeAreaView style={styles.safe} accessibilityLabel="Dashboard screen">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <MonthSwiper
+          selected={selected}
+          onChange={setSelected}
+          earliest={bounds.earliest}
+          latestPlusOne={bounds.latestPlusOne}
+        />
 
-        <Text
-          style={styles.title}
-          accessibilityRole="header"
-        >
-          {t('dashboard.this_month')}
-        </Text>
+        <MonthlyTotalHero totalCents={data.totalCents} monthKey={selected} />
 
-        {count === 0 ? (
-          // Empty state
-          <View
-            style={styles.emptyContainer}
-            accessibilityLabel="No transactions loaded yet"
+        {data.error && (
+          <Pressable
+            onPress={data.refresh}
+            accessibilityRole="button"
+            accessibilityLabel={t('dashboard.error_load')}
+            style={styles.errorRow}
+            hitSlop={8}
           >
-            <Text style={styles.emptyText}>
-              {t('dashboard.empty')}
+            <Text style={styles.errorText} allowFontScaling>
+              {t('dashboard.error_load')}
             </Text>
-          </View>
-        ) : (
-          // Summary card
-          <View style={styles.card} accessibilityLabel="Monthly summary card">
-            <Text
-              style={styles.totalAmount}
-              accessibilityLabel={`Monthly expenses: ${formattedTotal}`}
-            >
-              {formattedTotal}
-            </Text>
-            <Text style={styles.txCount}>
-              {t('dashboard.transactions_count', { n: count })}
-            </Text>
-          </View>
+          </Pressable>
         )}
 
-      </View>
+        {isFuture ? (
+          <EmptyState variant="future-month" onCtaPress={goAddTransaction} />
+        ) : data.totalCents === 0 ? (
+          <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
+        ) : (
+          <>
+            <DonutChart breakdown={data.breakdown} />
+            <View style={styles.rows}>
+              {data.breakdown.top.map((slice) => (
+                <CategoryRow
+                  key={`top-${String(slice.categoryId)}`}
+                  slice={slice}
+                  maxAmountCents={maxAmount}
+                />
+              ))}
+              {data.breakdown.other != null && (
+                <CategoryRow
+                  key="other"
+                  slice={data.breakdown.other}
+                  maxAmountCents={maxAmount}
+                />
+              )}
+            </View>
+          </>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
 const styles = StyleSheet.create({
-  safeArea: {
+  safe: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  container: {
+  scroll: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
   },
-  title: {
-    ...TYPE.displayL,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.lg,
+  content: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.xxl,
+    gap: SPACING.lg,
   },
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    ...SHADOWS.card,
+  errorRow: {
+    paddingVertical: SPACING.sm,
   },
-  totalAmount: {
-    ...TYPE.displayXL,
-    color: COLORS.expense,
-    marginBottom: SPACING.sm,
-  },
-  txCount: {
+  errorText: {
     ...TYPE.uiLabel,
-    color: COLORS.textSecondary,
+    color: COLORS.error,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    ...TYPE.editorialLead,
-    color: COLORS.textMuted,
-    textAlign: 'center',
+  rows: {
+    gap: SPACING.sm,
   },
 });
