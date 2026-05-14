@@ -12,6 +12,12 @@ import * as Localization from 'expo-localization';
 
 import en from './en.json';
 import uk from './uk.json';
+// Phase 2 — namespaced dashboard strings live in src/i18n/locales/*/dashboard.json
+// per the plan artifact contract. They are merged into the bundled `translation`
+// namespace under the `dashboard.*` key path so existing useTranslation() calls
+// (t('dashboard.empty_month')) resolve without a namespace change.
+import dashboardEn from '../../i18n/locales/en/dashboard.json';
+import dashboardUk from '../../i18n/locales/uk/dashboard.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -23,9 +29,21 @@ export const i18n = createInstance();
 // Resources
 // ---------------------------------------------------------------------------
 
+// Deep-merge the Phase 2 dashboard.* keys into the existing `dashboard` subtree.
+// The existing Phase 1 keys (this_month, empty, transactions_count) are preserved;
+// Phase 2 adds empty_month, empty_future, error_load, etc.
+const enBundle = {
+  ...en,
+  dashboard: { ...(en as { dashboard?: Record<string, string> }).dashboard, ...dashboardEn },
+};
+const ukBundle = {
+  ...uk,
+  dashboard: { ...(uk as { dashboard?: Record<string, string> }).dashboard, ...dashboardUk },
+};
+
 const resources = {
-  en: { translation: en },
-  uk: { translation: uk },
+  en: { translation: enBundle },
+  uk: { translation: ukBundle },
 } as const;
 
 // ---------------------------------------------------------------------------

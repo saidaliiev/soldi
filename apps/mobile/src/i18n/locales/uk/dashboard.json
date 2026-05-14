@@ -1,0 +1,16 @@
+{
+  "this_month": "This month",
+  "total_spent_in": "Total spent in {{month}}",
+  "transactions_count": "{{n}} transactions",
+  "empty": "No transactions yet",
+  "empty_month": "This month is a blank page.",
+  "empty_future": "No data yet.",
+  "empty_future_sub": "Add a transaction to see this month.",
+  "error_load": "Couldn't load data. Tap to retry.",
+  "cta_add_transaction": "Add transaction",
+  "donut_total_label": "Total",
+  "digest_above_avg": "+ €{{delta}} above last month's daily average",
+  "digest_below_avg": "− €{{delta}} below last month's daily average",
+  "digest_on_track": "Right on track for the month.",
+  "digest_first_month": "First month tracked."
+}

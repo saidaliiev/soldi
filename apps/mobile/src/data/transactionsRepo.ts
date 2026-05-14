@@ -16,6 +16,7 @@
 
 import { getDB } from '@lib/db';
 import { nowSeconds } from '@lib/time';
+import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -150,4 +151,50 @@ export function sumLastNDays(days: number): number {
   // SUM of negative amounts is negative; return absolute value for display
   const s = (row['s'] as number) ?? 0;
   return Math.abs(s);
+}
+
+// ---------------------------------------------------------------------------
+// listByMonth (Phase 2 — transaction list, dashboard breakdown)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns all transactions whose `date` falls within the calendar month
+ * (year, month) in UTC, ordered by date DESC then id DESC.
+ *
+ * Parameters are bounded before query (defense in depth — T-02-01-01).
+ */
+export function listByMonth(year: number, month: number): TransactionRow[] {
+  const yi = Math.floor(Number(year));
+  const mi = Math.floor(Number(month));
+  if (!Number.isFinite(yi) || !Number.isFinite(mi)) return [];
+  if (yi < 1900 || yi > 3000) return [];
+  if (mi < 1 || mi > 12) return [];
+
+  const { startSec, endSec } = monthStartEndUnixSec({ year: yi, month: mi });
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT id, amount_cents, currency, merchant_name, merchant_id, mcc_code,
+            category_id, account_id, description, date, source, external_id,
+            created_at
+     FROM transactions
+     WHERE date >= ? AND date < ?
+     ORDER BY date DESC, id DESC`,
+    [startSec, endSec]
+  );
+
+  return result.rows.map((row) => ({
+    id: row['id'] as number,
+    amount_cents: row['amount_cents'] as number,
+    currency: row['currency'] as string,
+    merchant_name: row['merchant_name'] as string,
+    merchant_id: (row['merchant_id'] as string | null) ?? null,
+    mcc_code: (row['mcc_code'] as number | null) ?? null,
+    category_id: (row['category_id'] as number | null) ?? null,
+    account_id: (row['account_id'] as number | null) ?? null,
+    description: (row['description'] as string | null) ?? null,
+    date: row['date'] as number,
+    source: row['source'] as string,
+    external_id: (row['external_id'] as string | null) ?? null,
+    created_at: row['created_at'] as number,
+  }));
 }
