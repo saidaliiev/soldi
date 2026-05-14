@@ -197,21 +197,24 @@ export function getCategoryById(id: number): Category | null {
 
   const db = getDB();
   const result = db.executeSync(
-    'SELECT id, name_en, name_uk, icon_name, is_custom FROM categories WHERE id = ? LIMIT 1',
+    'SELECT id, name_en, name_uk, icon_name, is_custom, slug, color FROM categories WHERE id = ? LIMIT 1',
     [id]
   );
   const row = result.rows[0];
   if (row == null) return null;
 
   const nameEn = row['name_en'] as string;
-  const slug = slugForCategoryName(nameEn);
+  const storedSlug = row['slug'] as string | null | undefined;
+  const slug = storedSlug != null && storedSlug.length > 0 ? storedSlug : slugForCategoryName(nameEn);
+  const storedColor = row['color'] as string | null | undefined;
+  const color = storedColor != null && storedColor.length > 0 ? storedColor : colorForCategorySlug(slug);
   return {
     id: row['id'] as number,
     slug,
     nameEn,
     nameUk: row['name_uk'] as string,
     iconName: row['icon_name'] as string,
-    color: colorForCategorySlug(slug),
+    color,
     isCustom: ((row['is_custom'] as number) ?? 0) === 1,
   };
 }
@@ -223,22 +226,178 @@ export function getCategoryById(id: number): Category | null {
 /**
  * Returns every category enriched with derived slug + color, in id order.
  *
- * Distinct from `listCategories()` (which returns the raw CategoryRow shape
- * for Phase 1 backwards compatibility). Phase 2 UI consumers prefer this
- * enriched shape.
+ * Phase 2 plan 02-04 added persistent `slug` + `color` columns via migration 002.
+ * This function prefers the DB-stored values when present, falling back to the
+ * derived helpers for any row that predates the migration on existing devices.
  */
 export function listCategoriesEnriched(): readonly Category[] {
-  const rows = listCategories();
-  return rows.map((r) => {
-    const slug = slugForCategoryName(r.name_en);
+  const db = getDB();
+  const result = db.executeSync(
+    'SELECT id, name_en, name_uk, icon_name, parent_id, is_custom, slug, color, created_at FROM categories ORDER BY id ASC'
+  );
+  return result.rows.map((row) => {
+    const nameEn = row['name_en'] as string;
+    const storedSlug = row['slug'] as string | null | undefined;
+    const slug = storedSlug != null && storedSlug.length > 0 ? storedSlug : slugForCategoryName(nameEn);
+    const storedColor = row['color'] as string | null | undefined;
+    const color = storedColor != null && storedColor.length > 0 ? storedColor : colorForCategorySlug(slug);
     return {
-      id: r.id,
+      id: row['id'] as number,
       slug,
-      nameEn: r.name_en,
-      nameUk: r.name_uk,
-      iconName: r.icon_name,
-      color: colorForCategorySlug(slug),
-      isCustom: r.is_custom === 1,
+      nameEn,
+      nameUk: row['name_uk'] as string,
+      iconName: row['icon_name'] as string,
+      color,
+      isCustom: ((row['is_custom'] as number) ?? 0) === 1,
     };
   });
+}
+
+// ---------------------------------------------------------------------------
+// 02-04 mutations: insertCategory / updateCategory / deleteCategoryRow /
+// bulkReassignTransactionsCategory / getMiscellaneousCategoryId
+// ---------------------------------------------------------------------------
+
+/**
+ * Input shape for inserting a new (user-created) category. is_custom is forced
+ * to 1 by this repo function — defaults are seeded only via migrations.
+ */
+export type InsertCategoryInput = {
+  readonly nameEn: string;
+  readonly nameUk: string | null;
+  readonly iconSlug: string;
+  readonly color: string;
+  readonly slug: string;
+};
+
+/**
+ * Inserts a new custom category row and returns the enriched Category.
+ *
+ * Uses parameterized executeSync — never string-interpolates user input
+ * (T-02-04-01 mitigation). Slug is also user-derived via slugify but enforced
+ * UNIQUE via idx_categories_slug; caller catches the UNIQUE constraint failure.
+ */
+export function insertCategory(input: InsertCategoryInput): Category {
+  const db = getDB();
+  const now = Math.floor(Date.now() / 1000);
+  db.executeSync(
+    'INSERT INTO categories (name_en, name_uk, icon_name, parent_id, is_custom, slug, color, usage_count, created_at) VALUES (?, ?, ?, NULL, 1, ?, ?, 0, ?)',
+    [input.nameEn, input.nameUk ?? input.nameEn, input.iconSlug, input.slug, input.color, now]
+  );
+  const rowidResult = db.executeSync('SELECT last_insert_rowid() AS id');
+  const newId = rowidResult.rows[0]?.['id'] as number;
+  const cat = getCategoryById(newId);
+  if (cat == null) {
+    throw new Error('Inserted category not retrievable');
+  }
+  return cat;
+}
+
+/**
+ * Patches an existing category. `iconSlug` here corresponds to the new
+ * icon_name column value (we keep the schema name `icon_name` for stability).
+ */
+export type UpdateCategoryPatch = {
+  readonly nameEn?: string;
+  readonly nameUk?: string | null;
+  readonly iconSlug?: string;
+  readonly color?: string;
+  readonly slug?: string;
+};
+
+export function updateCategory(id: number, patch: UpdateCategoryPatch): Category {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('updateCategory: invalid id');
+  }
+  const sets: string[] = [];
+  const values: Array<string | number | null> = [];
+  if (patch.nameEn !== undefined) {
+    sets.push('name_en = ?');
+    values.push(patch.nameEn);
+  }
+  if (patch.nameUk !== undefined) {
+    sets.push('name_uk = ?');
+    values.push(patch.nameUk);
+  }
+  if (patch.iconSlug !== undefined) {
+    sets.push('icon_name = ?');
+    values.push(patch.iconSlug);
+  }
+  if (patch.color !== undefined) {
+    sets.push('color = ?');
+    values.push(patch.color);
+  }
+  if (patch.slug !== undefined) {
+    sets.push('slug = ?');
+    values.push(patch.slug);
+  }
+  if (sets.length === 0) {
+    const existing = getCategoryById(id);
+    if (existing == null) throw new Error('updateCategory: category not found');
+    return existing;
+  }
+  values.push(id);
+  const db = getDB();
+  db.executeSync(`UPDATE categories SET ${sets.join(', ')} WHERE id = ?`, values);
+  const after = getCategoryById(id);
+  if (after == null) throw new Error('updateCategory: row vanished');
+  return after;
+}
+
+/**
+ * Deletes a non-default category row. Defense-in-depth: the WHERE clause
+ * enforces is_custom = 1 so even a malformed call cannot delete a default
+ * category (T-02-04-02 mitigation).
+ */
+export function deleteCategoryRow(id: number): void {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('deleteCategoryRow: invalid id');
+  }
+  const db = getDB();
+  db.executeSync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
+}
+
+/**
+ * Reassigns all transactions from one category to another. Returns the number
+ * of affected rows. Wrapped in a transaction by callers in categoryMutations.
+ */
+export function bulkReassignTransactionsCategory(fromCategoryId: number, toCategoryId: number): number {
+  if (!Number.isInteger(fromCategoryId) || fromCategoryId <= 0) {
+    throw new Error('bulkReassignTransactionsCategory: invalid fromCategoryId');
+  }
+  if (!Number.isInteger(toCategoryId) || toCategoryId <= 0) {
+    throw new Error('bulkReassignTransactionsCategory: invalid toCategoryId');
+  }
+  const db = getDB();
+  const result = db.executeSync(
+    'UPDATE transactions SET category_id = ? WHERE category_id = ?',
+    [toCategoryId, fromCategoryId]
+  );
+  // op-sqlite QueryResult exposes rowsAffected; fall back to 0 if absent.
+  return (result as unknown as { rowsAffected?: number }).rowsAffected ?? 0;
+}
+
+/**
+ * Resolves the numeric id of the Miscellaneous fallback category, used when
+ * deleting a custom category to reassign its transactions. Tries 'misc' first
+ * (canonical seed slug), then falls back to the literal 'miscellaneous' slug
+ * for forward-compat. Throws if neither is present — the seed MUST contain
+ * one of these slugs.
+ */
+export function getMiscellaneousCategoryId(): number {
+  const db = getDB();
+  // Try slug column first (post-migration 002), then the canonical name_en match.
+  let result = db.executeSync(
+    "SELECT id FROM categories WHERE slug = 'misc' OR slug = 'miscellaneous' LIMIT 1"
+  );
+  let row = result.rows[0];
+  if (row == null) {
+    // Pre-migration fallback: look up by name_en.
+    result = db.executeSync("SELECT id FROM categories WHERE name_en = 'Other' LIMIT 1");
+    row = result.rows[0];
+  }
+  if (row == null) {
+    throw new Error('Miscellaneous category missing from seed');
+  }
+  return row['id'] as number;
 }

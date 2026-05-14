@@ -96,3 +96,40 @@ INSERT INTO categories (name_en, name_uk, icon_name, parent_id, is_custom, creat
   ('Pets',           'Тварини',      'paw-print',        NULL, 0, CAST(strftime('%s','now') AS INTEGER)),
   ('Other',          'Інше',         'more-horizontal',  NULL, 0, CAST(strftime('%s','now') AS INTEGER))
 `;
+
+// ---------------------------------------------------------------------------
+// SCHEMA_002: Phase 2 plan 02-04 — adds slug + color + usage_count columns
+// to categories, plus backfill of slug/color for the 18 seeded rows.
+// ---------------------------------------------------------------------------
+//
+// Why a migration: the 02-04 category editor persists user-chosen slug + color
+// per category. Wave 1 (02-01) worked around the missing columns by deriving
+// slug/color in the repo layer (see categoriesRepo SLUG_TO_NAME_EN + DEFAULT_
+// CATEGORY_COLORS). With user-created categories now possible, we need
+// persistent columns.
+
+export const SCHEMA_002 = `
+ALTER TABLE categories ADD COLUMN slug TEXT;
+ALTER TABLE categories ADD COLUMN color TEXT;
+ALTER TABLE categories ADD COLUMN usage_count INTEGER NOT NULL DEFAULT 0;
+UPDATE categories SET slug = 'groceries',     color = '#C97B5C' WHERE name_en = 'Groceries';
+UPDATE categories SET slug = 'transport',     color = '#9DA88C' WHERE name_en = 'Transport';
+UPDATE categories SET slug = 'eating-out',    color = '#D9997A' WHERE name_en = 'Eating out';
+UPDATE categories SET slug = 'coffee',        color = '#A86147' WHERE name_en = 'Coffee';
+UPDATE categories SET slug = 'rent',          color = '#7A5C52' WHERE name_en = 'Rent';
+UPDATE categories SET slug = 'utilities',     color = '#7A876A' WHERE name_en = 'Utilities';
+UPDATE categories SET slug = 'mobile',        color = '#B5C0A5' WHERE name_en = 'Mobile';
+UPDATE categories SET slug = 'entertainment', color = '#C97B5C' WHERE name_en = 'Entertainment';
+UPDATE categories SET slug = 'health',        color = '#B85C5C' WHERE name_en = 'Health';
+UPDATE categories SET slug = 'clothing',      color = '#D9997A' WHERE name_en = 'Clothing';
+UPDATE categories SET slug = 'gifts',         color = '#A86147' WHERE name_en = 'Gifts';
+UPDATE categories SET slug = 'transfers',     color = '#7A5C52' WHERE name_en = 'Transfers';
+UPDATE categories SET slug = 'salary',        color = '#9DA88C' WHERE name_en = 'Salary';
+UPDATE categories SET slug = 'refunds',       color = '#B5C0A5' WHERE name_en = 'Refunds';
+UPDATE categories SET slug = 'savings',       color = '#7A876A' WHERE name_en = 'Savings';
+UPDATE categories SET slug = 'kids',          color = '#C97B5C' WHERE name_en = 'Kids';
+UPDATE categories SET slug = 'pets',          color = '#9DA88C' WHERE name_en = 'Pets';
+UPDATE categories SET slug = 'misc',          color = '#7A5C52' WHERE name_en = 'Other';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug)
+`;
+
