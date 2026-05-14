@@ -29,6 +29,7 @@ import { COLORS } from '@design/tokens';
 import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
 import { initI18n, i18n } from '@lib/i18n';
+import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // ignored
@@ -107,7 +108,16 @@ export default function RootLayout() {
               name="modal"
               options={{ presentation: 'modal', title: 'Modal' }}
             />
+            <Stack.Screen
+              name="transactions/[id]"
+              options={{ title: 'Transaction' }}
+            />
+            <Stack.Screen
+              name="transactions/search"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
           </Stack>
+          <RecategorizeBottomSheet />
           <StatusBar style="dark" />
         </I18nextProvider>
       </QueryClientProvider>
