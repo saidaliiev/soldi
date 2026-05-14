@@ -310,7 +310,7 @@ export function updateCategory(id: number, patch: UpdateCategoryPatch): Category
     throw new Error('updateCategory: invalid id');
   }
   const sets: string[] = [];
-  const values: Array<string | number | null> = [];
+  const values: (string | number | null)[] = [];
   if (patch.nameEn !== undefined) {
     sets.push('name_en = ?');
     values.push(patch.nameEn);

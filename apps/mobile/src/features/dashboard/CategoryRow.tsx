@@ -6,7 +6,8 @@
  *   [-------- 2pt percent bar (proportional width) --------]
  *
  * Tap → navigates to /transactions?categoryId={id} (consumed by 02-03).
- * Long-press → no-op in Wave 1 (CategoryEditorBottomSheet ships in 02-04).
+ * Long-press → opens the global CategoryEditorBottomSheet for this category
+ * (D-17, wired in 02-04 via useCategoryEditorStore).
  *
  * Money formatting: amountCents is already absolute positive; render with
  * formatMoney via a positive value (no minus sign on the donut breakdown).
@@ -20,6 +21,7 @@ import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
 import { BaseCategoryIcon } from '@/src/design/icons/categories/BaseCategoryIcon';
+import { useCategoryEditorStore } from '@/src/features/categories/store';
 import type { CategorySlice } from './types';
 
 type Props = {
@@ -47,11 +49,15 @@ export function CategoryRow({
     router.push(`/(tabs)/transactions?categoryId=${String(slice.categoryId)}`);
   };
 
+  const handleLongPress = () => {
+    if (slice.slug === 'other') return; // aggregate slice — no edit target
+    useCategoryEditorStore.getState().openForEdit(slice.categoryId);
+  };
+
   return (
     <Pressable
       onPress={handlePress}
-      // TODO(02-04): open CategoryEditorBottomSheet on long-press (D-17).
-      onLongPress={() => {}}
+      onLongPress={handleLongPress}
       accessibilityRole="button"
       accessibilityLabel={`${slice.nameEn}: ${formatted}, ${percentInt}%`}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}

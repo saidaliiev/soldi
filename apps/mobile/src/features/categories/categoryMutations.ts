@@ -44,7 +44,6 @@ const MAX_NAME_LEN = 40;
 // HTML/script markers downstream. We don't render names as HTML, but defense
 // in depth is mandated by T-02-04-01.
 // Note: the backslash is included explicitly to block path-injection oddities.
-// eslint-disable-next-line no-useless-escape
 const BANNED_CHARS_RE = /[<>"'`;\\]/;
 
 /**
