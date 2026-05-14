@@ -1,0 +1,188 @@
+/**
+ * SOLDI dashboard repository (Phase 2 — Wave 1).
+ *
+ * Three queries consumed by the dashboard screen:
+ *   - getMonthlyExpenseTotal(year, month) → positive cents
+ *   - getCategoryBreakdown(year, month)   → top 5 + Other slice
+ *   - getMonthsWithTransactions()         → distinct {year,month} tuples ASC
+ *
+ * Conventions (locked, 01-SKELETON):
+ *   negative amount_cents = expense, positive = income.
+ *   transactions.date is stored as INTEGER unix seconds (UTC).
+ *
+ * Security (T-02-01-01 mitigation):
+ *   All queries use parameterized `?` placeholders. Year/month are coerced
+ *   to integer + bounded (1900..3000, 1..12) before query.
+ *
+ * Performance (T-02-01-02 mitigation):
+ *   - All SELECTs are bounded by month (idx_transactions_date covers them).
+ *   - Never SELECT *.
+ *   - executeSync — synchronous, no Promise chain bloat.
+ */
+
+import { getDB } from '@lib/db';
+import { COLORS } from '@design/tokens';
+import {
+  colorForCategorySlug,
+  slugForCategoryName,
+} from '@data/categoriesRepo';
+import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
+import type {
+  CategoryBreakdown,
+  CategorySlice,
+  MonthKey,
+} from '../features/dashboard/types';
+
+// ---------------------------------------------------------------------------
+// Internal — year/month bounds check
+// ---------------------------------------------------------------------------
+
+function boundsOrNull(year: number, month: number): { startSec: number; endSec: number } | null {
+  const yi = Math.floor(Number(year));
+  const mi = Math.floor(Number(month));
+  if (!Number.isFinite(yi) || !Number.isFinite(mi)) return null;
+  if (yi < 1900 || yi > 3000) return null;
+  if (mi < 1 || mi > 12) return null;
+  return monthStartEndUnixSec({ year: yi, month: mi });
+}
+
+// ---------------------------------------------------------------------------
+// getMonthlyExpenseTotal
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the sum of expense (negative amount_cents) transactions in the
+ * given calendar month, expressed as a POSITIVE cents integer.
+ *
+ * Returns 0 for empty months and for invalid inputs (e.g. month=13).
+ */
+export function getMonthlyExpenseTotal(year: number, month: number): number {
+  const b = boundsOrNull(year, month);
+  if (b == null) return 0;
+
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT COALESCE(-SUM(amount_cents), 0) AS total
+     FROM transactions
+     WHERE amount_cents < 0
+       AND date >= ? AND date < ?`,
+    [b.startSec, b.endSec]
+  );
+  const row = result.rows[0];
+  if (row == null) return 0;
+  const total = (row['total'] as number) ?? 0;
+  return Math.max(0, total);
+}
+
+// ---------------------------------------------------------------------------
+// getCategoryBreakdown
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the top-5 categories (descending by absolute expense) + one
+ * aggregated "Other" slice for the remainder.
+ *
+ * Percentages sum to 1.0 (± rounding). totalExpenseCents matches
+ * getMonthlyExpenseTotal(year, month) by construction.
+ *
+ * For months with zero expense: returns top=[], other=null, totalExpenseCents=0.
+ * For 5-or-fewer distinct categories: other is null.
+ */
+export function getCategoryBreakdown(year: number, month: number): CategoryBreakdown {
+  const empty: CategoryBreakdown = { top: [], other: null, totalExpenseCents: 0 };
+  const b = boundsOrNull(year, month);
+  if (b == null) return empty;
+
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT t.category_id AS category_id,
+            COALESCE(c.name_en, 'Other') AS name_en,
+            COALESCE(-SUM(t.amount_cents), 0) AS abs_total
+     FROM transactions t
+     LEFT JOIN categories c ON c.id = t.category_id
+     WHERE t.amount_cents < 0
+       AND t.date >= ? AND t.date < ?
+     GROUP BY t.category_id, c.name_en
+     ORDER BY abs_total DESC`,
+    [b.startSec, b.endSec]
+  );
+
+  if (result.rows.length === 0) return empty;
+
+  type Agg = { categoryId: number; nameEn: string; absTotal: number };
+  const aggs: Agg[] = result.rows.map((row) => ({
+    categoryId: (row['category_id'] as number | null) ?? -1,
+    nameEn: ((row['name_en'] as string | null) ?? 'Other'),
+    absTotal: Math.max(0, (row['abs_total'] as number) ?? 0),
+  }));
+
+  const total = aggs.reduce((acc, a) => acc + a.absTotal, 0);
+  if (total <= 0) return empty;
+
+  const TOP_N = 5;
+  const topAggs = aggs.slice(0, TOP_N);
+  const remainder = aggs.slice(TOP_N);
+
+  const top: CategorySlice[] = topAggs.map((a) => {
+    const slug = slugForCategoryName(a.nameEn);
+    return {
+      categoryId: a.categoryId,
+      slug,
+      nameEn: a.nameEn,
+      color: colorForCategorySlug(slug),
+      amountCents: a.absTotal,
+      percentage: a.absTotal / total,
+    };
+  });
+
+  let other: CategorySlice | null = null;
+  if (remainder.length > 0) {
+    const sumOther = remainder.reduce((acc, a) => acc + a.absTotal, 0);
+    if (sumOther > 0) {
+      other = {
+        categoryId: -1,
+        slug: 'other',
+        nameEn: 'Other',
+        color: COLORS.textMuted,
+        amountCents: sumOther,
+        percentage: sumOther / total,
+      };
+    }
+  }
+
+  return { top, other, totalExpenseCents: total };
+}
+
+// ---------------------------------------------------------------------------
+// getMonthsWithTransactions
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the distinct calendar months (year, month) for which any
+ * transaction exists, ascending by year then month.
+ *
+ * Used by MonthSwiper to bound the past-lock — earliest month = result[0].
+ *
+ * Note: strftime() reads the `date` column as a *unix timestamp* via the
+ * `unixepoch` modifier — the column is INTEGER unix seconds (not ISO text).
+ */
+export function getMonthsWithTransactions(): readonly MonthKey[] {
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT DISTINCT
+       CAST(strftime('%Y', date, 'unixepoch') AS INTEGER) AS y,
+       CAST(strftime('%m', date, 'unixepoch') AS INTEGER) AS m
+     FROM transactions
+     ORDER BY y ASC, m ASC`
+  );
+
+  const out: MonthKey[] = [];
+  for (const row of result.rows) {
+    const y = row['y'] as number;
+    const m = row['m'] as number;
+    if (Number.isInteger(y) && Number.isInteger(m) && m >= 1 && m <= 12) {
+      out.push({ year: y, month: m });
+    }
+  }
+  return out;
+}
