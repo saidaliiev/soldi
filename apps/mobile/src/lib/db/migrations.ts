@@ -12,7 +12,7 @@
  *   CREATE INDEX IF NOT EXISTS patterns (already satisfied by schema.sql.ts).
  */
 
-import { SCHEMA_001, SEED_DEFAULT_CATEGORIES } from './schema.sql';
+import { SCHEMA_001, SCHEMA_002, SEED_DEFAULT_CATEGORIES } from './schema.sql';
 
 export type Migration = {
   readonly version: number;
@@ -27,5 +27,11 @@ export const MIGRATIONS: readonly Migration[] = [
   {
     version: 1,
     sql: SCHEMA_001 + ';\n' + SEED_DEFAULT_CATEGORIES,
+  },
+  {
+    // Phase 2 plan 02-04 — categories.slug / color / usage_count columns
+    // + backfill of the 18 seeded rows. See SCHEMA_002 in schema.sql.ts.
+    version: 2,
+    sql: SCHEMA_002,
   },
 ] as const;

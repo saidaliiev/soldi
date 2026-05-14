@@ -1,0 +1,202 @@
+/**
+ * BottomSheetPrimitive — shared bottom-sheet wrapper consumed by 02-03 +
+ * 02-04. Mirrors a subset of the @gorhom/bottom-sheet API surface
+ * (`open()` / `close()` / `snapPoints`) so a future migration is a drop-in.
+ *
+ * Implementation: RN <Modal> + reanimated v4 + gesture-handler v2 pan.
+ * Chosen over @gorhom/bottom-sheet for Phase 2 because gorhom requires a
+ * native rebuild (autolinking) that breaks Expo Go device verification.
+ * Pattern reuses the Wave 1 MonthSwiper gesture (worklet onUpdate/onEnd,
+ * runOnJS for JS-side state).
+ *
+ * Design contract (UI-SPEC §"CategoryEditorBottomSheet"):
+ *   - 60% snap point default (single-snap; no full-screen expand)
+ *   - COLORS.surface background, RADIUS.xl top corners
+ *   - 4×36pt drag indicator (textMuted @ 40%)
+ *   - Pan-down-to-close gesture
+ *   - accessibilityViewIsModal on inner view
+ */
+
+import React from 'react';
+import {
+  Modal,
+  View,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  runOnJS,
+  Easing,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+
+import { COLORS, RADIUS, SPACING } from '@design/tokens';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BACKDROP_ALPHA = '90'; // 0.56 in hex; sheet backdrops use a softer fade
+const HANDLE_MUTED_SUFFIX = '66'; // 40% alpha 8-bit hex
+
+export type BottomSheetPrimitiveRef = {
+  readonly open: () => void;
+  readonly close: () => void;
+};
+
+type Props = {
+  /** Tuple like ['60%']; first entry is the resting snap height (% of screen). */
+  readonly snapPoints: readonly [string, ...string[]];
+  /** Notifies opened/closed; 0 = closed, 1 = at first snap point. */
+  readonly onChange?: (index: number) => void;
+  readonly accessibilityLabel?: string;
+  readonly children?: React.ReactNode;
+};
+
+function parsePercent(s: string): number {
+  const m = /^(\d+(?:\.\d+)?)%$/.exec(s);
+  if (m == null) return 0.6;
+  return Number(m[1]) / 100;
+}
+
+export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Props>(
+  function BottomSheetPrimitive(
+    { snapPoints, onChange, accessibilityLabel, children },
+    ref,
+  ) {
+    const [visible, setVisible] = React.useState(false);
+    const restingHeight = SCREEN_HEIGHT * parsePercent(snapPoints[0]);
+    // translateY: 0 = fully visible, restingHeight = fully hidden
+    const translateY = useSharedValue(restingHeight);
+
+    const notifyChange = React.useCallback(
+      (index: number) => {
+        onChange?.(index);
+      },
+      [onChange],
+    );
+
+    const finishClose = React.useCallback(() => {
+      setVisible(false);
+      notifyChange(0);
+    }, [notifyChange]);
+
+    const openSheet = React.useCallback(() => {
+      setVisible(true);
+      translateY.value = restingHeight;
+      translateY.value = withSpring(0, { damping: 18, stiffness: 180 }, (finished) => {
+        if (finished === true) {
+          runOnJS(notifyChange)(1);
+        }
+      });
+    }, [translateY, restingHeight, notifyChange]);
+
+    const closeSheet = React.useCallback(() => {
+      translateY.value = withTiming(
+        restingHeight,
+        { duration: 220, easing: Easing.out(Easing.cubic) },
+        (finished) => {
+          if (finished === true) {
+            runOnJS(finishClose)();
+          }
+        },
+      );
+    }, [translateY, restingHeight, finishClose]);
+
+    React.useImperativeHandle(ref, () => ({ open: openSheet, close: closeSheet }), [
+      openSheet,
+      closeSheet,
+    ]);
+
+    const pan = Gesture.Pan()
+      .activeOffsetY([8, 9999])
+      .onUpdate((e) => {
+        if (e.translationY > 0) {
+          translateY.value = e.translationY;
+        }
+      })
+      .onEnd((e) => {
+        if (e.translationY > 80) {
+          translateY.value = withTiming(
+            restingHeight,
+            { duration: 200, easing: Easing.out(Easing.cubic) },
+            (finished) => {
+              if (finished === true) {
+                runOnJS(finishClose)();
+              }
+            },
+          );
+        } else {
+          translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        }
+      });
+
+    const sheetStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: translateY.value }],
+    }));
+
+    return (
+      <Modal
+        transparent
+        visible={visible}
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={closeSheet}
+      >
+        <View style={styles.root} accessibilityLabel={accessibilityLabel}>
+          <Pressable
+            style={styles.backdrop}
+            onPress={closeSheet}
+            accessibilityLabel="Close"
+            accessibilityRole="button"
+          />
+          <GestureDetector gesture={pan}>
+            <Animated.View
+              accessibilityViewIsModal
+              style={[styles.sheet, { height: restingHeight }, sheetStyle]}
+            >
+              <View style={styles.handleZone}>
+                <View style={styles.handle} />
+              </View>
+              <View style={styles.body}>{children}</View>
+            </Animated.View>
+          </GestureDetector>
+        </View>
+      </Modal>
+    );
+  },
+);
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: `${COLORS.textPrimary}${BACKDROP_ALPHA}`,
+  },
+  sheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: RADIUS.xl,
+    borderTopRightRadius: RADIUS.xl,
+    overflow: 'hidden',
+  },
+  handleZone: {
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: `${COLORS.textMuted}${HANDLE_MUTED_SUFFIX}`,
+  },
+  body: {
+    flex: 1,
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.lg,
+  },
+});
