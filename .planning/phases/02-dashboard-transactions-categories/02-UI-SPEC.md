@@ -65,9 +65,21 @@ All values from `SPACING` token in `apps/mobile/src/design/tokens.ts`. No hardco
 
 All presets from `TYPE` in `apps/mobile/src/design/typography.ts`. Use preset name, never inline values.
 
+### Type Scale Architecture
+
+Phase 2 uses **4 active text sizes** in the phase type scale: **40pt, 28pt, 16pt, 14pt**.
+
+`TYPE.displayXL` (64pt Oswald) is a **display singleton** — it appears on exactly one element on one screen (MonthlyTotalHero on DashboardScreen). It is deliberately excluded from the phase type scale count. Its presence does not add a fifth scale step; it is a one-off brand statement, architecturally equivalent to a logotype.
+
+The **3-typeface system** (Oswald display / EB Garamond editorial / Manrope UI) is mandated by `CLAUDE.md`. Each typeface uses at most 2 weights: Oswald 500; EB Garamond 400 regular + 600 semibold italic; Manrope 500 medium + 600 semibold. The apparent weight variety is a structural consequence of a deliberate 3-typeface architecture, not weight proliferation — each individual typeface stays within its 2-weight budget.
+
+`TYPE.editorialLead` (20pt EB Garamond) exists in `typography.ts` but is **excluded from Phase 2** — it is not used in any component. Empty-state phrases that previously referenced it are reassigned to `TYPE.displayM` (28pt Oswald italic) for display-weight impact or `TYPE.editorialBody` (16pt EB Garamond italic) for softer editorial tone. See per-component assignments below.
+
+`TYPE.uiMeta` (12pt Manrope) exists in `typography.ts` but is **excluded from Phase 2** — all roles previously assigned to it are reassigned to `TYPE.uiLabel` (14pt Manrope) for improved legibility at small UI sizes. The only exception is tab bar labels which historically used 12pt — they are also raised to `TYPE.uiLabel` (14pt) for consistency.
+
 | Role | Preset | Font | Size/Weight/LH | Used On |
 |------|--------|------|----------------|---------|
-| Hero monthly total | `TYPE.displayXL` | Oswald Medium | 64pt / 500 / 72pt | Dashboard monthly total (D-01) |
+| Hero monthly total | `TYPE.displayXL` *(display singleton)* | Oswald Medium | 64pt / 500 / 72pt | Dashboard monthly total (D-01) — one screen, one element |
 | Yesterday total in digest | `TYPE.displayL` | Oswald Medium | 40pt / 500 / 48pt | Digest card large number (D-07) |
 | Section heading | `TYPE.displayM` | Oswald Medium | 28pt / 500 / 34pt | Month label in MonthSwiper |
 | Donut center — category name | `TYPE.displayM` | Oswald Medium | 28pt / 500 / 34pt | Donut center on slice tap (D-04) |
@@ -77,14 +89,15 @@ All presets from `TYPE` in `apps/mobile/src/design/typography.ts`. Use preset na
 | Merchant name in tx row | `TYPE.uiBody` semibold override | Manrope 600 | 16pt / 600 / 22pt | Transaction row merchant (D-10) |
 | Amount in tx row | `TYPE.tabular` | Manrope SemiBold | 16pt / 600 / 22pt + `fontVariant: ['tabular-nums']` | Transaction row amount (D-10) |
 | Daily subtotal in date header | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Sticky date header right side (D-09) |
-| Date header label | `TYPE.uiMeta` | Manrope Medium | 12pt / 500 / 16pt / ls 0.3 | Date header left side — "Today", "Mon 12 May" (D-09) |
-| Category chip label | `TYPE.uiMeta` | Manrope Medium | 12pt / 500 / 16pt | Category chip on tx row (D-10) |
-| Filter pill label | `TYPE.uiMeta` | Manrope Medium | 12pt / 500 / 16pt | Applied-filter pills above list (D-16) |
+| Date header label | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Date header left side — "Today", "Mon 12 May" (D-09) |
+| Category chip label | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Category chip on tx row (D-10) |
+| Filter pill label | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Applied-filter pills above list (D-16) |
 | UI button | `TYPE.uiButton` | Manrope SemiBold | 16pt / 600 / 20pt | Primary CTAs, "Apply" in filter modal |
 | UI label / meta | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Sheet section headers, color swatch labels |
-| Empty state phrase | `TYPE.editorialLead` italic | EB Garamond 600i | 20pt / 600 / 28pt | Empty-state single line (D-23) |
+| Empty state phrase | `TYPE.editorialBody` italic | EB Garamond 400i | 16pt / 400 / 24pt | Empty-state single line (D-23) |
 | Search input | `TYPE.uiBody` | Manrope Medium | 16pt / 500 / 22pt | Search field in filter modal (D-13) |
 | Category row name | `TYPE.uiBody` | Manrope Medium | 16pt / 500 / 22pt | Category editor list rows (D-18) |
+| Tab bar label | `TYPE.uiLabel` | Manrope Medium | 14pt / 500 / 18pt | Tab bar active/inactive labels |
 
 **Dynamic type:** All `Text` components use `allowFontScaling={true}` (default). No `allowFontScaling={false}` anywhere in Phase 2. Layouts tested at AccessibilityXXXL scale — flex wrap rather than clip (QUAL-04 groundwork).
 
@@ -132,6 +145,12 @@ Expense amounts in transaction rows · sparkline line · active/applied filter p
 | 8 (textSecondary) | `COLORS.textSecondary` | `#7A5C52` |
 
 **Banned (enforced, never appear in Phase 2 code):** `#667EEA`, `#8B7AB8`, `#E8E0FF`, `#10B981`, `#1A73E8`, `#2563EB`. No glassmorphism, no neon gradients.
+
+---
+
+## Visuals
+
+**Icon-only actions in screen headers (search icon, `+` button) use universally recognizable conventions (magnifier = search, + = create) and rely on `accessibilityLabel` for screen readers. No visible text label fallback is needed for these conventions per iOS HIG.**
 
 ---
 
@@ -194,8 +213,8 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 
 **Purpose:** Large Oswald monthly expense total (D-01).
 **Layout:** Full-width, left-aligned, horizontal padding inherited from DashboardScreen.
-**Primary number:** `TYPE.displayXL` (64pt Oswald Medium), color `COLORS.textPrimary`. Formatted via `formatMoney(cents, locale)` from `src/lib/money.ts`. Currency symbol left of number, same size.
-**Sub-label:** `"Total spent in [Month]"` — `TYPE.uiMeta` (`COLORS.textMuted`), `mt: SPACING.xs` (4pt) below number.
+**Primary number:** `TYPE.displayXL` (64pt Oswald Medium — display singleton, one element), color `COLORS.textPrimary`. Formatted via `formatMoney(cents, locale)` from `src/lib/money.ts`. Currency symbol left of number, same size.
+**Sub-label:** `"Total spent in [Month]"` — `TYPE.uiLabel` (`COLORS.textMuted`), `mt: SPACING.xs` (4pt) below number.
 **Tabular figures:** `fontVariant: ['tabular-nums']` on number `Text`.
 **Accessibility:** `accessibilityLabel="Total spent in [Month]: [formatted amount]"`, `accessibilityRole="text"`.
 
@@ -208,7 +227,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Stroke:** 10pt width, round cap (`StrokeCap.Round`), gaps between slices 2pt (achieved by trimming arc start/end by 1pt each side in angle space).
 **Slice colors:** Use category's assigned color from the D-22 swatch set. "Other" slice color: `COLORS.textMuted`.
 **Slice order:** Descending by absolute amount (D-06). Top 5 slices explicit; remainder → "Other".
-**Center label — default (no tap):** Monthly total in `TYPE.displayL` (Oswald 40pt) color `COLORS.textPrimary`, centered. `TYPE.uiMeta` `"Total"` label above in `COLORS.textMuted`.
+**Center label — default (no tap):** Monthly total in `TYPE.displayL` (Oswald 40pt) color `COLORS.textPrimary`, centered. `TYPE.uiLabel` `"Total"` label above in `COLORS.textMuted`.
 **Center label — on slice tap (D-04):** Category name `TYPE.displayM` (28pt) top, amount `TYPE.displayL` (40pt) middle, percentage `TYPE.uiLabel` (14pt) `COLORS.textSecondary` bottom. Morphs with 200ms opacity/translateY transition. Tap anywhere outside slice to reset.
 **Tap target:** Each slice arc region ≥ 44pt arc length. Thin slices (<5% of total) merged visually into adjacent or "Other" for tappability.
 **Animation on month change:** All arc paths animate from previous month values to new month values via `withTiming(300ms, Easing.out(Easing.cubic))` shared values (D-05).
@@ -222,7 +241,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Purpose:** "Yesterday in money" editorial card (D-07, D-08).
 **Container:** Full-width card, `RADIUS.lg` (16pt), `COLORS.surface` background, `SHADOWS.card` shadow. Internal padding `SPACING.md` (16pt) all sides.
 **Layout (top to bottom):**
-1. Prefix label: `"yesterday in money"` — `TYPE.uiMeta` (`COLORS.textMuted`), `mb: SPACING.xs` (4pt)
+1. Prefix label: `"yesterday in money"` — `TYPE.uiLabel` (`COLORS.textMuted`), `mb: SPACING.xs` (4pt)
 2. Yesterday total: `TYPE.displayL` (40pt Oswald) `COLORS.accent` (expense color). `fontVariant: ['tabular-nums']`.
 3. Sparkline: 32pt height, full card width minus 2×16pt padding. Skia `Path` single line, no fill, `COLORS.accent`, anti-aliased. Data = last 7 daily totals (D-07).
 4. MoM compare phrase: `TYPE.editorialBody` italic (`COLORS.textSecondary`). Example: `"−€42 vs last month's daily average"`. `mt: SPACING.sm` (8pt).
@@ -251,7 +270,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 ### TransactionListScreen
 
 **Route:** `app/(tabs)/transactions/index.tsx` (new tab)
-**Layout:** `FlashList` v2 fills screen. Header: fixed native header with screen title `"Transactions"` (`TYPE.displayM`) + search icon (SVG, 24pt, `COLORS.textPrimary`). Below header (if filters active): FilterPillsRow.
+**Layout:** `FlashList` v2 fills screen. Header: fixed native header with screen title `"Transactions"` (`TYPE.displayM`) + search icon (SVG, 24pt, `COLORS.textPrimary`, `accessibilityLabel="Search and filter"`). Below header (if filters active): FilterPillsRow.
 **Data:** `listByMonth(year, month)` from `transactionsRepo` grouped by date. Date groups = sticky headers. Items = `TransactionRow`.
 **FlashList config (D-25):**
 - `estimatedItemSize={72}` (transaction row height)
@@ -270,7 +289,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Purpose:** Sticky section header in transaction FlashList (D-09).
 **Height:** 36pt.
 **Layout:** Full-width, `COLORS.background` background (opaque — prevents content showing through sticky). Horizontal padding `SPACING.md` (16pt). Vertical padding `SPACING.sm` (8pt) top and bottom.
-**Left text:** Date label — `TYPE.uiMeta` (`COLORS.textMuted`). Format: `"Today"` / `"Yesterday"` / locale-aware `"Mon 12 May"` (via `i18next` + `Intl.DateTimeFormat`). i18n keys: `transactions.header_today`, `transactions.header_yesterday`, `transactions.header_date`.
+**Left text:** Date label — `TYPE.uiLabel` (`COLORS.textMuted`). Format: `"Today"` / `"Yesterday"` / locale-aware `"Mon 12 May"` (via `i18next` + `Intl.DateTimeFormat`). i18n keys: `transactions.header_today`, `transactions.header_yesterday`, `transactions.header_date`.
 **Right text:** Daily expense subtotal — `TYPE.uiLabel` (`COLORS.textSecondary`), `fontVariant: ['tabular-nums']`. Sum of expense amounts (negative cents) for that day, formatted via `formatMoney`.
 **Separator:** 1pt bottom border `COLORS.textMuted` @ 20% opacity.
 **Accessibility:** `accessibilityRole="header"`, `accessibilityLabel="[Date label], [daily total]"`.
@@ -285,9 +304,9 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 - Left column: Category chip (`CategoryChip`, 24pt height) above merchant name.
 - Merchant name: `TYPE.uiBody` semibold (600) `COLORS.textPrimary`, single line, `numberOfLines={1}` + `ellipsizeMode="tail"`.
 - Right column (right-aligned): Amount `TYPE.tabular` (16pt Manrope SemiBold), `fontVariant: ['tabular-nums']`. Color: `COLORS.expense` for negative, `COLORS.income` for positive.
-- Right sub-text: Time of day `TYPE.uiMeta` `COLORS.textMuted`.
+- Right sub-text: Time of day `TYPE.uiLabel` `COLORS.textMuted`.
 **Swipe:** `PanGestureHandler` worklet (D-11). Swipe-left reveals action area (120pt wide, `COLORS.accentDeep` background for recategorize action — or `COLORS.error` background for a future delete). Threshold to snap open: 60pt horizontal displacement.
-**Action area:** Single action — "Categorize" label `TYPE.uiMeta` (`COLORS.white`) + category icon SVG (20pt white). Tap action area → RecategorizeBottomSheet opens, row snaps back to closed.
+**Action area:** Single action — "Categorize" label `TYPE.uiLabel` (`COLORS.white`) + category icon SVG (20pt white). Tap action area → RecategorizeBottomSheet opens, row snaps back to closed.
 **Tap (full row):** Navigates to `/transactions/[id]` (tx detail + edit screen, TXN-04).
 **Accessibility (row):** `accessibilityRole="button"`, `accessibilityLabel="[Merchant], [amount], [category], [date]"`, `accessibilityHint="Double-tap to view details. Swipe left to recategorize."`.
 
@@ -299,7 +318,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Size:** Height 20pt, horizontal padding `SPACING.xs` (4pt) each side. `RADIUS.pill` border-radius.
 **Background:** Category swatch color @ 20% opacity.
 **Border:** 1pt border category swatch color @ 60% opacity.
-**Label:** `TYPE.uiMeta` (12pt Manrope) category name, category swatch color (full opacity).
+**Label:** `TYPE.uiLabel` (14pt Manrope) category name, category swatch color (full opacity).
 **Accessibility:** Not independently focusable — parent row covers accessibility.
 
 ---
@@ -311,7 +330,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Snap points:** `['45%']` — single snap point (no drag to expand needed for this use case).
 **Background:** `COLORS.surface`, `RADIUS.xl` top corners.
 **Header:** `"Recategorize"` — `TYPE.displayM` (28pt Oswald), `COLORS.textPrimary`. `mb: SPACING.md` (16pt). Drag handle above header (4×36pt pill, `COLORS.textMuted` @ 40%).
-**Top section — Recent (D-12):** Horizontal `ScrollView`. Top-5 most-recently-used categories as `CategoryChip` variants (larger: 32pt height, more padding). Label: `"Recent"` in `TYPE.uiMeta` `COLORS.textMuted` above scroll. `mb: SPACING.md` (16pt).
+**Top section — Recent (D-12):** Horizontal `ScrollView`. Top-5 most-recently-used categories as `CategoryChip` variants (larger: 32pt height, more padding). Label: `"Recent"` in `TYPE.uiLabel` `COLORS.textMuted` above scroll. `mb: SPACING.md` (16pt).
 **Main section — All categories:** `FlatList` (not FlashList — short list) sorted by usage count descending. Each row: icon (20pt) + name `TYPE.uiBody` + checkmark if current category. Row height 44pt.
 **Selection:** Tap any category → `Haptics.impactAsync('light')` → write to DB (`updateCategory(txId, categoryId)`) → close sheet. No confirm needed (non-destructive).
 **Accessibility (sheet):** `accessibilityViewIsModal={true}`. Close handle: `accessibilityRole="button"`, `accessibilityLabel="Close"`. Each category row: `accessibilityRole="button"`, `accessibilityLabel="[Category name]"`.
@@ -323,7 +342,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 **Purpose:** Full-screen search + multi-axis filter (D-13, D-14, D-15, D-16).
 **Route:** `app/transactions/search.tsx` (modal route in expo-router). Presented as a modal stack slide.
 **Background:** `COLORS.background`.
-**Header:** Back/close icon (SVG chevron, 24pt) left + `"Search & Filter"` `TYPE.displayM` center + `"Clear all"` `TYPE.uiLabel` `COLORS.accent` right (visible only when filters active).
+**Header:** Back/close icon (SVG chevron, 24pt, `accessibilityLabel="Close"`) left + `"Search & Filter"` `TYPE.displayM` center + `"Clear all"` `TYPE.uiLabel` `COLORS.accent` right (visible only when filters active).
 **Search input (D-15):**
 - Position: top of modal, below header, full-width, `SPACING.md` padding all sides.
 - Height: 48pt. `RADIUS.md` (12pt). Background `COLORS.surface`. Border 1pt `COLORS.textMuted` @ 30%.
@@ -346,7 +365,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 
 **Purpose:** Visualizes applied filters above transaction list (D-16).
 **Layout:** Horizontal `ScrollView` (no wrap), `SPACING.md` (16pt) horizontal padding, `SPACING.sm` (8pt) vertical padding. `SPACING.sm` (8pt) gap between pills.
-**Each pill:** `RADIUS.pill`, `COLORS.accent` background, `COLORS.white` text `TYPE.uiMeta`. Right: `×` icon (12pt SVG `COLORS.white`). Tap `×` removes that filter axis. Examples: `"Food"`, `"€0–€50"`, `"Expense"`, `"May 1–14"`.
+**Each pill:** `RADIUS.pill`, `COLORS.accent` background, `COLORS.white` text `TYPE.uiLabel`. Right: `×` icon (12pt SVG `COLORS.white`). Tap `×` removes that filter axis. Examples: `"Food"`, `"€0–€50"`, `"Expense"`, `"May 1–14"`.
 **Visibility:** Row is hidden (zero height, `overflow='hidden'`) when no filters active.
 **Accessibility:** Each pill: `accessibilityRole="button"`, `accessibilityLabel="Remove [filter description] filter"`.
 
@@ -355,9 +374,9 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 ### CategoriesScreen
 
 **Route:** `app/(tabs)/categories/index.tsx` (new tab, third tab in tab bar).
-**Layout:** `ScrollView` + safe area. Header: `"Categories"` `TYPE.displayM` + `"+"` icon button top-right (creates new category).
+**Layout:** `ScrollView` + safe area. Header: `"Categories"` `TYPE.displayM` + `"+"` icon button top-right (`accessibilityLabel="New category"`, creates new category).
 **Category list:** Full list of categories (all, not top-5). Each row: icon (24pt) + color dot (8pt) + name `TYPE.uiBody` + chevron `>` (12pt SVG). Row height 52pt. Tap row → opens CategoryEditorBottomSheet for that category.
-**Sections:** "Default" categories (pre-seeded) above a separator, "Custom" categories below. Section label `TYPE.uiMeta` `COLORS.textMuted`.
+**Sections:** "Default" categories (pre-seeded) above a separator, "Custom" categories below. Section label `TYPE.uiLabel` `COLORS.textMuted`.
 **Empty custom section:** No explicit empty state — section simply absent.
 **Accessibility:** Each row `accessibilityRole="button"`, `accessibilityLabel="[Category name], tap to edit"`. `+` button: `accessibilityRole="button"`, `accessibilityLabel="New category"`.
 
@@ -375,15 +394,15 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 1. Name input: full-width, 48pt height, `RADIUS.md`, border 1pt `COLORS.textMuted` @ 30%, placeholder `"Category name"` (`categories.name_placeholder`).
 2. `"Icon"` section label + IconPicker (horizontal scroll of ~30 SVG icons, 40pt each).
 3. `"Color"` section label + ColorSwatchPicker (8 swatches, 32×32pt each, `SPACING.sm` gap).
-4. `"Save"` primary CTA — full-width, `GRADIENTS.primary`, `RADIUS.lg`, 52pt, `TYPE.uiButton` `COLORS.white`.
+4. `"Create category"` primary CTA — full-width, `GRADIENTS.primary`, `RADIUS.lg`, 52pt, `TYPE.uiButton` `COLORS.white`. i18n key: `categories.save`.
 
 **Edit mode layout (top to bottom):**
 1. Name input pre-filled with current name. Same styling as create.
 2. IconPicker with current icon selected.
 3. ColorSwatchPicker with current color selected.
-4. `"Save changes"` primary CTA.
+4. `"Save changes"` primary CTA. i18n key: `categories.save_changes`.
 5. Separator.
-6. `"Delete category"` destructive row — `TYPE.uiBody` `COLORS.error`. Tap → confirm modal: `"Delete [Name]? Transactions will be moved to Miscellaneous."` with `"Delete"` (`COLORS.error`) and `"Cancel"` options.
+6. `"Delete category"` destructive row — `TYPE.uiBody` `COLORS.error`. Tap → confirm modal: `"Delete [Name]? Transactions will be moved to Miscellaneous."` with `"Delete category"` (`COLORS.error`) and `"Cancel"` options.
 
 **Drag-drop merge (D-19):**
 - Long-press a category row in the sheet enters drag mode: item lifts (scale 1→1.04, shadow deepens), `Haptics.impactAsync('medium')`.
@@ -391,7 +410,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
 - Drop on target row → confirm modal appears (sheet stays open behind modal):
   - Title: `"Merge categories?"` (`TYPE.displayM`)
   - Body: `"All transactions in [A] will be moved to [B]. This cannot be undone."` (`TYPE.editorialBody`, `COLORS.textSecondary`) — i18n key `categories.merge_confirm_body`
-  - `"Merge"` CTA — `COLORS.error` background (irreversible), `COLORS.white` text, `TYPE.uiButton`, `RADIUS.lg`.
+  - `"Merge categories"` CTA — `COLORS.error` background (irreversible), `COLORS.white` text, `TYPE.uiButton`, `RADIUS.lg`. i18n key: `categories.merge_confirm`.
   - `"Cancel"` — `TYPE.uiBody` `COLORS.textSecondary`, no background.
 - On confirm: DB update + sheet closes.
 **Accessibility (sheet):** `accessibilityViewIsModal={true}`. Name input `accessibilityLabel="Category name"`, `accessibilityRole="none"` (text input). IconPicker items `accessibilityRole="button"`. ColorSwatches `accessibilityRole="radio"`. Save CTA `accessibilityRole="button"`. Delete `accessibilityRole="button"`, `accessibilityLabel="Delete [name]"`.
@@ -431,7 +450,7 @@ All animations use `react-native-reanimated` v4. Worklets used only for swipe ge
    - "no search results" → empty coffee cup (upturned)
    - "no categories" → bare branches
    - "future month" → open window
-2. Phrase: `TYPE.editorialLead` italic (EB Garamond 20pt semibold italic) `COLORS.textPrimary`, centered, `mt: SPACING.lg` (24pt).
+2. Phrase: `TYPE.editorialBody` italic (EB Garamond 400i, 16pt) `COLORS.textPrimary`, centered, `mt: SPACING.lg` (24pt).
 3. CTA button: `GRADIENTS.primary` fill, `RADIUS.lg`, height 48pt, `TYPE.uiButton` `COLORS.white`, `mt: SPACING.md` (16pt). Width: `auto` with `SPACING.xl` (32pt) horizontal padding.
 
 **Variant copy and CTAs:**
@@ -456,13 +475,13 @@ All strings in `src/i18n/locales/en/` — one JSON file per screen namespace. Uk
 | Element | Copy (EN) | i18n key |
 |---------|-----------|----------|
 | Apply search filters | `"Apply filters"` | `transactions.apply_filters` |
-| Save new category | `"Save"` | `categories.save` |
+| Save new category | `"Create category"` | `categories.save` |
 | Save category edits | `"Save changes"` | `categories.save_changes` |
 | Add first transaction | `"Add transaction"` | `dashboard.cta_add_transaction` |
 | Clear all filters | `"Clear filters"` | `transactions.clear_filters` |
 | New category | `"New category"` | `categories.cta_new` |
-| Confirm category merge | `"Merge"` | `categories.merge_confirm` |
-| Confirm category delete | `"Delete"` | `categories.delete_confirm` |
+| Confirm category merge | `"Merge categories"` | `categories.merge_confirm` |
+| Confirm category delete | `"Delete category"` | `categories.delete_confirm` |
 
 ### Empty States
 
@@ -486,8 +505,8 @@ All strings in `src/i18n/locales/en/` — one JSON file per screen namespace. Uk
 
 | Action | Modal title | Body copy | Confirm label | i18n keys |
 |--------|-------------|-----------|---------------|-----------|
-| Delete category | `"Delete category?"` | `"Transactions in [Name] will be moved to Miscellaneous."` | `"Delete"` | `categories.delete_title`, `categories.delete_body`, `categories.delete_confirm` |
-| Merge categories | `"Merge categories?"` | `"All transactions in [A] will be moved to [B]. This cannot be undone."` | `"Merge"` | `categories.merge_title`, `categories.merge_body`, `categories.merge_confirm` |
+| Delete category | `"Delete category?"` | `"Transactions in [Name] will be moved to Miscellaneous."` | `"Delete category"` | `categories.delete_title`, `categories.delete_body`, `categories.delete_confirm` |
+| Merge categories | `"Merge categories?"` | `"All transactions in [A] will be moved to [B]. This cannot be undone."` | `"Merge categories"` | `categories.merge_title`, `categories.merge_body`, `categories.merge_confirm` |
 
 ### Digest Card Editorial Phrases
 
@@ -526,7 +545,7 @@ All strings in `src/i18n/locales/en/` — one JSON file per screen namespace. Uk
 - Background: `COLORS.surface` (slightly warm, not pure white)
 - Active icon + label: `COLORS.accent`
 - Inactive icon + label: `COLORS.textMuted`
-- Label: `TYPE.uiMeta` (12pt Manrope)
+- Label: `TYPE.uiLabel` (14pt Manrope)
 - No emoji. SVG only (D-21).
 - Border top: 1pt `COLORS.textMuted` @ 20%.
 **Accessibility:** Each tab `accessibilityRole="tab"`, `accessibilityLabel="[Tab name] tab"`, `accessibilityState={{ selected: isActive }}`.
