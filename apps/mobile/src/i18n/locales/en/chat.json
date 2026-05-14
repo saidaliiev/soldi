@@ -1,0 +1,5 @@
+{
+  "propagation_one": "Updated 1 similar transaction.",
+  "propagation_many": "Updated {{count}} similar transactions.",
+  "propagation_undo": "Undo"
+}

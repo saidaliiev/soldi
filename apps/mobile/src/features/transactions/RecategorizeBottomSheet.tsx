@@ -19,6 +19,8 @@ import { View, Text, Pressable, ScrollView, FlatList, StyleSheet } from 'react-n
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import {
@@ -27,12 +29,18 @@ import {
 } from '@/src/components/BottomSheet/BottomSheetPrimitive';
 import { listCategoriesEnriched } from '@data/categoriesRepo';
 import { updateCategory as updateTxCategory, getTransactionById } from '@data/transactionsRepo';
+import {
+  upsertForMerchant,
+  propagateCategoryToSimilar,
+} from '@data/merchantOverridesRepo';
 import { ICON_REGISTRY } from '@design/icons/categories/_iconRegistry';
 import { Misc } from '@design/icons/categories/Misc';
 import type { Category } from '@data/categoriesRepo';
 
 import { useRecategorizeStore } from './recategorizeStore';
 import { CategoryChip } from './CategoryChip';
+import { normalizeMerchantKey } from './merchantNormalize';
+import { usePropagationStore } from './propagationStore';
 
 const SNAP_POINTS = ['65%'] as const;
 
@@ -50,9 +58,15 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
   const onPicked = useRecategorizeStore((s) => s.onPicked);
   const close = useRecategorizeStore((s) => s.close);
   const sheetRef = React.useRef<BottomSheetPrimitiveRef>(null);
+  const queryClient = useQueryClient();
 
   const [categories, setCategories] = React.useState<readonly Category[]>([]);
   const [currentCategoryId, setCurrentCategoryId] = React.useState<number | null>(null);
+  // Cache the source transaction's merchant_name at sheet-open time so the
+  // propagation pass after handlePick can hash it without re-querying the DB
+  // post-update (the row's merchant_name is immutable, but reading-after-write
+  // adds an unnecessary round-trip on a synchronous handler).
+  const [sourceMerchantName, setSourceMerchantName] = React.useState<string | null>(null);
 
   // Open/close imperative bridge
   React.useEffect(() => {
@@ -63,9 +77,11 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
         if (targetTxId !== null) {
           const tx = getTransactionById(targetTxId);
           setCurrentCategoryId(tx?.categoryId ?? null);
+          setSourceMerchantName(tx?.merchantName ?? null);
         }
       } catch {
         setCategories([]);
+        setSourceMerchantName(null);
       }
       sheetRef.current?.open();
     } else {
@@ -91,12 +107,53 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
           // Haptics may not be available on simulator — never fail the UI on this.
         });
         onPicked?.(categoryId);
+
+        // Phase 3 / 03-02 propagation flow (CAT-04):
+        //   1. Upsert merchant_overrides as source='user' BEFORE propagation so
+        //      any concurrent ai-categorize calls see the override and so
+        //      rollback only reverts transaction rows, not the override.
+        //   2. Propagate the new category to similar local transactions.
+        //   3. Surface the toast when >=1 row was auto-updated.
+        //   4. Invalidate TanStack Query cache so the transactions list refetches.
+        if (sourceMerchantName !== null && sourceMerchantName.length > 0) {
+          const merchantKey = normalizeMerchantKey(sourceMerchantName);
+          if (merchantKey.length > 0) {
+            try {
+              upsertForMerchant({
+                merchant_name: sourceMerchantName,
+                category_id: categoryId,
+                source: 'user',
+                confidence: 1.0,
+              });
+              const { propagated_ids, rollback } = propagateCategoryToSimilar({
+                source_tx_id: targetTxId,
+                merchant_key: merchantKey,
+                category_id: categoryId,
+              });
+              if (propagated_ids.length > 0) {
+                usePropagationStore
+                  .getState()
+                  .openWith(propagated_ids.length, rollback);
+              }
+            } catch {
+              // Propagation is best-effort; failure must not block the primary
+              // recategorize action. T-03-02-02: never log merchant_name.
+            }
+          }
+        }
+
+        // Refresh transactions list (Phase 2 cache key).
+        try {
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        } catch {
+          // queryClient may be unmounted in edge cases — non-fatal.
+        }
       } catch {
         // Never expose DB errors in console (T-02-03-04). Sheet still closes.
       }
       close();
     },
-    [targetTxId, onPicked, close],
+    [targetTxId, onPicked, close, sourceMerchantName, queryClient],
   );
 
   return (

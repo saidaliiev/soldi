@@ -1,0 +1,6 @@
+{
+  "_comment": "TODO Phase 4 (QUAL-01..04): translate to Ukrainian. v1 ships identical to en/chat.json so i18next does not emit missing-key warnings on uk-UA devices.",
+  "propagation_one": "Updated 1 similar transaction.",
+  "propagation_many": "Updated {{count}} similar transactions.",
+  "propagation_undo": "Undo"
+}

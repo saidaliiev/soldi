@@ -24,6 +24,10 @@ import categoriesUk from '../../i18n/locales/uk/categories.json';
 // Phase 2 plan 02-03 — transactions namespace (list / detail / search modal)
 import transactionsEn from '../../i18n/locales/en/transactions.json';
 import transactionsUk from '../../i18n/locales/uk/transactions.json';
+// Phase 3 plan 03-02 — chat namespace (PropagationToast + chat surfaces from 03-03).
+// uk bundle currently mirrors en (TODO Phase 4 / QUAL-01..04 for real translations).
+import chatEn from '../../i18n/locales/en/chat.json';
+import chatUk from '../../i18n/locales/uk/chat.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -43,12 +47,14 @@ const enBundle = {
   dashboard: { ...(en as { dashboard?: Record<string, string> }).dashboard, ...dashboardEn },
   categories: { ...(en as { categories?: Record<string, string> }).categories, ...categoriesEn },
   transactions: { ...(en as { transactions?: Record<string, string> }).transactions, ...transactionsEn },
+  chat: { ...(en as { chat?: Record<string, string> }).chat, ...chatEn },
 };
 const ukBundle = {
   ...uk,
   dashboard: { ...(uk as { dashboard?: Record<string, string> }).dashboard, ...dashboardUk },
   categories: { ...(uk as { categories?: Record<string, string> }).categories, ...categoriesUk },
   transactions: { ...(uk as { transactions?: Record<string, string> }).transactions, ...transactionsUk },
+  chat: { ...(uk as { chat?: Record<string, string> }).chat, ...chatUk },
 };
 
 const resources = {
