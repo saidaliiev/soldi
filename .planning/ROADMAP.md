@@ -76,7 +76,7 @@ Plans:
 - [x] 02-01: Dashboard screen with Skia donut chart + Oswald monthly total + category breakdown rows
 - [x] 02-02: "Yesterday in money" digest card with Skia sparkline + month-vs-month comparison
 - [ ] 02-03: FlashList transaction list with date grouping, swipe-to-recategorize, search, filter pills
-- [ ] 02-04: Category editor (view/rename/merge/create) + SVG icon picker (no emoji)
+- [x] 02-04: Category editor (view/rename/merge/create) + SVG icon picker (no emoji)
 
 ### Phase 3: AI Categorization + Chat
 **Goal**: New transactions auto-categorize accurately, user corrections propagate, and the chat answers NL queries in under 3 seconds.
