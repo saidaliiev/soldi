@@ -133,3 +133,28 @@ UPDATE categories SET slug = 'misc',          color = '#7A5C52' WHERE name_en = 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug)
 `;
 
+// ---------------------------------------------------------------------------
+// SCHEMA_003: Phase 3 plan 03-01 — adds AI-categorization metadata columns
+// to the transactions table.
+//
+// Why a migration: Phase 3's ai-categorize Edge Function returns a per-row
+// confidence and a needs_review flag. These columns persist that result so
+// the transactions list can render the amber "needs review" dot (UI-SPEC
+// §cat-feedback) and so a future bulk re-categorize pass knows when each row
+// was last attempted (last_ai_attempt_at).
+//
+// op-sqlite has no BOOLEAN type — needs_review is INTEGER 0/1. The
+// last_ai_attempt_at column is unix seconds (matches nowSeconds() helper).
+//
+// Columns:
+//   ai_confidence       REAL    nullable     — Haiku-returned confidence 0..1
+//   needs_review        INTEGER NOT NULL=0   — 1 when confidence below D-11 threshold
+//   last_ai_attempt_at  INTEGER nullable     — unix seconds of last categorize attempt
+// ---------------------------------------------------------------------------
+
+export const SCHEMA_003 = `
+ALTER TABLE transactions ADD COLUMN ai_confidence REAL;
+ALTER TABLE transactions ADD COLUMN needs_review INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE transactions ADD COLUMN last_ai_attempt_at INTEGER
+`;
+

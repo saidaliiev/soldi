@@ -12,7 +12,7 @@
  *   CREATE INDEX IF NOT EXISTS patterns (already satisfied by schema.sql.ts).
  */
 
-import { SCHEMA_001, SCHEMA_002, SEED_DEFAULT_CATEGORIES } from './schema.sql';
+import { SCHEMA_001, SCHEMA_002, SCHEMA_003, SEED_DEFAULT_CATEGORIES } from './schema.sql';
 
 export type Migration = {
   readonly version: number;
@@ -33,5 +33,12 @@ export const MIGRATIONS: readonly Migration[] = [
     // + backfill of the 18 seeded rows. See SCHEMA_002 in schema.sql.ts.
     version: 2,
     sql: SCHEMA_002,
+  },
+  {
+    // Phase 3 plan 03-01 — transactions AI columns
+    // (ai_confidence, needs_review, last_ai_attempt_at). See SCHEMA_003.
+    // 03-02 owns version 4 (merchant_overrides v2 rewrite); both ship in Wave 1.
+    version: 3,
+    sql: SCHEMA_003,
   },
 ] as const;
