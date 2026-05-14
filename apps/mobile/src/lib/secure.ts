@@ -21,7 +21,8 @@ import * as SecureStore from 'expo-secure-store';
 export type SecureKey =
   | 'monobank_token'
   | 'monobank_token_hash'
-  | 'soldi-onboarding';
+  | 'soldi-onboarding'
+  | 'soldi-tx-filter';
 
 // ---------------------------------------------------------------------------
 // API

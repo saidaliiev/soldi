@@ -21,6 +21,9 @@ import dashboardUk from '../../i18n/locales/uk/dashboard.json';
 // Phase 2 plan 02-04 — categories namespace (CategoryEditorBottomSheet + screen)
 import categoriesEn from '../../i18n/locales/en/categories.json';
 import categoriesUk from '../../i18n/locales/uk/categories.json';
+// Phase 2 plan 02-03 — transactions namespace (list / detail / search modal)
+import transactionsEn from '../../i18n/locales/en/transactions.json';
+import transactionsUk from '../../i18n/locales/uk/transactions.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -39,11 +42,13 @@ const enBundle = {
   ...en,
   dashboard: { ...(en as { dashboard?: Record<string, string> }).dashboard, ...dashboardEn },
   categories: { ...(en as { categories?: Record<string, string> }).categories, ...categoriesEn },
+  transactions: { ...(en as { transactions?: Record<string, string> }).transactions, ...transactionsEn },
 };
 const ukBundle = {
   ...uk,
   dashboard: { ...(uk as { dashboard?: Record<string, string> }).dashboard, ...dashboardUk },
   categories: { ...(uk as { categories?: Record<string, string> }).categories, ...categoriesUk },
+  transactions: { ...(uk as { transactions?: Record<string, string> }).transactions, ...transactionsUk },
 };
 
 const resources = {

@@ -17,6 +17,8 @@
 import { getDB } from '@lib/db';
 import { nowSeconds } from '@lib/time';
 import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
+import { buildFilterSql } from '../features/transactions/filterCompose';
+import type { FilterState, Transaction } from '../features/transactions/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -197,4 +199,242 @@ export function listByMonth(year: number, month: number): TransactionRow[] {
     external_id: (row['external_id'] as string | null) ?? null,
     created_at: row['created_at'] as number,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 plan 02-03 — listByFilter / updateCategory / getTransactionById /
+// updateTransaction / searchByMerchant
+// ---------------------------------------------------------------------------
+//
+// AI-safety contract (T-02-03-03 + 01-LEARNINGS):
+// None of the SELECT/UPDATE statements below reference the `description`
+// column. Phase 1 SKELETON locked description=NULL across all ingest paths;
+// Phase 2 must not read or write it. The filterCompose unit test enforces
+// the WHERE-clause side; this comment + grep in 02-03 Task 2 verify enforce
+// the repo side.
+
+/**
+ * Projection row shape returned by the JOIN query — a flat subset of
+ * transactions JOIN categories columns. The repo maps this to the
+ * features/transactions Transaction shape (camelCase).
+ *
+ * Note: description column is INTENTIONALLY ABSENT here. The Phase 2 list /
+ * detail / search surfaces never read it. AI-safety enforcement.
+ */
+type JoinRow = Readonly<{
+  id: number;
+  amount_cents: number;
+  currency: string;
+  merchant_name: string;
+  category_id: number | null;
+  category_name: string | null;
+  icon_slug: string | null;
+  color: string | null;
+  date: number;
+}>;
+
+function joinRowToTransaction(row: JoinRow): Transaction {
+  return {
+    id: row.id,
+    amountCents: row.amount_cents,
+    currency: row.currency,
+    merchantName: row.merchant_name,
+    categoryId: row.category_id,
+    categoryName: row.category_name,
+    categoryIconSlug: row.icon_slug,
+    categoryColor: row.color,
+    dateSec: row.date,
+  };
+}
+
+/** Defensive cap — Phase 5 will add pagination/windowing. */
+const LIST_BY_FILTER_LIMIT = 5000;
+
+/**
+ * Returns transactions matching the supplied filter, joined with categories
+ * for icon/color rendering. Ordered by date DESC, id DESC.
+ *
+ * The WHERE clause comes from filterCompose.buildFilterSql with positional
+ * binds — no user input is ever interpolated into the SQL string.
+ */
+export function listByFilter(filter: FilterState): readonly Transaction[] {
+  const { whereClause, params } = buildFilterSql(filter);
+  const db = getDB();
+  // We always rewrite simple column refs in the whereClause to be t-qualified
+  // because the same column names exist on both sides of the JOIN. The
+  // filterCompose unit test pins the literals — this is a stable contract.
+  const qualifiedWhere = whereClause
+    .replace(/(^|[^.])amount_cents/g, '$1t.amount_cents')
+    .replace(/(^|[^.])merchant_name/g, '$1t.merchant_name')
+    .replace(/(^|[^.])category_id/g, '$1t.category_id')
+    .replace(/(^|[^.])\bdate\b/g, '$1t.date');
+
+  const sql =
+    `SELECT t.id           AS id,
+            t.amount_cents AS amount_cents,
+            t.currency     AS currency,
+            t.merchant_name AS merchant_name,
+            t.category_id  AS category_id,
+            c.name_en      AS category_name,
+            c.icon_name    AS icon_slug,
+            c.color        AS color,
+            t.date         AS date
+       FROM transactions t
+       LEFT JOIN categories c ON c.id = t.category_id
+      WHERE ${qualifiedWhere}
+      ORDER BY t.date DESC, t.id DESC
+      LIMIT ${LIST_BY_FILTER_LIMIT}`;
+
+  const result = db.executeSync(sql, params as (string | number)[]);
+  return result.rows.map((row) =>
+    joinRowToTransaction({
+      id: row['id'] as number,
+      amount_cents: row['amount_cents'] as number,
+      currency: row['currency'] as string,
+      merchant_name: row['merchant_name'] as string,
+      category_id: (row['category_id'] as number | null) ?? null,
+      category_name: (row['category_name'] as string | null) ?? null,
+      icon_slug: (row['icon_slug'] as string | null) ?? null,
+      color: (row['color'] as string | null) ?? null,
+      date: row['date'] as number,
+    })
+  );
+}
+
+/**
+ * Reassigns a single transaction to a new category. Parameterized — no
+ * string interpolation.
+ */
+export function updateCategory(txId: number, categoryId: number): void {
+  if (!Number.isInteger(txId) || txId <= 0) {
+    throw new Error('updateCategory: invalid txId');
+  }
+  if (!Number.isInteger(categoryId) || categoryId <= 0) {
+    throw new Error('updateCategory: invalid categoryId');
+  }
+  const db = getDB();
+  db.executeSync('UPDATE transactions SET category_id = ? WHERE id = ?', [
+    categoryId,
+    txId,
+  ]);
+}
+
+/**
+ * Convenience wrapper around listByFilter for the debounced live merchant
+ * search. The downstream screen actually uses listByFilter via filterStore;
+ * this is exposed for any future surface that needs a quick lookup.
+ */
+export function searchByMerchant(query: string, limit: number): readonly Transaction[] {
+  const filter: FilterState = {
+    search: query,
+    categoryIds: [],
+    minCents: null,
+    maxCents: null,
+    sign: 'both',
+    dateFromISO: null,
+    dateToISO: null,
+  };
+  const rows = listByFilter(filter);
+  return rows.slice(0, Math.max(0, Math.floor(limit)));
+}
+
+/**
+ * Returns the joined Transaction projection for a single id, or null.
+ */
+export function getTransactionById(id: number): Transaction | null {
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT t.id           AS id,
+            t.amount_cents AS amount_cents,
+            t.currency     AS currency,
+            t.merchant_name AS merchant_name,
+            t.category_id  AS category_id,
+            c.name_en      AS category_name,
+            c.icon_name    AS icon_slug,
+            c.color        AS color,
+            t.date         AS date
+       FROM transactions t
+       LEFT JOIN categories c ON c.id = t.category_id
+      WHERE t.id = ?
+      LIMIT 1`,
+    [id]
+  );
+  const row = result.rows[0];
+  if (row == null) return null;
+  return joinRowToTransaction({
+    id: row['id'] as number,
+    amount_cents: row['amount_cents'] as number,
+    currency: row['currency'] as string,
+    merchant_name: row['merchant_name'] as string,
+    category_id: (row['category_id'] as number | null) ?? null,
+    category_name: (row['category_name'] as string | null) ?? null,
+    icon_slug: (row['icon_slug'] as string | null) ?? null,
+    color: (row['color'] as string | null) ?? null,
+    date: row['date'] as number,
+  });
+}
+
+/**
+ * Whitelist-driven partial update for a transaction.
+ *
+ * Accepted patch keys: merchant_name, amount_cents, occurred_at (mapped to
+ * the schema's `date` column), category_id. Any other key is rejected before
+ * the SQL is built (T-02-03-02 mitigation).
+ */
+export type UpdateTransactionPatch = Readonly<{
+  merchant_name?: string;
+  amount_cents?: number;
+  occurred_at?: number; // unix seconds — written to the schema's `date` column
+  category_id?: number | null;
+}>;
+
+const UPDATE_TX_WHITELIST = ['merchant_name', 'amount_cents', 'occurred_at', 'category_id'] as const;
+type UpdateTxKey = (typeof UPDATE_TX_WHITELIST)[number];
+
+export function updateTransaction(id: number, patch: UpdateTransactionPatch): Transaction {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('updateTransaction: invalid id');
+  }
+  // Reject unknown keys before building any SQL — defense in depth.
+  for (const key of Object.keys(patch)) {
+    if (!UPDATE_TX_WHITELIST.includes(key as UpdateTxKey)) {
+      throw new Error(`updateTransaction: rejected unknown key`);
+    }
+  }
+
+  const sets: string[] = [];
+  const values: (string | number | null)[] = [];
+
+  if (patch.merchant_name !== undefined) {
+    sets.push('merchant_name = ?');
+    values.push(patch.merchant_name);
+  }
+  if (patch.amount_cents !== undefined) {
+    sets.push('amount_cents = ?');
+    values.push(patch.amount_cents);
+  }
+  if (patch.occurred_at !== undefined) {
+    // Schema column is `date`; surface API exposes occurred_at for forward-compat.
+    sets.push('date = ?');
+    values.push(patch.occurred_at);
+  }
+  if (patch.category_id !== undefined) {
+    sets.push('category_id = ?');
+    values.push(patch.category_id);
+  }
+
+  if (sets.length === 0) {
+    const existing = getTransactionById(id);
+    if (existing == null) throw new Error('updateTransaction: row not found');
+    return existing;
+  }
+
+  values.push(id);
+  const db = getDB();
+  db.executeSync(`UPDATE transactions SET ${sets.join(', ')} WHERE id = ?`, values);
+
+  const after = getTransactionById(id);
+  if (after == null) throw new Error('updateTransaction: row vanished');
+  return after;
 }
