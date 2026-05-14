@@ -81,11 +81,11 @@ Out of scope (other phases):
 
 ### SQL Safety for `ai-query` Tool
 
-- **D-17:** `ai-query` is a **server-side tool** exposed only to Sonnet inside the `ai-chat` Edge Function. It is NOT a public Postgres role and NOT callable from the mobile client. Sonnet sees a tool with a typed JSON schema:
+- **D-17:** (superseded by D-17′ — see "Decision Revisions" section below) `ai-query` is a **server-side tool** exposed only to Sonnet inside the `ai-chat` Edge Function. It is NOT a public Postgres role and NOT callable from the mobile client. Sonnet sees a tool with a typed JSON schema:
   `{ query_type: 'sum_by_category' | 'count_by_category' | 'sum_by_month' | 'top_merchants' | 'compare_periods', filters: { date_from, date_to, category_slugs?, currency? } }`.
-- **D-18:** No free-form SQL ever reaches Postgres from the LLM. The Edge Function maps the tool call to a **parameterized prepared statement** from a fixed library of ~6 query shapes. Sonnet picks the shape; parameters are validated (date format, category slug existence, currency enum) before binding.
-- **D-19:** RLS scoping: the Edge Function uses the **user's JWT** (not service-role) when calling `ai-query` so all queries are auto-filtered by `auth.uid()`. Service-role is only used for `ai-categorize` writes.
-- **D-20:** Row-limit caps live in the Edge Function (per-query-shape constants): `top_merchants LIMIT 20`, `sum_by_category LIMIT 50 categories`, `compare_periods` is two scalar sums. Date-range cap: max 13 months (current + 12 lookback). Requests for longer ranges are clamped server-side and the chat response notes the clamp.
+- **D-18:** (superseded by D-18′ — see "Decision Revisions" section below) No free-form SQL ever reaches Postgres from the LLM. The Edge Function maps the tool call to a **parameterized prepared statement** from a fixed library of ~6 query shapes. Sonnet picks the shape; parameters are validated (date format, category slug existence, currency enum) before binding.
+- **D-19:** (superseded by D-19′ — see "Decision Revisions" section below) RLS scoping: the Edge Function uses the **user's JWT** (not service-role) when calling `ai-query` so all queries are auto-filtered by `auth.uid()`. Service-role is only used for `ai-categorize` writes.
+- **D-20:** (superseded by D-20′ — see "Decision Revisions" section below) Row-limit caps live in the Edge Function (per-query-shape constants): `top_merchants LIMIT 20`, `sum_by_category LIMIT 50 categories`, `compare_periods` is two scalar sums. Date-range cap: max 13 months (current + 12 lookback). Requests for longer ranges are clamped server-side and the chat response notes the clamp.
 
 ### Failure Mode UX for `ai-categorize` Partial Failures
 
@@ -93,6 +93,26 @@ Out of scope (other phases):
 - **D-22:** Failed rows are left with `category_id = NULL` and a `last_ai_attempt_at` timestamp. They appear as "Uncategorized" in the list. The Edge Function does NOT automatically retry; manual retry happens on next batch insert that includes that tx_id, or via the (Phase 4) bulk re-run endpoint.
 - **D-23:** If the ENTIRE batch fails (Anthropic 5xx, rate limit, network), the Edge Function returns HTTP 503 with a structured error. Client surfaces a small, non-blocking inline banner on the transactions list: "Categorization paused — tap to retry" (EB Garamond italic, brand sage muted). Tap → re-fires the request. No toast, no modal.
 - **D-24:** Cost ceiling: per-user daily cap of $0.20 categorization spend, $0.50 chat spend (enforced via PostHog counter + Edge Function pre-check). Over cap → fall through to MCC-only (no Haiku) for categorization; chat surfaces a soft "Daily limit reached, try again tomorrow" message. Caps are configurable per-env in Supabase project secrets.
+
+### Decision Revisions (post plan-checker, 2026-05-14)
+
+The plan-checker agent flagged that D-17..D-20 assume transactions live in remote Postgres, but per Phase 1/2 the **transaction source-of-truth is local op-sqlite** (`apps/mobile/src/db/repos/transactionsRepo.ts`). There is no remote Postgres copy of transactions in Phase 3 scope (and per PROJECT.md scope: no PSD2/AISP, no cloud transaction storage). The four revised decisions below supersede the originals and lock the FactsPack architecture.
+
+- **D-17′ (revised, supersedes D-17):** `ai-query` is a **server-side tool** exposed only to Sonnet inside the `ai-chat` Edge Function. Tool inputs are typed JSON (no free-form SQL ever). The tool dispatches against a client-supplied aggregate dataset (FactsPack — see D-18′), NOT a remote SQL execution path.
+
+- **D-18′ (revised, supersedes D-18):** Sonnet's tool calls dispatch against a **FactsPack** — an aggregate-only dataset built client-side from op-sqlite and shipped with each chat request. The Edge Function runs ~6 deterministic JS reducers (in `supabase/functions/_shared/facts-runner.ts` — renamed from `sql-runner.ts`) over the in-request FactsPack. No SQL is executed on the Edge Function in Phase 3. Sonnet picks one of 6 query shapes (`sum_by_category`, `count_by_category`, `sum_by_month`, `top_merchants`, `compare_periods`, `last_n_transactions_aggregate`); the reducer filters/aggregates the FactsPack and returns rows. Per-shape row caps (`top_merchants ≤ 20`, `sum_by_category ≤ 50 categories`, etc.) are enforced inside the reducers.
+
+- **D-19′ (revised, supersedes D-19):** RLS scoping via JWT pass-through becomes **vestigial in Phase 3** because no remote transaction queries run. The Edge Function still validates the user JWT for authentication, but it uses no service-role table reads against transactions. The userClient JWT-pass-through hook stays in code for Phase 4 (when monobank live sync / cloud-sync may introduce remote writes); merchant_overrides remote reads (if any chat use case needs them later) will use the userClient with RLS.
+
+- **D-20′ (revised, supersedes D-20):** Date-range cap (13 months) and per-shape row caps live in **two places** for defense-in-depth:
+  1. **Client-side at FactsPack build** — `factsPackBuilder.ts` clamps the date range to the last 13 months and caps `monthly_category_sums` + `top_merchants_by_month` arrays to 2000 entries each before sending.
+  2. **Server-side enforcement** — Edge Function rejects (with 400) any FactsPack whose date range exceeds 13 months or whose per-shape row counts exceed caps. Sonnet's chat response notes any clamp in the prose.
+
+**Rationale:**
+- Source-of-truth for transactions is **local op-sqlite by project design** (CLAUDE.md §Scope: portfolio piece, no PSD2/AISP, no cloud transaction storage). Remote Postgres holds only `merchant_overrides` + (Phase 4) `chat_session_logs`.
+- FactsPack honors GDPR-aggregates-only better than remote SQL because `merchant_key` values in FactsPack are **pseudonymized (normalized) before leaving the device** — raw merchant names never cross the wire.
+- Satisfies CHAT-04 ("no raw transaction PII to LLM") **strictly and unconditionally** at the schema level (`FactsPack.strict()` rejects any `description`/`raw_data` field; only normalized merchant_key + aggregates pass).
+- Removes architectural dependency on a remote transactions table that Phase 3 does not (and will not, per scope) build.
 
 ### Claude's Discretion (during planning + execution)
 
