@@ -1,10 +1,11 @@
 /**
- * SOLDI dashboard repository (Phase 2 — Wave 1).
+ * SOLDI dashboard repository (Phase 2 — Wave 1 + Wave 2).
  *
- * Three queries consumed by the dashboard screen:
+ * Queries consumed by the dashboard screen:
  *   - getMonthlyExpenseTotal(year, month) → positive cents
  *   - getCategoryBreakdown(year, month)   → top 5 + Other slice
  *   - getMonthsWithTransactions()         → distinct {year,month} tuples ASC
+ *   - getDailyExpenseTotals(fromISO, toISO) → per-day positive cents (02-02)
  *
  * Conventions (locked, 01-SKELETON):
  *   negative amount_cents = expense, positive = income.
@@ -182,6 +183,64 @@ export function getMonthsWithTransactions(): readonly MonthKey[] {
     const m = row['m'] as number;
     if (Number.isInteger(y) && Number.isInteger(m) && m >= 1 && m <= 12) {
       out.push({ year: y, month: m });
+    }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// getDailyExpenseTotals (02-02 — digest card sparkline)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns daily expense totals (positive cents) for the half-open ISO date
+ * window [dateFromISO, dateToISO). Used by useDigestData → buildLast7DaysSeries
+ * (which fills missing days with zeros) and computeYesterdayExpenseCents.
+ *
+ * Bounds are inclusive of `dateFromISO` and exclusive of `dateToISO`. The
+ * caller is responsible for computing the exclusive upper bound (e.g.
+ * `today+1` to include today's row).
+ *
+ * Note: `transactions.date` is INTEGER unix seconds (per schema-001 and
+ * 02-01-SUMMARY deviation §1). ISO date inputs are validated via Date
+ * round-trip and converted to unix seconds before binding (T-02-02-01
+ * mitigation — reject NaN dates).
+ *
+ * Rows for days with zero spend are omitted by SQL — densify in the caller.
+ */
+export function getDailyExpenseTotals(
+  dateFromISO: string,
+  dateToISO: string
+): readonly { date: string; cents: number }[] {
+  const from = new Date(dateFromISO);
+  const to = new Date(dateToISO);
+  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime())) {
+    // Tampered / malformed inputs — surface as empty, caller will fall back
+    // to zero series. (T-02-02-01 mitigation — never bind NaN to SQL.)
+    return [];
+  }
+  const fromSec = Math.floor(from.getTime() / 1000);
+  const toSec = Math.floor(to.getTime() / 1000);
+  if (toSec <= fromSec) return [];
+
+  const db = getDB();
+  const result = db.executeSync(
+    `SELECT strftime('%Y-%m-%d', date, 'unixepoch') AS d,
+            COALESCE(-SUM(amount_cents), 0) AS cents
+     FROM transactions
+     WHERE amount_cents < 0
+       AND date >= ? AND date < ?
+     GROUP BY d
+     ORDER BY d ASC`,
+    [fromSec, toSec]
+  );
+
+  const out: { date: string; cents: number }[] = [];
+  for (const row of result.rows) {
+    const d = row['d'] as string | null;
+    const cents = (row['cents'] as number | null) ?? 0;
+    if (typeof d === 'string' && d.length === 10) {
+      out.push({ date: d, cents: Math.max(0, Math.floor(cents)) });
     }
   }
   return out;
