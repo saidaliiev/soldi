@@ -1,10 +1,11 @@
 ---
 phase: 2
 slug: dashboard-transactions-categories
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-14
+reviewed_at: 2026-05-14T08:36:00+01:00
 ---
 
 # Phase 2 — UI Design Contract
