@@ -84,7 +84,7 @@ test('jarRingArcPath: different radius produces different coordinate values', ()
 // For fraction=0.25 starting at top, x1 should equal cx (within float tolerance).
 // ---------------------------------------------------------------------------
 
-test('jarRingArcPath: fraction=0.25 start x is approximately cx (12 o'clock start)', () => {
+test("jarRingArcPath: fraction=0.25 start x is approximately cx (12 o'clock start)", () => {
   const radius = 60;
   const strokeWidth = 10;
   const cx = radius; // center, matching chatChartGeometry idiom
