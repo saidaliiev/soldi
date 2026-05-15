@@ -146,6 +146,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       .messages.filter((m) => m.role === 'user' || m.role === 'assistant')
       .filter((m): m is Extract<ChatMessage, { role: 'user' | 'assistant' }> => true)
       .filter((m) => m.id !== typingId)
+      .filter((m) => m.role !== 'assistant' || !m.isError)
       .map((m) => ({ role: m.role as 'user' | 'assistant', text: m.role === 'user' ? (m as Extract<ChatMessage, { role: 'user' }>).text : (m as Extract<ChatMessage, { role: 'assistant' }>).text }));
 
     try {
