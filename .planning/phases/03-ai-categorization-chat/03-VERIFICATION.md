@@ -2,38 +2,33 @@
 phase: 03-ai-categorization-chat
 verified: 2026-05-15T15:50:00Z
 status: human_needed
-score: 3/5 must-haves verified (2 are HUMAN_NEEDED per infra constraints)
-overrides_applied: 0
+score: 3/5 must-haves statically verified; remaining 2 (SC#1 accuracy, SC#3 latency) are runtime-only, blocked on P0 #5/#6 — NOT code gaps. No open code gaps.
+overrides_applied: 1
+verification_correction: >
+  2026-05-15T16:05Z — The CAT-03 "orphaned trigger" gap below was a verifier
+  FALSE NEGATIVE: the original grep was scoped to apps/mobile/src/ only and
+  missed apps/mobile/app/ (expo-router dir). fireAndForgetCategorize IS wired
+  into all three ingest paths. Gap reclassified failed→resolved with evidence.
+  The remote-migration item is reclassified to an accepted Phase-4 deferral
+  (documented in 03-01-SUMMARY + STATE.md D-17..D-20; resolveTier1 is an
+  intentional no-op until Phase 4). No blocking code gaps remain; phase is
+  code-complete and human_needed strictly for live-API SC#1/#3.
 gaps:
   - truth: "fireAndForgetCategorize is wired into every transaction insert call site"
-    status: failed
+    status: resolved
     reason: >
-      aiCategorizeTrigger.ts exports fireAndForgetCategorize (line 90) but zero call
-      sites exist in apps/mobile/src/. grep for fireAndForgetCategorize returns only the
-      definition line. manualEntryStore.ts is absent from the repo. The function is
-      defined but never fired — the on-ingest trigger is an orphaned artifact.
-      CAT-03 (AI auto-categorizes every new transaction) cannot be satisfied without
-      this wiring.
+      RESOLVED — false negative in original verification (grep scoped to
+      apps/mobile/src/ only). fireAndForgetCategorize is imported and called
+      after successful insert in all three Phase-1 ingest paths, committed in
+      2e3dea9 (feat(03-01): on-ingest trigger wiring) during Wave 1.
     artifacts:
-      - path: "apps/mobile/src/features/transactions/aiCategorizeTrigger.ts"
-        issue: "Exported fireAndForgetCategorize is never imported or called"
-    missing:
-      - "Import and call fireAndForgetCategorize after each successful transaction insert (manualEntryStore, synthetic ingest, CSV ingest)"
-  - truth: "supabase/migrations/0001_merchant_overrides.sql remote DDL exists"
-    status: failed
-    reason: >
-      supabase/migrations/ directory does not exist. 03-01-SUMMARY documents the remote
-      migration as deferred to Phase 4 (line 71, 152). However the 03-01-PLAN lists this
-      file as a required artifact (line 58-60) and the Phase 3 goal requires the full
-      pipeline — including the Tier 1 remote merchant_overrides lookup — to be wired.
-      Currently resolveTier1 intentionally returns an empty Map in all cases (index.ts
-      line 107: `void data; // intentionally not used until Phase 4`), making Tier 1 a
-      no-op. The deferred deferral is documented and Phase 4 is the explicit target.
-    artifacts:
-      - path: "supabase/migrations/0001_merchant_overrides.sql"
-        issue: "File missing — no supabase/migrations/ directory"
-    missing:
-      - "Remote Postgres DDL for merchant_overrides + RLS policies OR formal deferral to Phase 4 roadmap entry"
+      - path: "apps/mobile/app/onboarding/manual.tsx:154"
+        issue: "RESOLVED — fireAndForgetCategorize called after manual-entry insert"
+      - path: "apps/mobile/app/onboarding/monobank.tsx:163"
+        issue: "RESOLVED — fireAndForgetCategorize called after monobank sync insert"
+      - path: "apps/mobile/app/onboarding/csv.tsx:193"
+        issue: "RESOLVED — fireAndForgetCategorize called after CSV import insert"
+    missing: []
 deferred:
   - truth: "supabase/migrations/0001_merchant_overrides.sql remote DDL + RLS"
     addressed_in: "Phase 4"
@@ -46,7 +41,7 @@ deferred:
 human_verification:
   - test: "Add a manual transaction with mcc=5411 (Tesco/groceries); verify it auto-categorizes to Groceries within 5 seconds via Tier 2 MCC hit"
     expected: "Transaction row shows 'Groceries' category without needs_review dot; POST to /functions/v1/ai-categorize fires with merchant_name+mcc+amount_sign+amount_bucket only"
-    why_human: "Requires live Supabase project (P0 #5) + physical iPhone via Expo Go; on-ingest trigger wiring gap must first be resolved"
+    why_human: "Requires live Supabase project (P0 #5) + physical iPhone via Expo Go (on-ingest trigger wiring confirmed present — 2e3dea9)"
   - test: "Ask chat 'how much on groceries last month?' — verify numeric answer arrives within 3 seconds"
     expected: "ChatBubble shows accurate EUR amount matching local transactions; optional mini chart; response time < 3s on fast network"
     why_human: "Requires live Anthropic API key (P0 #6) + live Supabase project (P0 #5); latency is a runtime measurement not statically verifiable"
