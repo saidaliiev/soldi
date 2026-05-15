@@ -65,8 +65,10 @@ export function JarDetailScreen(): React.JSX.Element {
         setSweepResult(t('jars.sweep_nothing'));
       }
     } catch {
-      // Fail gracefully — show nothing rather than crash (CLAUDE.md security rule)
-      setSweepResult(null);
+      // WR-05: show error feedback rather than silently clearing the message.
+      // CLAUDE.md: "catch blocks fail gracefully (cached data, never crash)" —
+      // silent null is not graceful; user sees spinner stop with no explanation.
+      setSweepResult(t('jars.error_save'));
     } finally {
       setSweeping(false);
     }
