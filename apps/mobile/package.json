@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "lint:i18n": "node ./scripts/check-i18n-parity.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/eb-garamond": "^0.4.2",
