@@ -22,6 +22,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { ChatLaunchFAB } from '@/src/features/chat/ChatLaunchFAB';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -110,6 +111,7 @@ export default function DashboardScreen(): React.JSX.Element {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+
         <MonthSwiper
           selected={selected}
           onChange={setSelected}
@@ -164,6 +166,8 @@ export default function DashboardScreen(): React.JSX.Element {
           </>
         )}
       </ScrollView>
+      {/* ChatLaunchFAB — absolute overlay; no scrollY SharedValue yet (Phase 5) */}
+      <ChatLaunchFAB />
     </SafeAreaView>
   );
 }

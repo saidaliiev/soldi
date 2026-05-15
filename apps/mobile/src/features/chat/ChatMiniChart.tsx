@@ -11,15 +11,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
-import Animated, {
-  useSharedValue,
-  withDelay,
-  withTiming,
-  useAnimatedProps,
-  Easing,
-} from 'react-native-reanimated';
 
-import { COLORS, SPACING, RADIUS } from '@design/tokens';
+import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { sparklinePath, donutArcs, barLayout } from './chatChartGeometry';
 import type { ChartPayload } from '@services/aiQuery';
@@ -81,11 +74,9 @@ const DONUT_STROKE = 8;
 function MiniDonut({
   slices,
 }: {
-  slices: Array<{ label: string; value: number; color: string }>;
+  slices: { label: string; value: number; color: string }[];
 }): React.JSX.Element {
   const arcs = React.useMemo(() => donutArcs(slices, DONUT_RADIUS, DONUT_STROKE), [slices]);
-  const cx = DONUT_RADIUS + DONUT_STROKE / 2;
-
   // Top 2 slices for labels
   const top2 = [...slices].sort((a, b) => Math.abs(b.value) - Math.abs(a.value)).slice(0, 2);
 
@@ -131,7 +122,7 @@ const BAR_W = 240;
 const BAR_H = 72;
 const BAR_V_PAD = 20;
 
-function MiniBar({ bars }: { bars: Array<{ label: string; value: number }> }): React.JSX.Element {
+function MiniBar({ bars }: { bars: { label: string; value: number }[] }): React.JSX.Element {
   const layout = React.useMemo(() => barLayout(bars, BAR_W, BAR_H, BAR_V_PAD), [bars]);
 
   return (
