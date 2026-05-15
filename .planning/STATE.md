@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 Wave 1 complete (03-01 + 03-02 merged to main); Wave 2 (03-03 chat) pending
+stopped_at: Phase 3 Wave 2 IN PROGRESS — 03-03 Tasks 1-2 committed to main, Task 3 (chat UI) WIP commit 98c7064 INCOMPLETE, no SUMMARY; interrupted by usage limit 2026-05-15 (reset 2:50pm Europe/Dublin)
 last_updated: "2026-05-15T12:54:41.934Z"
 last_activity: 2026-05-15 -- Phase 03 execution started
 progress:
@@ -31,6 +31,22 @@ Status: Executing Phase 03 — Wave 1 merged to main (HEAD ~4178702)
 Last activity: 2026-05-15 -- Phase 03 Wave 1 (03-01+03-02) merged; gates tsc=0 lint=0; jest harness absent (P1, see below)
 
 Progress: [█████░░░░░] ~31% (8 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..04 fully done. P0 cloud device init items still outstanding but non-blocking for Phase 2 planning.)
+
+## RESUME (Phase 3 Wave 2 — 03-03 chat)
+
+After usage limit resets (2:50pm Europe/Dublin, 2026-05-15): re-run
+`/gsd-execute-phase 3`. It will detect 03-03 has no SUMMARY and resume.
+03-03 state on main (branching=none, executor committed to main directly —
+deviation from worktree isolation, accepted):
+- `2e415d5` Task 1: ai-query Edge Function + facts-runner + chat schemas — committed
+- `ce3c6e6` Task 2: mobile chat plumbing (service/store/facts-pack/i18n/icons) — committed
+- `98c7064` Task 3: chat UI (bubbles, mini chart, geometry+test) — **WIP, INCOMPLETE,
+  UNVERIFIED**. Finish Task 3, wire chat bottom sheet, run `cd apps/mobile &&
+  npx tsc --noEmit` + `npx expo lint` (both must exit 0; jest N/A — see below),
+  write `.planning/phases/03-ai-categorization-chat/03-03-SUMMARY.md`, then
+  ROADMAP `[x] 03-03` + Phase 3 verification (gsd-verifier).
+NOTE: dispatch executor with a SHORT prompt — the long-prompt variant failed
+"Prompt is too long". gsd-executor loads its own execute-plan context.
 
 ## Known Infra Gaps (P1 — pre-existing, not Wave-1 regression)
 
