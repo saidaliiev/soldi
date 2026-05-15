@@ -136,8 +136,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02: Round-up calculation engine (rules: round-up, fixed weekly, percentage of income)
-- [ ] 04-03: Full Ukrainian translation pass via Claude + Upwork native reviewer
+- [x] 04-02: Round-up calculation engine (rules: round-up, fixed weekly, percentage of income)
+- [x] 04-03: Full Ukrainian translation pass via Claude + Upwork native reviewer
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -200,7 +200,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 1. Onboarding + Data Ingest | 4/4 | Complete (device-verified) | 2026-05-13 |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
-| 4. Jars + i18n + Accessibility | 1/4 | In Progress|  |
+| 4. Jars + i18n + Accessibility | 3/4 | In Progress|  |
 | 5. Polish + TestFlight Beta | 0/4 | Not started | - |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
 
