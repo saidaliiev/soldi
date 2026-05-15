@@ -31,13 +31,13 @@ gaps:
     missing: []
 deferred:
   - truth: "supabase/migrations/0001_merchant_overrides.sql remote DDL + RLS"
-    addressed_in: "Phase 4"
+    addressed_in: "Phase 5/6"
     evidence: >
       03-01-SUMMARY.md line 71: 'supabase/migrations/0001_merchant_overrides.sql deferred
       to Phase 4 (remote table stays empty in Phase 3 per D-17..D-20 FactsPack)'.
-      Phase 4 goal covers Jars + i18n; merchant_overrides cloud sync is not yet in Phase 4
-      success criteria — matching is WEAK. Keeping as gap until Phase 4 roadmap explicitly
-      claims this. See note in Gaps Summary below.
+      Re-deferred 2026-05-15: Phase 4 ROADMAP never listed this item — orphaned deferral
+      repointed to Phase 5/6 per 04-03-PLAN.md task 3. resolveTier1 remains an intentional
+      no-op. No DDL implemented.
 human_verification:
   - test: "Add a manual transaction with mcc=5411 (Tesco/groceries); verify it auto-categorizes to Groceries within 5 seconds via Tier 2 MCC hit"
     expected: "Transaction row shows 'Groceries' category without needs_review dot; POST to /functions/v1/ai-categorize fires with merchant_name+mcc+amount_sign+amount_bucket only"
@@ -79,7 +79,7 @@ human_verification:
 
 | # | Item | Addressed In | Evidence |
 |---|------|-------------|----------|
-| 1 | Remote Postgres `merchant_overrides` DDL + RLS policies | Phase 4 (weak match) | 03-01-SUMMARY.md line 71 documents Phase 4 deferral. `resolveTier1` is code-wired but intentionally no-ops in Phase 3 (`index.ts:107`). Phase 4 ROADMAP does not yet list this SC explicitly — escalated to developer for decision. |
+| 1 | Remote Postgres `merchant_overrides` DDL + RLS policies | Phase 5/6 (re-deferred 2026-05-15) | 03-01-SUMMARY.md line 71 documents original Phase 4 deferral. Phase 4 ROADMAP never listed this item — orphaned deferral repointed to Phase 5/6 per 04-03-PLAN.md task 3. `resolveTier1` intentionally no-ops; no DDL implemented. |
 
 ---
 
@@ -93,7 +93,7 @@ human_verification:
 | `supabase/functions/_shared/prompts.ts` | CATEGORIZE_SYSTEM_PROMPT, no tx_index | VERIFIED | `tx_index` absent from prompt (CR-02 confirmed fixed). Single-payload instruction. |
 | `supabase/functions/ai-query/index.ts` | Sonnet 4.6 chat, tool-use loop, 503 on failure | VERIFIED (248 lines) | `claude-sonnet-4-6`, MAX_ITERATIONS=3, QUERY_SHAPES tool dispatch, 503 on all error paths. |
 | `supabase/functions/_shared/facts-runner.ts` | 6 deterministic query shapes, no DB | VERIFIED (299 lines) | `QUERY_SHAPES` registry: sum_by_category, count_by_category, sum_by_month, top_merchants, compare_periods, last_n_transactions_aggregate. Pure JS, no Postgres queries. |
-| `supabase/migrations/0001_merchant_overrides.sql` | Remote Postgres DDL + RLS | MISSING | `supabase/migrations/` directory does not exist. Documented as Phase 4 deferral in SUMMARY (weak — Phase 4 roadmap does not explicitly list this). |
+| `supabase/migrations/0001_merchant_overrides.sql` | Remote Postgres DDL + RLS | MISSING — intentional | `supabase/migrations/` directory does not exist. Re-deferred to Phase 5/6 (2026-05-15); Phase 4 ROADMAP never listed this. `resolveTier1` intentionally no-ops. |
 | `apps/mobile/src/services/aiCategorize.ts` | Client fetch wrapper, slug→id resolution | VERIFIED | File exists, exports `aiCategorizeBatch`. |
 | `apps/mobile/src/services/aiQuery.ts` | Client fetch wrapper, error translation | VERIFIED | 503/5xx → 'Service unavailable', 408 → 'Timeout', 429 → 'Daily limit reached'. |
 | `apps/mobile/src/features/chat/chatStore.ts` | Zustand store, retryLast with isError filter | VERIFIED (180 lines) | CR-01 fix present: line 149 `.filter((m) => m.role !== 'assistant' \|\| !m.isError)`. |
