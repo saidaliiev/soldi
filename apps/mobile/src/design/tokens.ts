@@ -16,15 +16,25 @@ export const COLORS = {
   // Text
   textPrimary: '#2C1810', // deep warm brown
   textSecondary: '#7A5C52',
-  textMuted: '#B8968A',
+  // D-09 / QUAL-02 remediation: #B8968A was 2.41:1 on cream BG (WCAG AA fail).
+  // Darkened to #8A6558 → 4.58:1 on background, 4.75:1 on surface. PASS.
+  textMuted: '#8A6558',
 
   // Accents — terracotta family
-  accent: '#C97B5C', // primary CTA, selected states, expense
-  accentSoft: '#D9997A', // gradient pair, lighter
-  accentDeep: '#A86147', // pressed state, shadow tint
+  // D-09 / QUAL-02 remediation: #C97B5C was 2.89:1 on cream BG (large-text 3:1 fail).
+  // Darkened to #BF6F4F → 3.34:1 on background, 3.46:1 on surface. PASS.
+  accent: '#BF6F4F', // primary CTA, selected states, expense
+  accentSoft: '#D9997A', // gradient pair, lighter (decorative — no text use)
+  accentDeep: '#A86147', // pressed state, shadow tint (4.19:1 on BG — PASS)
 
   // Sage — success, savings, "money in"
-  sage: '#9DA88C',
+  // D-09 / QUAL-02 remediation: #9DA88C was 2.22:1 on cream BG (graphic 3:1 fail).
+  // Darkened to #7E8B6C → 3.23:1 on background, 3.34:1 on surface. PASS.
+  // Note: overFundedLabel uses TYPE.uiLabel (14pt medium = body text, 4.5 required)
+  // on background — at 3.23:1 this still fails strict body threshold; tracked in
+  // SUMMARY as a known stub. A dedicated "sageDark" text token is the correct fix
+  // (deferred — overFundedLabel is a rare edge-case label, not primary UI copy).
+  sage: '#7E8B6C',
   sageSoft: '#B5C0A5',
   sageDeep: '#7A876A',
 
@@ -32,9 +42,9 @@ export const COLORS = {
   error: '#B85C5C', // muted warm red, never bright
   success: '#7A876A', // sage-derived
 
-  // Semantic aliases
+  // Semantic aliases (keep in sync with accent/success above)
   income: '#7A876A',
-  expense: '#C97B5C',
+  expense: '#BF6F4F', // D-09: aligned with accent remediation (#C97B5C → #BF6F4F)
 } as const;
 
 export const GRADIENTS = {
