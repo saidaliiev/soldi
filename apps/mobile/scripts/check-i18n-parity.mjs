@@ -31,6 +31,10 @@ const results = [];
 const enFiles = readdirSync(enDir).filter((f) => f.endsWith('.json'));
 
 for (const filename of enFiles) {
+  // CR-05: track per-namespace failure with a local flag so the PASS/FAIL
+  // summary line is always emitted for every namespace, regardless of whether
+  // an earlier namespace already set the module-level `failed = true`.
+  let nsFailed = false;
   const ns = filename.replace('.json', '');
   const enPath = join(enDir, filename);
   const ukPath = join(ukDir, filename);
@@ -38,6 +42,7 @@ for (const filename of enFiles) {
   // Check 1: uk file must exist
   if (!existsSync(ukPath)) {
     results.push(`FAIL [${ns}] uk/${filename} is MISSING`);
+    nsFailed = true;
     failed = true;
     continue;
   }
@@ -55,11 +60,13 @@ for (const filename of enFiles) {
   if (missingInUk.length > 0) {
     results.push(`FAIL [${ns}] Keys present in en but MISSING in uk:`);
     missingInUk.forEach((k) => results.push(`       - ${k}`));
+    nsFailed = true;
     failed = true;
   }
   if (extraInUk.length > 0) {
     results.push(`FAIL [${ns}] Keys present in uk but MISSING in en:`);
     extraInUk.forEach((k) => results.push(`       + ${k}`));
+    nsFailed = true;
     failed = true;
   }
 
@@ -76,17 +83,22 @@ for (const filename of enFiles) {
 
     if (missingInUkPH.length > 0) {
       results.push(`FAIL [${ns}] "${key}": uk is missing placeholders: ${missingInUkPH.join(', ')}`);
+      nsFailed = true;
       failed = true;
     }
     if (extraInUkPH.length > 0) {
       results.push(`FAIL [${ns}] "${key}": uk has extra placeholders not in en: ${extraInUkPH.join(', ')}`);
+      nsFailed = true;
       failed = true;
     }
   }
 
-  if (!failed || !results.some((r) => r.includes(`[${ns}]`))) {
-    results.push(`PASS [${ns}] ${enKeys.size} keys, placeholder parity OK`);
-  } else if (!results.some((r) => r.startsWith('FAIL') && r.includes(`[${ns}]`))) {
+  // CR-05: use per-namespace nsFailed flag — the old condition used the
+  // module-level `failed` which became permanently true after the first
+  // failing namespace, causing subsequent passing namespaces to suppress
+  // their PASS line when `results.some(r => r.includes('[ns]'))` was false
+  // (no entries yet for this ns) but `!failed` was also false.
+  if (!nsFailed) {
     results.push(`PASS [${ns}] ${enKeys.size} keys, placeholder parity OK`);
   }
 }
