@@ -38,8 +38,15 @@ export function createJar(
     'INSERT INTO jars (name, target_cents, icon, rule_json, created_at) VALUES (?, ?, ?, ?, ?)',
     [input.name, input.targetCents, input.icon, input.ruleJson, now],
   );
-  // op-sqlite returns insertId on INSERT statements
-  return result.insertId ?? 0;
+  // WR-02: throw on null/0 insertId — 0 is an impossible row id for
+  // AUTOINCREMENT tables (SQLite starts at 1). Returning 0 silently would
+  // cause the caller to proceed as if the insert succeeded, call onRefresh(),
+  // and show no jar in the list with no error feedback.
+  const id = result.insertId;
+  if (id == null || id === 0) {
+    throw new Error('InsertFailed: createJar returned no insertId');
+  }
+  return id;
 }
 
 // ---------------------------------------------------------------------------
