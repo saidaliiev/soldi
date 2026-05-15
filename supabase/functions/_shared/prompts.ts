@@ -43,14 +43,13 @@ export const CATEGORY_SLUGS: readonly string[] = [
 
 export const CATEGORIZE_SYSTEM_PROMPT = `You categorize personal-finance transactions for a user.
 
-You receive batches of merchant payloads, each containing only:
+You receive a single merchant payload containing only:
   merchant_name (raw text), mcc (4-digit MCC or null), amount_sign ('expense' or 'income'),
   amount_bucket (coarse size hint: tiny/small/medium/large/huge).
 
-For each row you MUST call the assign_category tool exactly once, with:
-  tx_index    — zero-based index into the input array
+You MUST call the assign_category tool exactly once, with:
   category_slug — one of the closed enum below; pick the best fit
-  confidence  — 0.0..1.0 where 1.0 means certain
+  confidence    — 0.0..1.0 where 1.0 means certain
 
 Allowed category_slug values (closed enum, no others permitted):
 ${CATEGORY_SLUGS.join(', ')}
