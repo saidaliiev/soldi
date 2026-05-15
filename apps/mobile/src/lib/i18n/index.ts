@@ -25,15 +25,19 @@ import categoriesUk from '../../i18n/locales/uk/categories.json';
 import transactionsEn from '../../i18n/locales/en/transactions.json';
 import transactionsUk from '../../i18n/locales/uk/transactions.json';
 // Phase 3 plan 03-02 — chat namespace (PropagationToast + chat surfaces from 03-03).
-// uk bundle currently mirrors en (TODO Phase 4 / QUAL-01..04 for real translations).
+// Phase 4 plan 04-03 — uk/chat.json translated to native Ukrainian (QUAL-01..04 done).
 import chatEn from '../../i18n/locales/en/chat.json';
 import chatUk from '../../i18n/locales/uk/chat.json';
 // Phase 3 plan 03-03 — ai namespace (FAB label + hint).
+// Phase 4 plan 04-03 — uk/ai.json translated to native Ukrainian.
 import aiEn from '../../i18n/locales/en/ai.json';
 import aiUk from '../../i18n/locales/uk/ai.json';
 // Phase 4 plan 04-01 — jars namespace (create sheet + list + detail).
 import jarsEn from '../../i18n/locales/en/jars.json';
 import jarsUk from '../../i18n/locales/uk/jars.json';
+// Phase 4 plan 04-03 — settings namespace (language toggle + screen).
+import settingsEn from '../../i18n/locales/en/settings.json';
+import settingsUk from '../../i18n/locales/uk/settings.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -56,6 +60,7 @@ const enBundle = {
   chat: { ...(en as { chat?: Record<string, string> }).chat, ...chatEn },
   ai: { ...(en as { ai?: Record<string, string> }).ai, ...aiEn },
   jars: { ...(en as { jars?: Record<string, string> }).jars, ...jarsEn },
+  settings: { ...(en as { settings?: Record<string, string> }).settings, ...settingsEn },
 };
 const ukBundle = {
   ...uk,
@@ -65,6 +70,7 @@ const ukBundle = {
   chat: { ...(uk as { chat?: Record<string, string> }).chat, ...chatUk },
   ai: { ...(uk as { ai?: Record<string, string> }).ai, ...aiUk },
   jars: { ...(uk as { jars?: Record<string, string> }).jars, ...jarsUk },
+  settings: { ...(uk as { settings?: Record<string, string> }).settings, ...settingsUk },
 };
 
 const resources = {
