@@ -61,8 +61,6 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
   const { t } = useTranslation();
 
   const radius = (size - STROKE_WIDTH) / 2;
-  const cx = size / 2;
-  const cy = size / 2;
 
   const fraction = targetCents > 0 ? balanceCents / targetCents : 0;
   const isOverFunded = balanceCents > targetCents && targetCents > 0;
@@ -111,13 +109,21 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
+      {/* D-09 / QUAL-01: Animated.View carries the single summarising a11y label
+          (ring_a11y). Canvas + child Paths are decorative — hidden individually. */}
       <Animated.View
         style={[styles.canvasWrap, { width: size, height: size }, canvasAnimStyle]}
         accessible
         accessibilityLabel={a11yLabel}
         accessibilityRole="image"
       >
-        <Canvas style={{ width: size, height: size }}>
+        {/* Canvas children (Skia Path) are decorative — outer Animated.View
+            is the single VoiceOver focus target for this ring. */}
+        <Canvas
+          style={{ width: size, height: size }}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {/* Background track */}
           {trackPath != null && (
             <Path
@@ -141,10 +147,12 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
         </Canvas>
       </Animated.View>
 
-      {/* Center overlay — hero balance */}
+      {/* Center overlay — hero balance; hidden from a11y (ring label above suffices) */}
       <View
         style={[styles.centerOverlay, { width: size, height: size }]}
         pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
       >
         <Text style={[styles.heroAmount, { maxWidth: size - STROKE_WIDTH * 4 }]} numberOfLines={1} allowFontScaling>
           {balanceStr}

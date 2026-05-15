@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, StyleSheet, AccessibilityInfo, findNodeHandle } from 'react-native';
 
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -35,6 +35,13 @@ type Props = {
   readonly onCancel: () => void;
   /** Optional accessibilityLabel for the confirm button (e.g. "Delete Coffee"). */
   readonly confirmAccessibilityLabel?: string;
+  /**
+   * D-09 / QUAL-03: optional ref to the element that triggered this modal.
+   * On close (confirm or cancel), VoiceOver/TalkBack focus returns here so
+   * users are never left in a dead end. If absent, Modal teardown returns
+   * OS focus naturally.
+   */
+  readonly returnFocusRef?: React.RefObject<React.ElementRef<typeof View> | null>;
 };
 
 export function ConfirmModal({
@@ -47,7 +54,39 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
   confirmAccessibilityLabel,
+  returnFocusRef,
 }: Props): React.JSX.Element | null {
+  // D-09 / QUAL-03: ref to the title so VoiceOver focus lands here on open.
+  const titleRef = React.useRef<Text>(null);
+
+  // Move VoiceOver/TalkBack focus to the modal title when the modal mounts.
+  React.useEffect(() => {
+    if (!visible) return;
+    // Small defer so the Modal's native view is committed before we try to
+    // resolve the node handle (RAF/setTimeout both work; setTimeout is simpler).
+    const id = setTimeout(() => {
+      const tag = findNodeHandle(titleRef.current);
+      if (tag != null) {
+        AccessibilityInfo.setAccessibilityFocus(tag);
+      }
+    }, 100);
+    return () => clearTimeout(id);
+  }, [visible]);
+
+  // Return focus to the trigger on close.
+  const handleClose = React.useCallback(
+    (action: () => void) => () => {
+      action();
+      if (returnFocusRef?.current != null) {
+        const tag = findNodeHandle(returnFocusRef.current);
+        if (tag != null) {
+          AccessibilityInfo.setAccessibilityFocus(tag);
+        }
+      }
+    },
+    [returnFocusRef],
+  );
+
   if (!visible) return null;
   const confirmBg = destructive === true ? COLORS.error : COLORS.accent;
   return (
@@ -56,18 +95,18 @@ export function ConfirmModal({
       visible={visible}
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={onCancel}
+      onRequestClose={handleClose(onCancel)}
     >
       <View style={styles.backdrop} accessibilityViewIsModal>
         <View style={styles.card}>
-          <Text style={styles.title} allowFontScaling accessibilityRole="header">
+          <Text ref={titleRef} style={styles.title} allowFontScaling accessibilityRole="header">
             {title}
           </Text>
           <Text style={styles.body} allowFontScaling>
             {body}
           </Text>
           <Pressable
-            onPress={onConfirm}
+            onPress={handleClose(onConfirm)}
             accessibilityRole="button"
             accessibilityLabel={confirmAccessibilityLabel ?? confirmLabel}
             style={({ pressed }) => [
@@ -81,7 +120,7 @@ export function ConfirmModal({
             </Text>
           </Pressable>
           <Pressable
-            onPress={onCancel}
+            onPress={handleClose(onCancel)}
             accessibilityRole="button"
             accessibilityLabel={cancelLabel}
             style={({ pressed }) => [styles.cancelBtn, pressed && styles.pressed]}

@@ -66,6 +66,18 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
     translateX.value = withSpring(0, SPRING_CONFIG);
   }, [openFor, tx.id, translateX]);
 
+  // D-09 / QUAL-03: VoiceOver alternative for swipe-left recategorize gesture.
+  // accessibilityActions exposes the same action to screen-reader users without
+  // requiring the swipe gesture that VoiceOver intercepts.
+  const handleAccessibilityAction = React.useCallback(
+    (event: { nativeEvent: { actionName: string } }) => {
+      if (event.nativeEvent.actionName === 'recategorize') {
+        openFor(tx.id);
+      }
+    },
+    [openFor, tx.id],
+  );
+
   const pan = Gesture.Pan()
     .activeOffsetX([-12, 12])
     .onUpdate((e) => {
@@ -123,6 +135,8 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
           accessibilityRole="button"
           accessibilityLabel={`${tx.merchantName}, ${signedAmount}, ${categoryName}`}
           accessibilityHint="Double-tap to view details. Swipe left to recategorize."
+          accessibilityActions={[{ name: 'recategorize', label: t('transactions.action_categorize') }]}
+          onAccessibilityAction={handleAccessibilityAction}
         >
           <View style={styles.left}>
             <Text style={styles.merchant} numberOfLines={1} allowFontScaling>

@@ -15,6 +15,15 @@
  *   - 4×36pt drag indicator (textMuted @ 40%)
  *   - Pan-down-to-close gesture
  *   - accessibilityViewIsModal on inner view
+ *
+ * A11y contract (D-09 / QUAL-03):
+ *   - On open: moves VoiceOver/TalkBack focus to the sheet header ref via
+ *     AccessibilityInfo.setAccessibilityFocus(findNodeHandle(headerRef)).
+ *   - On close: returns focus to the caller-supplied returnFocusRef (optional;
+ *     if absent or ref resolves null, no-op — focus never trapped in a dead end
+ *     because the Modal closes and the OS returns focus naturally).
+ *   - accessibilityViewIsModal on the sheet container prevents background
+ *     content from being reachable by VoiceOver swipe.
  */
 
 import React from 'react';
@@ -24,6 +33,8 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  AccessibilityInfo,
+  findNodeHandle,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -52,6 +63,13 @@ type Props = {
   /** Notifies opened/closed; 0 = closed, 1 = at first snap point. */
   readonly onChange?: (index: number) => void;
   readonly accessibilityLabel?: string;
+  /**
+   * D-09 / QUAL-03: optional ref to the element that triggered the sheet open.
+   * When the sheet closes, VoiceOver/TalkBack focus returns to this ref so users
+   * are never left in a dead end. If absent or the node handle is null, the
+   * RN Modal teardown naturally returns OS focus — still not a dead end.
+   */
+  readonly returnFocusRef?: React.RefObject<React.ElementRef<typeof View> | null>;
   readonly children?: React.ReactNode;
 };
 
@@ -63,13 +81,17 @@ function parsePercent(s: string): number {
 
 export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Props>(
   function BottomSheetPrimitive(
-    { snapPoints, onChange, accessibilityLabel, children },
+    { snapPoints, onChange, accessibilityLabel, returnFocusRef, children },
     ref,
   ) {
     const [visible, setVisible] = React.useState(false);
     const restingHeight = SCREEN_HEIGHT * parsePercent(snapPoints[0]);
     // translateY: 0 = fully visible, restingHeight = fully hidden
     const translateY = useSharedValue(restingHeight);
+
+    // D-09 / QUAL-03: ref to the header View so we can move VoiceOver focus
+    // into the sheet on open (AccessibilityInfo.setAccessibilityFocus).
+    const headerRef = React.useRef<View>(null);
 
     const notifyChange = React.useCallback(
       (index: number) => {
@@ -78,10 +100,31 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
       [onChange],
     );
 
+    // Move VoiceOver/TalkBack focus to the sheet header on open.
+    const moveFocusToSheet = React.useCallback(() => {
+      const tag = findNodeHandle(headerRef.current);
+      if (tag != null) {
+        AccessibilityInfo.setAccessibilityFocus(tag);
+      }
+    }, []);
+
+    // Return focus to the caller's trigger element on close.
+    const returnFocusToTrigger = React.useCallback(() => {
+      if (returnFocusRef?.current != null) {
+        const tag = findNodeHandle(returnFocusRef.current);
+        if (tag != null) {
+          AccessibilityInfo.setAccessibilityFocus(tag);
+        }
+      }
+      // If no returnFocusRef, the Modal teardown returns OS focus naturally —
+      // not a dead end (D-09 limitation documented in SUMMARY).
+    }, [returnFocusRef]);
+
     const finishClose = React.useCallback(() => {
       setVisible(false);
       notifyChange(0);
-    }, [notifyChange]);
+      returnFocusToTrigger();
+    }, [notifyChange, returnFocusToTrigger]);
 
     const openSheet = React.useCallback(() => {
       setVisible(true);
@@ -89,9 +132,10 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
       translateY.value = withSpring(0, { damping: 18, stiffness: 180 }, (finished) => {
         if (finished === true) {
           runOnJS(notifyChange)(1);
+          runOnJS(moveFocusToSheet)();
         }
       });
-    }, [translateY, restingHeight, notifyChange]);
+    }, [translateY, restingHeight, notifyChange, moveFocusToSheet]);
 
     const closeSheet = React.useCallback(() => {
       translateY.value = withTiming(
@@ -145,7 +189,7 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
         statusBarTranslucent
         onRequestClose={closeSheet}
       >
-        <View style={styles.root} accessibilityLabel={accessibilityLabel}>
+        <View style={styles.root}>
           <Pressable
             style={styles.backdrop}
             onPress={closeSheet}
@@ -157,7 +201,14 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
               accessibilityViewIsModal
               style={[styles.sheet, { height: restingHeight }, sheetStyle]}
             >
-              <View style={styles.handleZone}>
+              {/* D-09 / QUAL-03: headerRef is the VoiceOver focus landing target on open */}
+              <View
+                ref={headerRef}
+                style={styles.handleZone}
+                accessible
+                accessibilityLabel={accessibilityLabel ?? 'Bottom sheet'}
+                accessibilityRole="header"
+              >
                 <View style={styles.handle} />
               </View>
               <View style={styles.body}>{children}</View>

@@ -57,8 +57,14 @@ export function Sparkline({
       accessibilityRole="image"
       accessibilityLabel="Spending sparkline, last 7 days"
     >
+      {/* D-09 / QUAL-01: Canvas + child Path are decorative — hidden from VoiceOver.
+          The outer View summarises via accessibilityLabel above. */}
       {path != null && (
-        <Canvas style={{ width, height }}>
+        <Canvas
+          style={{ width, height }}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           <Path
             path={path}
             color={color}

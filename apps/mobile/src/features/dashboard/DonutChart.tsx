@@ -162,10 +162,18 @@ export function DonutChart({
 
   return (
     <View style={styles.container} accessibilityRole="image" accessibilityLabel={a11yLabel}>
-      <Animated.View style={[styles.canvasWrap, canvasAnimStyle]}>
+      {/* D-09 / QUAL-01: Canvas + child Paths are decorative — hidden from VoiceOver.
+          The outer View summarises the chart content via accessibilityLabel above. */}
+      <Animated.View
+        style={[styles.canvasWrap, canvasAnimStyle]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
         <Pressable
           onPress={(e) => handleTap(e.nativeEvent.locationX, e.nativeEvent.locationY)}
           style={styles.pressable}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
           <Canvas style={styles.canvas}>
             {skPaths.map((entry, idx) =>
@@ -184,7 +192,12 @@ export function DonutChart({
         </Pressable>
       </Animated.View>
 
-      <View style={styles.centerOverlay} pointerEvents="none">
+      <View
+        style={styles.centerOverlay}
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
         {selectedSlice == null ? (
           <>
             <Text style={styles.totalLabel} allowFontScaling>
