@@ -26,6 +26,7 @@ import {
   DashboardIcon,
   TransactionsIcon,
   CategoriesIcon,
+  JarsIcon,
 } from '@/src/design/icons/tabs';
 
 // 20% alpha for the top border — `33` is the 8-bit alpha hex suffix pattern
@@ -93,6 +94,17 @@ export default function TabLayout(): React.JSX.Element {
             <CategoriesIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
           ),
           tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Categories</TabLabel>,
+        }}
+      />
+      <Tabs.Screen
+        name="jars"
+        options={{
+          title: 'Jars',
+          tabBarAccessibilityLabel: 'Jars tab',
+          tabBarIcon: ({ focused }) => (
+            <JarsIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
+          ),
+          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Jars</TabLabel>,
         }}
       />
       {/* Hide the Phase 1 placeholder route from the tab bar without deleting
