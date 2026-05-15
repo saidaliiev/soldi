@@ -120,24 +120,42 @@ export function sweepToJar(
     return { contributedCents: 0, newBalanceCents };
   }
 
-  // 6. Insert ONE aggregate contribution row (T-04-02-03 auditable ledger row)
-  // CR-01: store created_at as Unix seconds (Math.floor(now/1000)) to match
-  // transactions.created_at convention. Storing ms caused lastSweepAt() to
-  // return ~1.7e12 which is greater than every transaction's Unix-second
-  // created_at (~1.7e9), making the cutoff filter match nothing on all
-  // subsequent sweeps.
-  insertContribution(
-    {
-      jarId,
-      amountCents: contributedCents,
-      source: 'roundup',
-      txId: null, // aggregates many tx — no single tx reference
-      createdAt: Math.floor(now / 1000),
-    },
-    db,
-  );
+  // 6+7. Wrap insert + balance-read in a single transaction (WR-01).
+  // Without this, a kill between the two executeSync calls leaves the
+  // contribution written but newBalanceCents never returned, so the ring
+  // doesn't animate until the next focus refresh. The transaction also
+  // ensures jarBalanceCents reflects exactly this sweep's contribution —
+  // no concurrent write can slip in between.
+  let newBalanceCents: number;
+  try {
+    db.executeSync('BEGIN');
 
-  // 7. Return contributed + updated balance
-  const newBalanceCents = jarBalanceCents(jarId, db);
+    // Step 6: Insert ONE aggregate contribution row (T-04-02-03 auditable ledger row)
+    // CR-01: store created_at as Unix seconds (Math.floor(now/1000)) to match
+    // transactions.created_at convention.
+    insertContribution(
+      {
+        jarId,
+        amountCents: contributedCents,
+        source: 'roundup',
+        txId: null, // aggregates many tx — no single tx reference
+        createdAt: Math.floor(now / 1000),
+      },
+      db,
+    );
+
+    // Step 7: Read balance inside the same transaction
+    newBalanceCents = jarBalanceCents(jarId, db);
+
+    db.executeSync('COMMIT');
+  } catch (err) {
+    try {
+      db.executeSync('ROLLBACK');
+    } catch {
+      // ROLLBACK failed — nothing further to recover; rethrow original error
+    }
+    throw err;
+  }
+
   return { contributedCents, newBalanceCents };
 }
