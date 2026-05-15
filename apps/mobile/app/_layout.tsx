@@ -30,6 +30,7 @@ import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
 import { initI18n, i18n } from '@lib/i18n';
 import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
+import { PropagationToast } from '@/src/features/transactions/PropagationToast';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // ignored
@@ -118,6 +119,7 @@ export default function RootLayout() {
             />
           </Stack>
           <RecategorizeBottomSheet />
+          <PropagationToast />
           <StatusBar style="dark" />
         </I18nextProvider>
       </QueryClientProvider>

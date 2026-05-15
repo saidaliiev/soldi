@@ -34,7 +34,7 @@ import { nowSeconds, startOfDaySeconds } from '@lib/time';
 import { insertManyTransactions } from '@data/transactionsRepo';
 import { listCategories, type CategoryRow } from '@data/categoriesRepo';
 import { ensureDefaultAccount } from '@data/accountsRepo';
-import { addMerchantOverride } from '@data/merchantOverridesRepo';
+import { upsertForMerchant } from '@data/merchantOverridesRepo';
 import { djb2 } from '@lib/csv/mappers';
 
 // ---------------------------------------------------------------------------
@@ -150,9 +150,16 @@ export default function ManualScreen(): React.JSX.Element {
       ]);
 
       if (result.inserted > 0) {
-        // Seed merchant override — failure is silent, not blocking
+        // Seed merchant override — failure is silent, not blocking.
+        // Phase 3 / 03-02 rewrite: upsert through the new exact-match repo.
+        // Manual entry is a user correction → source='user', confidence=1.0.
         try {
-          addMerchantOverride(trimmedMerchant.toLowerCase(), categoryId, true);
+          upsertForMerchant({
+            merchant_name: trimmedMerchant,
+            category_id: categoryId,
+            source: 'user',
+            confidence: 1.0,
+          });
         } catch {
           // Silent — override is best-effort
         }

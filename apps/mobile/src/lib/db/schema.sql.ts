@@ -133,3 +133,58 @@ UPDATE categories SET slug = 'misc',          color = '#7A5C52' WHERE name_en = 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug)
 `;
 
+// ---------------------------------------------------------------------------
+// SCHEMA_004_MERCHANT_OVERRIDES_V2 — Phase 3 / 03-02 / migration version 4
+//
+// Rewrites merchant_overrides from substring-match (Phase 1 schema) to
+// exact-match on a normalized merchant_key (CONTEXT D-01/D-02). The new schema
+// matches the canonical D-01 shape modulo user_id (mobile-side single-user
+// implicit, not multi-tenant).
+//
+// Data-migration trade-off documented in CONTEXT D-02 + 03-02 plan: the SQL-side
+// lower(trim(...)) is a best-effort approximation of the JS normalizeMerchantKey
+// function — op-sqlite cannot invoke JS inside SQL. Collisions are deduped via
+// GROUP BY (first-wins). Users may see minor data-loss for keys whose JS-normalized
+// form differs from lower(trim()) (e.g., diacritics, internal punctuation). This is
+// acceptable per project portfolio scope; re-running the synthetic generator or
+// re-correcting one transaction restores the override.
+//
+// Note: depends on version 3 (transactions AI columns, shipped by Plan 03-01).
+// ---------------------------------------------------------------------------
+
+// Statement-by-statement contents (kept comment-free inside the SQL string because
+// the migration runner's splitStatements() drops any statement whose trimmed body
+// starts with `--`, which would silently skip CREATE TABLE etc. if leading comments
+// were inlined). Step list mirrors the JSDoc block above:
+//   1. CREATE TABLE merchant_overrides_v2 with the new schema
+//   2. INSERT ... SELECT to migrate Phase 1/2 rows (lower(trim()) is a SQL-side
+//      approximation of normalizeMerchantKey; collisions deduped via GROUP BY)
+//   3. DROP TABLE old, RENAME v2 to merchant_overrides
+//   4. CREATE INDEX on merchant_key (UNIQUE implies an index but explicit is better)
+export const SCHEMA_004_MERCHANT_OVERRIDES_V2 = `
+CREATE TABLE merchant_overrides_v2 (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  merchant_key TEXT NOT NULL,
+  category_id INTEGER NOT NULL REFERENCES categories(id),
+  source TEXT NOT NULL CHECK (source IN ('user','llm','mcc')),
+  confidence REAL NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(merchant_key)
+);
+INSERT INTO merchant_overrides_v2 (merchant_key, category_id, source, confidence, created_at, updated_at)
+SELECT
+  lower(trim(merchant_pattern)),
+  category_id,
+  CASE WHEN created_by_user = 1 THEN 'user' ELSE 'llm' END,
+  CASE WHEN created_by_user = 1 THEN 1.0 ELSE 0.85 END,
+  created_at,
+  created_at
+FROM merchant_overrides
+WHERE length(trim(merchant_pattern)) > 0
+GROUP BY lower(trim(merchant_pattern));
+DROP TABLE merchant_overrides;
+ALTER TABLE merchant_overrides_v2 RENAME TO merchant_overrides;
+CREATE INDEX idx_merchant_overrides_key ON merchant_overrides(merchant_key)
+`;
+
