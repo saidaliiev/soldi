@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 3 planned (3 plans, 2 waves), ready for execute-phase
-last_updated: "2026-05-14T15:14:41.507Z"
-last_activity: 2026-05-14 -- Phase 02 marked complete
+status: executing
+stopped_at: Phase 3 Wave 1 complete (03-01 + 03-02 merged to main); Wave 2 (03-03 chat) pending
+last_updated: "2026-05-15T12:54:41.934Z"
+last_activity: 2026-05-15 -- Phase 03 execution started
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 10
+  percent: 29
 ---
 
 # Project State
@@ -21,16 +21,36 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** A consumer installs SOLDI from the App Store and within 90 seconds sees their own spending visualized with care — without exposing real banking credentials.
-**Current focus:** Phase 02 — dashboard-transactions-categories
+**Current focus:** Phase 03 — ai-categorization-chat
 
 ## Current Position
 
-Phase: 02 — COMPLETE
-Plan: 4 of 4
-Status: Phase 02 complete
-Last activity: 2026-05-14 -- Phase 02 marked complete
+Phase: 03 (ai-categorization-chat) — EXECUTING (Wave 1 done, Wave 2 pending)
+Plan: 2 of 3 complete (03-01 ✓, 03-02 ✓; 03-03 pending)
+Status: Executing Phase 03 — Wave 1 merged to main (HEAD ~4178702)
+Last activity: 2026-05-15 -- Phase 03 Wave 1 (03-01+03-02) merged; gates tsc=0 lint=0; jest harness absent (P1, see below)
 
 Progress: [█████░░░░░] ~31% (8 of 26 work items complete: P0 scaffold 3+1 partial, Phase 1 plans 01-01..04 fully done. P0 cloud device init items still outstanding but non-blocking for Phase 2 planning.)
+
+## Known Infra Gaps (P1 — pre-existing, not Wave-1 regression)
+
+- **jest harness never set up** in `apps/mobile`: no `jest`/`jest-expo` devDep, no
+  `jest.config.*`, no `test` npm script, no `node_modules/.bin/jest`. `.test.ts`
+  files exist (Phase 1/2/3) but cannot run. **Project CI `ci.yml` step `npm test`
+  is therefore already broken** (Missing script: test) independent of Phase 3.
+  Verification currently rests on `tsc --noEmit` (exit 0) + `expo lint` (exit 0),
+  both green on merged Wave 1. Action: dedicated jest-harness setup task before
+  App Store (jest + jest-expo + babel-jest + jest.config + `test` script), then
+  run Phase 1/2/3 suites. Deferred per user 2026-05-15.
+
+## Phase 3 deferred → UAT / later phases
+
+- 03-01 Task 4 (device checkpoint: network-off → tx stays Uncategorized, no crash)
+  → UAT, BLOCKED on P0 #5 (Supabase Frankfurt project) + P0 #6 (Anthropic API key)
+- Real-API eval ≥0.85 accuracy run → UAT, same P0 blockers (CI `ai-eval` job is
+  workflow_dispatch-gated, needs `ANTHROPIC_API_KEY` secret)
+- Remote `supabase/migrations/0001_merchant_overrides.sql` DDL+RLS → Phase 4
+- Cost-cap (D-24) activation + Sentry breadcrumb wiring → Phase 5
 
 ## P0 Outstanding (device/cloud-dependent — user action required)
 

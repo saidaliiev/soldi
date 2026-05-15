@@ -92,8 +92,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Supabase Edge Function `ai-categorize` (Claude Haiku, batched, MCC pre-pass, GDPR-safe payload)
-- [ ] 03-02: User-correction propagation via `merchant_overrides` table + retroactive update on similar merchants
+- [x] 03-01: Supabase Edge Function `ai-categorize` (Claude Haiku, batched, MCC pre-pass, GDPR-safe payload)
+- [x] 03-02: User-correction propagation via `merchant_overrides` table + retroactive update on similar merchants
 - [ ] 03-03: Chat bottom sheet UI + Edge Function `ai-query` (Claude Sonnet intent extraction → SQL → response with mini chart)
 
 ### Phase 4: Jars + i18n + Accessibility
@@ -163,7 +163,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 0. Foundation | 3/4 + 1 partial | Code complete; device/cloud pending | 2026-05-13 (code) |
 | 1. Onboarding + Data Ingest | 4/4 | Complete (device-verified) | 2026-05-13 |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
-| 3. AI Categorization + Chat | 0/3 | Not started | - |
+| 3. AI Categorization + Chat | 2/3 | In Progress|  |
 | 4. Jars + i18n + Accessibility | 0/4 | Not started | - |
 | 5. Polish + TestFlight Beta | 0/4 | Not started | - |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
