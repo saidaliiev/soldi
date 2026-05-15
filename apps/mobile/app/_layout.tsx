@@ -89,11 +89,17 @@ export default function RootLayout() {
         runMigrations(getDB());
         setDbReady(true);
       } catch (err) {
-        // Log only error.name — never SQL fragments, values, or token bytes (T-01-01-02)
-        const name = err instanceof Error ? err.name : 'UnknownError';
-        console.warn('migration failed', name);
-        // Still unblock the UI — app is usable without completed migration
-        setDbReady(true);
+        // CR-03: do NOT set dbReady=true on migration failure.
+        // runMigrations wraps each migration in BEGIN/ROLLBACK so a crash
+        // mid-migration leaves PRAGMA user_version unchanged — the migration
+        // retries on next launch. Unblocking the UI with a partially-migrated
+        // schema (e.g. missing jars/jar_contributions tables) causes crashes
+        // that are harder to diagnose than a blank screen.
+        // Log only error.name — never SQL fragments, values, or token bytes (T-01-01-02).
+        const migrationErrName = err instanceof Error ? err.name : 'UnknownError';
+        console.error('migration failed — DB not ready:', migrationErrName);
+        // dbReady stays false → app renders null (splash stays visible).
+        // On next cold start the migration retries from the last committed version.
       }
     })();
   }, []);

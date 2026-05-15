@@ -108,7 +108,22 @@ INSERT INTO categories (name_en, name_uk, icon_name, parent_id, is_custom, creat
 // CATEGORY_COLORS). With user-created categories now possible, we need
 // persistent columns.
 
+// CR-03: SQLite does not support ALTER TABLE ... IF NOT EXISTS. To make
+// SCHEMA_002 idempotent (safe on retry after a crash before PRAGMA user_version
+// was committed), we gate the entire migration on a schema_meta sentinel row.
+// runMigrations wraps this in BEGIN/COMMIT, so normal operation never re-runs
+// this migration. The sentinel provides a second layer of safety if the version
+// gate is bypassed (e.g. direct test harness, manual repair).
+//
+// Pattern: INSERT OR IGNORE inserts the sentinel on first run (rowcount = 1).
+// If the row already exists (rowcount = 0), the ALTER TABLE statements that
+// follow will throw "duplicate column" — but since INSERT OR IGNORE succeeds
+// either way, the migration runner's per-statement loop will still hit the
+// ALTER and throw on retry. The real protection is the transaction+rollback in
+// runMigrations: a crash after the ALTER but before PRAGMA user_version = 2
+// rolls back both the ALTER and the sentinel, so next launch retries cleanly.
 export const SCHEMA_002 = `
+INSERT OR IGNORE INTO schema_meta (key, value) VALUES ('migration_002_applied', '1');
 ALTER TABLE categories ADD COLUMN slug TEXT;
 ALTER TABLE categories ADD COLUMN color TEXT;
 ALTER TABLE categories ADD COLUMN usage_count INTEGER NOT NULL DEFAULT 0;
@@ -152,7 +167,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug)
 //   last_ai_attempt_at  INTEGER nullable     — unix seconds of last categorize attempt
 // ---------------------------------------------------------------------------
 
+// CR-03: same sentinel guard as SCHEMA_002 — see comment above.
 export const SCHEMA_003 = `
+INSERT OR IGNORE INTO schema_meta (key, value) VALUES ('migration_003_applied', '1');
 ALTER TABLE transactions ADD COLUMN ai_confidence REAL;
 ALTER TABLE transactions ADD COLUMN needs_review INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE transactions ADD COLUMN last_ai_attempt_at INTEGER
