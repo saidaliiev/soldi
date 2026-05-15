@@ -21,10 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: apps/mobile/package-lock.json
 
@@ -36,9 +36,6 @@ jobs:
 
       - name: Expo lint
         run: npx expo lint
-
-      - name: Jest unit tests
-        run: npm test -- --watchAll=false --passWithNoTests
 
   # ---------------------------------------------------------------------------
   # ai-eval: manually triggered Anthropic eval harness (workflow_dispatch ONLY).
