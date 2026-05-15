@@ -416,7 +416,7 @@ export type CategoryBatchUpdate = Readonly<{
  *
  * Parameterized — no string interpolation.
  */
-export function updateCategoryBatch(updates: ReadonlyArray<CategoryBatchUpdate>): void {
+export function updateCategoryBatch(updates: readonly CategoryBatchUpdate[]): void {
   if (updates.length === 0) return;
   const db = getDB();
   try {

@@ -55,7 +55,7 @@ export type AiCategorizeError = {
 };
 
 export type AiCategorizeBatchResult = {
-  results: Array<AiCategorizeSuccess | AiCategorizeError>;
+  results: (AiCategorizeSuccess | AiCategorizeError)[];
 };
 
 // ---------------------------------------------------------------------------
@@ -98,7 +98,7 @@ type EdgeFnResponse = {
  * @returns       AiCategorizeBatchResult with resolved category_ids for hits.
  */
 export async function aiCategorizeBatch(
-  inputs: ReadonlyArray<AiCategorizeInput>,
+  inputs: readonly AiCategorizeInput[],
 ): Promise<AiCategorizeBatchResult> {
   if (inputs.length === 0) {
     return { results: [] };
@@ -151,7 +151,7 @@ export async function aiCategorizeBatch(
   }
 
   // ---- Resolve category_slug → local category_id ----
-  const resolved: Array<AiCategorizeSuccess | AiCategorizeError> = [];
+  const resolved: (AiCategorizeSuccess | AiCategorizeError)[] = [];
 
   for (const row of response.results) {
     if ('error' in row) {
