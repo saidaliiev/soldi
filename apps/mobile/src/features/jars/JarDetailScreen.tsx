@@ -1,24 +1,28 @@
 /**
- * JarDetailScreen — shows jar name, target, and current balance.
+ * JarDetailScreen — shows jar name, target, current balance, animated ring,
+ * and a "Sweep round-ups" action (plan 04-02).
  *
  * Hero balance: Oswald displayL (TYPE.displayL) per typography rules.
- * The animated Skia ring + Sweep action are deferred to plan 04-02.
- * A placeholder area is rendered with testID="jar-ring-slot".
+ * Animated Skia ring: JarRing (animated progress arc, D-05).
+ * Sweep: calls sweepToJar() on tap, refreshes balance, animates ring old→new.
+ * No raw transaction data shown or logged (CLAUDE.md security rule).
  *
- * A11y: header role on name, all amounts in accessible labels.
+ * A11y: header role on name; all amounts in accessible labels.
  * Tokens only — no hardcoded hex, no BANNED_COLORS.
  */
 
 import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { getJar, jarBalanceCents } from './jarsRepo';
+import { sweepToJar } from './sweepRepo';
 import { formatMoney } from '@/src/lib/money';
 import { JarIcon, type JarIconSlug } from '@design/icons/jars';
+import { JarRing } from './JarRing';
 import type { Jar } from './types';
 
 export function JarDetailScreen(): React.JSX.Element {
@@ -28,6 +32,8 @@ export function JarDetailScreen(): React.JSX.Element {
 
   const [jar, setJar] = useState<Jar | null>(null);
   const [balance, setBalance] = useState(0);
+  const [sweeping, setSweeping] = useState(false);
+  const [sweepResult, setSweepResult] = useState<string | null>(null);
 
   const load = useCallback(() => {
     if (isNaN(jarId) || jarId <= 0) return;
@@ -40,8 +46,31 @@ export function JarDetailScreen(): React.JSX.Element {
   useFocusEffect(
     useCallback(() => {
       load();
+      // Clear stale sweep result on focus
+      setSweepResult(null);
     }, [load]),
   );
+
+  const handleSweep = useCallback(() => {
+    if (isNaN(jarId) || jarId <= 0 || sweeping) return;
+    setSweeping(true);
+    setSweepResult(null);
+    try {
+      const result = sweepToJar(jarId);
+      setBalance(result.newBalanceCents);
+      if (result.contributedCents > 0) {
+        const amountStr = formatMoney({ amountCents: result.contributedCents, currency: 'EUR' });
+        setSweepResult(t('jars.sweep_done', { amount: amountStr }));
+      } else {
+        setSweepResult(t('jars.sweep_nothing'));
+      }
+    } catch {
+      // Fail gracefully — show nothing rather than crash (CLAUDE.md security rule)
+      setSweepResult(null);
+    } finally {
+      setSweeping(false);
+    }
+  }, [jarId, sweeping, t]);
 
   if (jar == null) {
     return (
@@ -66,14 +95,11 @@ export function JarDetailScreen(): React.JSX.Element {
     );
   }
 
-  const balanceStr = formatMoney({ amountCents: balance, currency: 'EUR' });
   const targetStr = formatMoney({ amountCents: jar.targetCents, currency: 'EUR' });
-  const isFunded = balance >= jar.targetCents;
   const iconSlug = jar.icon as JarIconSlug;
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Screen-local title via expo-router Stack.Screen — no root layout edit needed */}
       <Stack.Screen
         options={{
           title: jar.name,
@@ -104,19 +130,10 @@ export function JarDetailScreen(): React.JSX.Element {
           </Text>
         </View>
 
-        {/* 04-02 ring slot placeholder — JarRing + Sweep wired in plan 04-02 */}
-        <View testID="jar-ring-slot" style={styles.ringSlot}>
-          {/* 04-02 wires JarRing + Sweep here */}
-          <View style={styles.ringPlaceholder} />
+        {/* Animated Skia ring — replaces testID="jar-ring-slot" placeholder */}
+        <View style={styles.ringWrap}>
+          <JarRing balanceCents={balance} targetCents={jar.targetCents} size={160} />
         </View>
-
-        {/* Hero balance — Oswald displayL per typography rules */}
-        <Text style={styles.heroBalance} allowFontScaling accessibilityLabel={`${t('jars.balance_label')}: ${balanceStr}`}>
-          {balanceStr}
-        </Text>
-        <Text style={styles.heroLabel} allowFontScaling>
-          {isFunded ? t('jars.over_funded') : t('jars.balance_label')}
-        </Text>
 
         {/* Target */}
         <View style={styles.targetRow}>
@@ -128,32 +145,34 @@ export function JarDetailScreen(): React.JSX.Element {
           </Text>
         </View>
 
-        {/* Progress bar */}
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { flex: jar.targetCents > 0 ? Math.min(balance / jar.targetCents, 1) : 0 },
-            ]}
-          />
-          <View
-            style={[
-              styles.progressRemainder,
-              { flex: jar.targetCents > 0 ? Math.max(1 - balance / jar.targetCents, 0) : 1 },
-            ]}
-          />
-        </View>
+        {/* Sweep result message */}
+        {sweepResult != null && (
+          <View style={styles.sweepResultWrap}>
+            <Text style={styles.sweepResultText} allowFontScaling>
+              {sweepResult}
+            </Text>
+          </View>
+        )}
 
-        {/* Sweep CTA — deferred to 04-02 (disabled placeholder) */}
+        {/* Sweep CTA */}
         <Pressable
-          disabled
+          onPress={handleSweep}
+          disabled={sweeping}
           accessibilityRole="button"
           accessibilityLabel={t('jars.sweep_cta')}
-          style={[styles.sweepBtn, styles.sweepBtnDisabled]}
+          style={({ pressed }) => [
+            styles.sweepBtn,
+            pressed && !sweeping && styles.pressed,
+            sweeping && styles.sweepBtnDisabled,
+          ]}
         >
-          <Text style={styles.sweepBtnLabel} allowFontScaling>
-            {t('jars.sweep_cta')}
-          </Text>
+          {sweeping ? (
+            <ActivityIndicator color={COLORS.white} />
+          ) : (
+            <Text style={styles.sweepBtnLabel} allowFontScaling>
+              {t('jars.sweep_cta')}
+            </Text>
+          )}
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -198,36 +217,16 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     flex: 1,
   },
-  ringSlot: {
+  ringWrap: {
     alignItems: 'center',
     marginVertical: SPACING.lg,
-    height: 160,
-    justifyContent: 'center',
-  },
-  ringPlaceholder: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 8,
-    borderColor: `${COLORS.sageSoft}66`,
-  },
-  heroBalance: {
-    ...TYPE.displayL,
-    color: COLORS.textPrimary,
-    textAlign: 'center',
-    marginBottom: SPACING.xs,
-  },
-  heroLabel: {
-    ...TYPE.uiLabel,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
   },
   targetRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.sm,
+    marginTop: SPACING.md,
   },
   targetLabel: {
     ...TYPE.uiLabel,
@@ -237,27 +236,27 @@ const styles = StyleSheet.create({
     ...TYPE.tabular,
     color: COLORS.textSecondary,
   },
-  progressBar: {
-    flexDirection: 'row',
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-    backgroundColor: `${COLORS.sage}33`,
-    marginBottom: SPACING.xl,
+  sweepResultWrap: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: `${COLORS.sage}1A`,
+    borderRadius: RADIUS.md,
+    marginBottom: SPACING.md,
+    alignItems: 'center',
   },
-  progressFill: {
-    backgroundColor: COLORS.sage,
-    borderRadius: 3,
-  },
-  progressRemainder: {
-    backgroundColor: 'transparent',
+  sweepResultText: {
+    ...TYPE.uiBody,
+    color: COLORS.sageDeep,
+    textAlign: 'center',
   },
   sweepBtn: {
     height: 52,
     borderRadius: RADIUS.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.sageSoft,
+    backgroundColor: COLORS.sage,
+    marginTop: SPACING.md,
+    minHeight: 44,
   },
   sweepBtnDisabled: {
     opacity: 0.4,
