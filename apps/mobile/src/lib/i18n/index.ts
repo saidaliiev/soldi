@@ -28,6 +28,9 @@ import transactionsUk from '../../i18n/locales/uk/transactions.json';
 // uk bundle currently mirrors en (TODO Phase 4 / QUAL-01..04 for real translations).
 import chatEn from '../../i18n/locales/en/chat.json';
 import chatUk from '../../i18n/locales/uk/chat.json';
+// Phase 3 plan 03-03 — ai namespace (FAB label + hint).
+import aiEn from '../../i18n/locales/en/ai.json';
+import aiUk from '../../i18n/locales/uk/ai.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -48,6 +51,7 @@ const enBundle = {
   categories: { ...(en as { categories?: Record<string, string> }).categories, ...categoriesEn },
   transactions: { ...(en as { transactions?: Record<string, string> }).transactions, ...transactionsEn },
   chat: { ...(en as { chat?: Record<string, string> }).chat, ...chatEn },
+  ai: { ...(en as { ai?: Record<string, string> }).ai, ...aiEn },
 };
 const ukBundle = {
   ...uk,
@@ -55,6 +59,7 @@ const ukBundle = {
   categories: { ...(uk as { categories?: Record<string, string> }).categories, ...categoriesUk },
   transactions: { ...(uk as { transactions?: Record<string, string> }).transactions, ...transactionsUk },
   chat: { ...(uk as { chat?: Record<string, string> }).chat, ...chatUk },
+  ai: { ...(uk as { ai?: Record<string, string> }).ai, ...aiUk },
 };
 
 const resources = {

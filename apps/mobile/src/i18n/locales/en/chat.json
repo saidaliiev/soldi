@@ -1,5 +1,26 @@
 {
   "propagation_one": "Updated 1 similar transaction.",
   "propagation_many": "Updated {{count}} similar transactions.",
-  "propagation_undo": "Undo"
+  "propagation_undo": "Undo",
+  "sheet_title": "Ask SOLDI",
+  "close_a11y": "Close",
+  "empty_phrase": "Ask anything about your spending.",
+  "empty_subphrase": "Try one of these",
+  "empty_result": "I couldn't find data for that question. Try rephrasing?",
+  "prompt_groceries_last_month": "How much on groceries last month?",
+  "prompt_compare_months": "Compare May vs April",
+  "prompt_top_merchants": "Top 5 merchants this month",
+  "error_unavailable": "AI is unavailable. Tap to retry.",
+  "error_unavailable_retry": "Still unavailable. Check your connection.",
+  "error_assistant_inline": "The assistant hit a snag. Please try again.",
+  "error_timeout": "Taking longer than usual. Please try again.",
+  "voice_coming_soon": "Voice coming soon.",
+  "input_placeholder": "Ask about your spending…",
+  "send_a11y": "Send",
+  "voice_a11y": "Voice input",
+  "bubble_label_user": "You said: {{text}}",
+  "bubble_label_assistant": "Assistant said: {{text}}",
+  "bubble_label_assistant_kpi": "Assistant said: {{text}}. Key number: {{kpi}}. With a chart.",
+  "bubble_label_typing": "Assistant is thinking",
+  "bubble_label_error": "Assistant error: {{text}}. Double-tap to retry."
 }

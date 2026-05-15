@@ -12,7 +12,8 @@
       "@data/*": ["./src/data/*"],
       "@api/*": ["./src/api/*"],
       "@lib/*": ["./src/lib/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@services/*": ["./src/services/*"]
     }
   },
   "include": [
