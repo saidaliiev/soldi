@@ -32,6 +32,7 @@ import { TextField } from '@components/TextField';
 import { parseAmount, toCents } from '@lib/money';
 import { nowSeconds, startOfDaySeconds } from '@lib/time';
 import { insertManyTransactions } from '@data/transactionsRepo';
+import { fireAndForgetCategorize } from '../../src/features/transactions/aiCategorizeTrigger';
 import { listCategories, type CategoryRow } from '@data/categoriesRepo';
 import { ensureDefaultAccount } from '@data/accountsRepo';
 import { upsertForMerchant } from '@data/merchantOverridesRepo';
@@ -132,22 +133,25 @@ export default function ManualScreen(): React.JSX.Element {
       const trimmedMerchant = merchant.trim().slice(0, 120);
       const externalId = `manual-${nowSec}-${djb2(trimmedMerchant + amount)}`;
 
-      const result = insertManyTransactions([
-        {
-          amount_cents,
-          currency: 'EUR',
-          merchant_name: trimmedMerchant,
-          merchant_id: null,
-          mcc_code: null,
-          category_id: categoryId,
-          account_id: accountId,
-          description: null,
-          date: dateSec,
-          source: 'manual',
-          external_id: externalId,
-          created_at: nowSec,
-        },
-      ]);
+      const insertableRow = {
+        amount_cents,
+        currency: 'EUR',
+        merchant_name: trimmedMerchant,
+        merchant_id: null as string | null,
+        mcc_code: null as number | null,
+        category_id: categoryId,
+        account_id: accountId,
+        description: null as string | null,
+        date: dateSec,
+        source: 'manual',
+        external_id: externalId,
+        created_at: nowSec,
+      };
+      const result = insertManyTransactions([insertableRow]);
+      // Fire-and-forget AI categorization (D-06/D-08). No-op when category_id
+      // is already set (manual entry user always picks a category); wired here
+      // for future flows where category_id may be null.
+      fireAndForgetCategorize([{ ...insertableRow, id: 0 }]);
 
       if (result.inserted > 0) {
         // Seed merchant override — failure is silent, not blocking.

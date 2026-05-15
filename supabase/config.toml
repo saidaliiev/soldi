@@ -1,0 +1,46 @@
+# Auth-only project; remote Postgres holds merchant_overrides + (Phase 4) chat_session_logs.
+# Transaction rows stay local per CONTEXT.md D-17'..D-20' FactsPack architecture.
+
+[project]
+id = "soldi"
+
+[api]
+port = 54321
+# Postgres port (local dev only)
+db_port = 54322
+# Studio port
+studio_port = 54323
+
+[db]
+# Database port for direct connections
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[storage]
+port = 54325
+
+[auth]
+enabled = true
+# JWT secret — override with SUPABASE_AUTH_JWT_SECRET in .env.local for local dev
+site_url = "http://localhost:3000"
+additional_redirect_urls = []
+jwt_expiry = 3600
+# Frankfurt EU — matches Supabase project region per PROJECT.md
+# remote region is eu-central-1; local dev uses the container default.
+
+[auth.email]
+enable_signup = false       # SOLDI uses anonymous/device-based auth only in Phase 3
+enable_confirmations = false
+
+[functions]
+verify_jwt = true
+
+[analytics]
+enabled = false

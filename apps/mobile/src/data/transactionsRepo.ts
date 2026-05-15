@@ -392,6 +392,113 @@ export type UpdateTransactionPatch = Readonly<{
 const UPDATE_TX_WHITELIST = ['merchant_name', 'amount_cents', 'occurred_at', 'category_id'] as const;
 type UpdateTxKey = (typeof UPDATE_TX_WHITELIST)[number];
 
+// ---------------------------------------------------------------------------
+// Phase 3 — AI categorization extensions
+// ---------------------------------------------------------------------------
+// These functions operate on the three AI-column additions from migration v3:
+//   ai_confidence REAL, needs_review INTEGER NOT NULL DEFAULT 0,
+//   last_ai_attempt_at INTEGER
+// All SQL is parameterized — no string interpolation.
+
+export type CategoryBatchUpdate = Readonly<{
+  id: number;
+  category_id: number;
+  ai_confidence: number;
+  needs_review: boolean;
+  last_ai_attempt_at: number;
+}>;
+
+/**
+ * Bulk-updates AI categorization results for a batch of transactions in a
+ * single BEGIN/COMMIT block. Each row gets category_id, ai_confidence,
+ * needs_review (stored as 0/1 per op-sqlite INTEGER convention), and
+ * last_ai_attempt_at (unix seconds) updated atomically.
+ *
+ * Parameterized — no string interpolation.
+ */
+export function updateCategoryBatch(updates: ReadonlyArray<CategoryBatchUpdate>): void {
+  if (updates.length === 0) return;
+  const db = getDB();
+  try {
+    db.executeSync('BEGIN');
+    for (const u of updates) {
+      db.executeSync(
+        `UPDATE transactions
+            SET category_id = ?,
+                ai_confidence = ?,
+                needs_review = ?,
+                last_ai_attempt_at = ?
+          WHERE id = ?`,
+        [
+          u.category_id,
+          u.ai_confidence,
+          u.needs_review ? 1 : 0,
+          u.last_ai_attempt_at,
+          u.id,
+        ],
+      );
+    }
+    db.executeSync('COMMIT');
+  } catch (err) {
+    try {
+      db.executeSync('ROLLBACK');
+    } catch {
+      // ROLLBACK failed — nothing more to do; rethrow original
+    }
+    throw err;
+  }
+}
+
+/**
+ * Sets the needs_review flag on a single transaction.
+ * op-sqlite stores BOOLEAN as INTEGER 0/1.
+ */
+export function markNeedsReview(id: number, value: boolean): void {
+  const db = getDB();
+  db.executeSync(
+    'UPDATE transactions SET needs_review = ? WHERE id = ?',
+    [value ? 1 : 0, id],
+  );
+}
+
+/**
+ * Returns transactions that have no category assigned yet, ordered by most
+ * recent first. Used by the AI categorization trigger to find rows to send
+ * to the Edge Function.
+ *
+ * Default limit: 200 (prevents accidentally sending huge batches; Edge
+ * Function caps at 50 rows per call — callers must chunk if needed).
+ */
+export function listUncategorized(limit = 200): readonly TransactionRow[] {
+  const db = getDB();
+  const safeLimit = Math.max(1, Math.min(Math.floor(limit), 1000));
+  const result = db.executeSync(
+    `SELECT id, amount_cents, currency, merchant_name, merchant_id, mcc_code,
+            category_id, account_id, description, date, source, external_id,
+            created_at
+       FROM transactions
+      WHERE category_id IS NULL
+      ORDER BY date DESC
+      LIMIT ?`,
+    [safeLimit],
+  );
+  return result.rows.map((row) => ({
+    id: row['id'] as number,
+    amount_cents: row['amount_cents'] as number,
+    currency: row['currency'] as string,
+    merchant_name: row['merchant_name'] as string,
+    merchant_id: (row['merchant_id'] as string | null) ?? null,
+    mcc_code: (row['mcc_code'] as number | null) ?? null,
+    category_id: (row['category_id'] as number | null) ?? null,
+    account_id: (row['account_id'] as number | null) ?? null,
+    description: (row['description'] as string | null) ?? null,
+    date: row['date'] as number,
+    source: row['source'] as string,
+    external_id: (row['external_id'] as string | null) ?? null,
+    created_at: row['created_at'] as number,
+  }));
+}
+
 export function updateTransaction(id: number, patch: UpdateTransactionPatch): Transaction {
   if (!Number.isInteger(id) || id <= 0) {
     throw new Error('updateTransaction: invalid id');

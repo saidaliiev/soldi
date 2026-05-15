@@ -15,6 +15,7 @@
 import {
   SCHEMA_001,
   SCHEMA_002,
+  SCHEMA_003,
   SCHEMA_004_MERCHANT_OVERRIDES_V2,
   SEED_DEFAULT_CATEGORIES,
 } from './schema.sql';
@@ -39,9 +40,12 @@ export const MIGRATIONS: readonly Migration[] = [
     version: 2,
     sql: SCHEMA_002,
   },
-  // NOTE: version 3 is owned by Plan 03-01 (transactions AI columns) and lands at
-  // merge time. The two waves ship in parallel; 03-01 inserts its `{ version: 3,
-  // sql: SCHEMA_003_* }` entry between this comment and the version 4 entry below.
+  {
+    // Phase 3 plan 03-01 — transactions AI columns
+    // (ai_confidence, needs_review, last_ai_attempt_at). See SCHEMA_003.
+    version: 3,
+    sql: SCHEMA_003,
+  },
   {
     // Phase 3 plan 03-02 — merchant_overrides rewrite: substring-match → exact-match
     // on a normalized merchant_key. See SCHEMA_004_MERCHANT_OVERRIDES_V2.

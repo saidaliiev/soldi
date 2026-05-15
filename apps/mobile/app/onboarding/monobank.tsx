@@ -34,6 +34,7 @@ import { mapMonobankItems } from '@lib/monobank/mapper';
 import { secureSet } from '@lib/secure';
 import { nowSeconds } from '@lib/time';
 import { insertManyTransactions } from '@data/transactionsRepo';
+import { fireAndForgetCategorize } from '../../src/features/transactions/aiCategorizeTrigger';
 import { getCategoryIdBySlug } from '@data/categoriesRepo';
 import { ensureDefaultAccount } from '@data/accountsRepo';
 
@@ -154,9 +155,12 @@ export default function MonobankScreen(): React.JSX.Element {
       }))
       .filter((r) => r.category_id !== null);
 
-    insertManyTransactions(
-      rows as Parameters<typeof insertManyTransactions>[0][number][],
-    );
+    const insertedRows = rows as Parameters<typeof insertManyTransactions>[0][number][];
+    insertManyTransactions(insertedRows);
+    // Fire-and-forget AI categorization (D-06/D-08). Monobank rows are
+    // pre-filtered to category_id !== null so this is a no-op in Phase 3;
+    // wired for future flows where category_id may be absent.
+    fireAndForgetCategorize(insertedRows.map((r, i) => ({ ...r, id: i })));
 
     // Step 6: Persist token AFTER successful sync (never before)
     await secureSet('monobank_token', trimmedToken);
