@@ -13,7 +13,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - [~] **Phase 0: Foundation** — Expo scaffold, design tokens, CI, EAS, Supabase + Anthropic accounts (code complete; device/cloud verification outstanding — see STATE.md)
 - [x] **Phase 1: Onboarding + Data Ingest** — User onboards in <90s and lands on dashboard with seeded data (4/4 plans, device-verified 2026-05-13)
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
-- [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet
+- [x] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet (completed 2026-05-15)
 - [ ] **Phase 4: Jars + i18n + Accessibility** — monobank-style jars + full Ukrainian + WCAG AA pass
 - [ ] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, 50-user beta
 - [ ] **Phase 6: App Store Submission + Launch** — Review, screenshots, case study, public launch
@@ -94,7 +94,7 @@ Plans:
 Plans:
 - [x] 03-01: Supabase Edge Function `ai-categorize` (Claude Haiku, batched, MCC pre-pass, GDPR-safe payload)
 - [x] 03-02: User-correction propagation via `merchant_overrides` table + retroactive update on similar merchants
-- [ ] 03-03: Chat bottom sheet UI + Edge Function `ai-query` (Claude Sonnet intent extraction → SQL → response with mini chart)
+- [x] 03-03: Chat bottom sheet UI + Edge Function `ai-query` (Claude Sonnet intent extraction → SQL → response with mini chart)
 
 ### Phase 4: Jars + i18n + Accessibility
 **Goal**: monobank-style goal jars feel delightful, the full app reads natively in Ukrainian, and VoiceOver navigates every screen.
@@ -163,7 +163,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 0. Foundation | 3/4 + 1 partial | Code complete; device/cloud pending | 2026-05-13 (code) |
 | 1. Onboarding + Data Ingest | 4/4 | Complete (device-verified) | 2026-05-13 |
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
-| 3. AI Categorization + Chat | 2/3 | In Progress|  |
+| 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
 | 4. Jars + i18n + Accessibility | 0/4 | Not started | - |
 | 5. Polish + TestFlight Beta | 0/4 | Not started | - |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |

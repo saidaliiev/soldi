@@ -41,10 +41,10 @@
 
 ### AI Chat
 
-- [ ] **CHAT-01**: User can ask natural-language questions about their spending in a chat bottom sheet
-- [ ] **CHAT-02**: AI responses arrive within 3 seconds for queries answerable from local data
-- [ ] **CHAT-03**: Chat responses include a mini chart embed for aggregate answers
-- [ ] **CHAT-04**: No raw transaction PII is sent to the LLM — only aggregates and category names cross the backend
+- [x] **CHAT-01**: User can ask natural-language questions about their spending in a chat bottom sheet
+- [x] **CHAT-02**: AI responses arrive within 3 seconds for queries answerable from local data
+- [x] **CHAT-03**: Chat responses include a mini chart embed for aggregate answers
+- [x] **CHAT-04**: No raw transaction PII is sent to the LLM — only aggregates and category names cross the backend
 
 ### Goal Jars
 
@@ -139,10 +139,10 @@ Deferred to post-launch milestones.
 | CAT-02 | Phase 2 | Pending |
 | CAT-03 | Phase 3 | Pending |
 | CAT-04 | Phase 3 | Pending |
-| CHAT-01 | Phase 3 | Pending |
-| CHAT-02 | Phase 3 | Pending |
-| CHAT-03 | Phase 3 | Pending |
-| CHAT-04 | Phase 3 | Pending |
+| CHAT-01 | Phase 3 | Complete |
+| CHAT-02 | Phase 3 | Complete |
+| CHAT-03 | Phase 3 | Complete |
+| CHAT-04 | Phase 3 | Complete |
 | JAR-01 | Phase 4 | Pending |
 | JAR-02 | Phase 4 | Pending |
 | JAR-03 | Phase 4 | Pending |
