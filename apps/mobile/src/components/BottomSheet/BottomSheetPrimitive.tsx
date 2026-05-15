@@ -32,9 +32,9 @@ import {
   View,
   Pressable,
   StyleSheet,
-  Dimensions,
   AccessibilityInfo,
   findNodeHandle,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -48,7 +48,10 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+// WR-03: SCREEN_HEIGHT was computed once at module load via Dimensions.get().
+// On orientation change or iPad Split View, the cached value goes stale causing
+// the sheet to animate to the wrong snap position. Moved inside component as
+// useWindowDimensions() which is reactive. See restingHeight derivation below.
 const BACKDROP_ALPHA = '90'; // 0.56 in hex; sheet backdrops use a softer fade
 const HANDLE_MUTED_SUFFIX = '66'; // 40% alpha 8-bit hex
 
@@ -85,7 +88,10 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
     ref,
   ) {
     const [visible, setVisible] = React.useState(false);
-    const restingHeight = SCREEN_HEIGHT * parsePercent(snapPoints[0]);
+    // WR-03: use reactive screen height — stale module-load value caused
+    // wrong snap position after orientation change or iPad Split View.
+    const { height: screenHeight } = useWindowDimensions();
+    const restingHeight = screenHeight * parsePercent(snapPoints[0]);
     // translateY: 0 = fully visible, restingHeight = fully hidden
     const translateY = useSharedValue(restingHeight);
 
