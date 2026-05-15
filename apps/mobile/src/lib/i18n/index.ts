@@ -31,6 +31,9 @@ import chatUk from '../../i18n/locales/uk/chat.json';
 // Phase 3 plan 03-03 — ai namespace (FAB label + hint).
 import aiEn from '../../i18n/locales/en/ai.json';
 import aiUk from '../../i18n/locales/uk/ai.json';
+// Phase 4 plan 04-01 — jars namespace (create sheet + list + detail).
+import jarsEn from '../../i18n/locales/en/jars.json';
+import jarsUk from '../../i18n/locales/uk/jars.json';
 
 // ---------------------------------------------------------------------------
 // Singleton instance — exported for use in screens via useTranslation()
@@ -52,6 +55,7 @@ const enBundle = {
   transactions: { ...(en as { transactions?: Record<string, string> }).transactions, ...transactionsEn },
   chat: { ...(en as { chat?: Record<string, string> }).chat, ...chatEn },
   ai: { ...(en as { ai?: Record<string, string> }).ai, ...aiEn },
+  jars: { ...(en as { jars?: Record<string, string> }).jars, ...jarsEn },
 };
 const ukBundle = {
   ...uk,
@@ -60,6 +64,7 @@ const ukBundle = {
   transactions: { ...(uk as { transactions?: Record<string, string> }).transactions, ...transactionsUk },
   chat: { ...(uk as { chat?: Record<string, string> }).chat, ...chatUk },
   ai: { ...(uk as { ai?: Record<string, string> }).ai, ...aiUk },
+  jars: { ...(uk as { jars?: Record<string, string> }).jars, ...jarsUk },
 };
 
 const resources = {

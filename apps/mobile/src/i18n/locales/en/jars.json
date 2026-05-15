@@ -1,0 +1,22 @@
+{
+  "title": "Jars",
+  "create_title": "New Jar",
+  "name_label": "Name",
+  "name_placeholder": "e.g. Holiday fund",
+  "target_label": "Target amount",
+  "target_placeholder": "0.00",
+  "icon_label": "Icon",
+  "save": "Create Jar",
+  "cancel": "Cancel",
+  "empty_state": "No jars yet",
+  "empty_state_sub": "Create your first savings jar to get started.",
+  "create_cta": "New Jar",
+  "balance_label": "Saved so far",
+  "target_display_label": "Target",
+  "over_funded": "Goal reached!",
+  "sweep_cta": "Sweep round-ups",
+  "error_save": "Couldn't save jar. Please try again.",
+  "validation_name_empty": "Name is required.",
+  "validation_target_invalid": "Enter a valid target amount.",
+  "back": "Back"
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Банки",
+  "create_title": "Нова банка",
+  "name_label": "Назва",
+  "name_placeholder": "наприклад, Відпустка",
+  "target_label": "Цільова сума",
+  "target_placeholder": "0.00",
+  "icon_label": "Іконка",
+  "save": "Створити банку",
+  "cancel": "Скасувати",
+  "empty_state": "Ще немає банок",
+  "empty_state_sub": "Створіть свою першу ощадну банку, щоб розпочати.",
+  "create_cta": "Нова банка",
+  "balance_label": "Накопичено",
+  "target_display_label": "Ціль",
+  "over_funded": "Ціль досягнута!",
+  "sweep_cta": "Перевести округлення",
+  "error_save": "Не вдалося зберегти банку. Спробуйте ще раз.",
+  "validation_name_empty": "Назва обов'язкова.",
+  "validation_target_invalid": "Введіть коректну цільову суму.",
+  "back": "Назад"
+}
