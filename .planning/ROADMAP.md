@@ -13,7 +13,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - [~] **Phase 0: Foundation** — Expo scaffold, design tokens, CI, EAS, Supabase + Anthropic accounts (code complete; device/cloud verification outstanding — see STATE.md)
 - [x] **Phase 1: Onboarding + Data Ingest** — User onboards in <90s and lands on dashboard with seeded data (4/4 plans, device-verified 2026-05-13)
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
-- [x] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet (completed 2026-05-15)
+- [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet (verification 2026-05-15: human_needed — CAT-03 trigger gap + SC#1/#3 blocked on P0 #5/#6)
 - [ ] **Phase 4: Jars + i18n + Accessibility** — monobank-style jars + full Ukrainian + WCAG AA pass
 - [ ] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, 50-user beta
 - [ ] **Phase 6: App Store Submission + Launch** — Review, screenshots, case study, public launch
