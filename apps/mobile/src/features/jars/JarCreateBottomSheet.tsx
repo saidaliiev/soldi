@@ -86,9 +86,11 @@ export function JarCreateBottomSheet(): React.JSX.Element {
       onRefresh?.();
       close();
     } catch (err) {
-      // Log only error.name — never log jar name or amount (T-04-01-02)
-      const name = err instanceof Error ? err.name : 'UnknownError';
-      console.error('[JarCreateBottomSheet] save failed:', name);
+      // CR-02: renamed from `name` to `errName` — `name` is the jar-name state
+      // variable in outer scope; shadowing it risked future devs logging PII.
+      // Log only error.name — never log jar name or amount (T-04-01-02).
+      const errName = err instanceof Error ? err.name : 'UnknownError';
+      console.error('[JarCreateBottomSheet] save failed:', errName);
       setErrorKey('jars.error_save');
     }
   };
