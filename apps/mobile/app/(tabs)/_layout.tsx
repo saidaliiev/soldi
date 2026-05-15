@@ -19,6 +19,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { COLORS } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -58,6 +59,9 @@ function TabLabel({ focused, children }: TabLabelProps): React.JSX.Element {
 }
 
 export default function TabLayout(): React.JSX.Element {
+  // WR-06: tab labels were hardcoded English — use t() so they update on
+  // language switch. Keys added to dashboard namespace (tab_overview etc.).
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -74,45 +78,45 @@ export default function TabLayout(): React.JSX.Element {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Overview',
-          tabBarAccessibilityLabel: 'Overview tab',
+          title: t('dashboard.tab_overview'),
+          tabBarAccessibilityLabel: t('dashboard.tab_overview'),
           tabBarIcon: ({ focused }) => (
             <DashboardIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
           ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Overview</TabLabel>,
+          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_overview')}</TabLabel>,
         }}
       />
       <Tabs.Screen
         name="transactions"
         options={{
-          title: 'Transactions',
-          tabBarAccessibilityLabel: 'Transactions tab',
+          title: t('dashboard.tab_transactions'),
+          tabBarAccessibilityLabel: t('dashboard.tab_transactions'),
           tabBarIcon: ({ focused }) => (
             <TransactionsIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
           ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Transactions</TabLabel>,
+          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_transactions')}</TabLabel>,
         }}
       />
       <Tabs.Screen
         name="categories"
         options={{
-          title: 'Categories',
-          tabBarAccessibilityLabel: 'Categories tab',
+          title: t('dashboard.tab_categories'),
+          tabBarAccessibilityLabel: t('dashboard.tab_categories'),
           tabBarIcon: ({ focused }) => (
             <CategoriesIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
           ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Categories</TabLabel>,
+          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_categories')}</TabLabel>,
         }}
       />
       <Tabs.Screen
         name="jars"
         options={{
-          title: 'Jars',
-          tabBarAccessibilityLabel: 'Jars tab',
+          title: t('dashboard.tab_jars'),
+          tabBarAccessibilityLabel: t('dashboard.tab_jars'),
           tabBarIcon: ({ focused }) => (
             <JarsIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
           ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>Jars</TabLabel>,
+          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_jars')}</TabLabel>,
         }}
       />
       {/* Hide the Phase 1 placeholder route from the tab bar without deleting

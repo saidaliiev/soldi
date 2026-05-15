@@ -13,5 +13,9 @@
   "digest_above_avg": "+ {{delta}} понад середній денний показник минулого місяця",
   "digest_below_avg": "− {{delta}} нижче середнього денного показника минулого місяця",
   "digest_on_track": "Все за планом на цей місяць.",
-  "digest_first_month": "Перший відстежений місяць."
+  "digest_first_month": "Перший відстежений місяць.",
+  "tab_overview": "Огляд",
+  "tab_transactions": "Транзакції",
+  "tab_categories": "Категорії",
+  "tab_jars": "Скарбнички"
 }
