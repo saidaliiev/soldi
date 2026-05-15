@@ -4,6 +4,9 @@
  * Props: jar + balanceCents (pre-queried by JarListScreen).
  * Navigates to /jars/[id] on press via expo-router.
  *
+ * 04-02: right side now shows a compact JarRing thumbnail (size=44) instead
+ * of only the icon; the icon moves to the left well as before.
+ *
  * A11y: accessibilityRole="button", accessibilityLabel summarises
  *   "{name}, {balance} of {target}". Min tap target 44pt height.
  * Tokens only — no hardcoded hex, no BANNED_COLORS.
@@ -18,6 +21,7 @@ import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@/src/lib/money';
 import { JarIcon, type JarIconSlug } from '@design/icons/jars';
+import { JarRing } from './JarRing';
 import type { Jar } from './types';
 
 type Props = {
@@ -31,8 +35,6 @@ export function JarRow({ jar, balanceCents }: Props): React.JSX.Element {
   const balanceStr = formatMoney({ amountCents: balanceCents, currency: 'EUR' });
   const targetStr = formatMoney({ amountCents: jar.targetCents, currency: 'EUR' });
   const a11yLabel = `${jar.name}, ${balanceStr} ${t('jars.balance_label')} ${targetStr} ${t('jars.target_display_label')}`;
-
-  const progress = jar.targetCents > 0 ? Math.min(balanceCents / jar.targetCents, 1) : 0;
 
   const iconSlug = jar.icon as JarIconSlug;
 
@@ -51,13 +53,14 @@ export function JarRow({ jar, balanceCents }: Props): React.JSX.Element {
         <Text style={styles.name} numberOfLines={1} allowFontScaling>
           {jar.name}
         </Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { flex: progress }]} />
-          <View style={[styles.progressRemainder, { flex: 1 - progress }]} />
-        </View>
         <Text style={styles.meta} allowFontScaling>
           {balanceStr} / {targetStr}
         </Text>
+      </View>
+
+      {/* Compact ring thumbnail — reflects progress at a glance */}
+      <View style={styles.ringWrap} pointerEvents="none">
+        <JarRing balanceCents={balanceCents} targetCents={jar.targetCents} size={44} />
       </View>
     </Pressable>
   );
@@ -95,22 +98,11 @@ const styles = StyleSheet.create({
     ...TYPE.uiBody,
     color: COLORS.textPrimary,
   },
-  progressBar: {
-    flexDirection: 'row',
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-    backgroundColor: `${COLORS.sage}33`,
-  },
-  progressFill: {
-    backgroundColor: COLORS.sage,
-    borderRadius: 2,
-  },
-  progressRemainder: {
-    backgroundColor: 'transparent',
-  },
   meta: {
     ...TYPE.uiMeta,
     color: COLORS.textMuted,
+  },
+  ringWrap: {
+    marginLeft: SPACING.sm,
   },
 });
