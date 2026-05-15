@@ -31,6 +31,7 @@ import { PressableButton } from '@components/PressableButton';
 import { parseCsv, CsvParseError } from '@lib/csv/parser';
 import { detectColumns, csvRowsToTransactions, type ColumnMap } from '@lib/csv/mappers';
 import { insertManyTransactions } from '@data/transactionsRepo';
+import { fireAndForgetCategorize } from '../../src/features/transactions/aiCategorizeTrigger';
 import { getCategoryIdBySlug } from '@data/categoriesRepo';
 import { ensureDefaultAccount } from '@data/accountsRepo';
 
@@ -183,9 +184,14 @@ export default function CsvScreen(): React.JSX.Element {
       }))
       .filter((r) => r.category_id !== null);
 
-    const result = insertManyTransactions(
-      finalRows as Parameters<typeof insertManyTransactions>[0][number][],
-    );
+    const csvInsertRows = finalRows as Parameters<typeof insertManyTransactions>[0][number][];
+    const result = insertManyTransactions(csvInsertRows);
+    // Fire-and-forget AI categorization (D-06/D-08). CSV rows are pre-filtered
+    // to category_id !== null so this is a no-op in Phase 3; wired for future
+    // flows where category resolution may be absent.
+    if (result.inserted > 0) {
+      fireAndForgetCategorize(csvInsertRows.map((r, i) => ({ ...r, id: i })));
+    }
 
     // B4: Defensive zero-row check — never silently navigate to empty dashboard
     if (result.inserted === 0 && finalRows.length > 0) {
