@@ -154,7 +154,16 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <Text style={[styles.heroAmount, { maxWidth: size - STROKE_WIDTH * 4 }]} numberOfLines={1} allowFontScaling>
+        <Text
+          style={[styles.heroAmount, { maxWidth: size - STROKE_WIDTH * 4 }]}
+          numberOfLines={1}
+          allowFontScaling
+          // QUAL-04: Oswald displayL (40pt) center label inside a fixed-size ring.
+          // Cap at 1.2× (≈48pt) and use adjustsFontSizeToFit so the amount string
+          // shrinks to fit the ring diameter rather than overflowing the canvas.
+          maxFontSizeMultiplier={1.2}
+          adjustsFontSizeToFit
+        >
           {balanceStr}
         </Text>
         {isOverFunded && (

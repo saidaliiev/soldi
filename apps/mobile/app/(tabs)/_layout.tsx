@@ -42,6 +42,14 @@ function TabLabel({ focused, children }: TabLabelProps): React.JSX.Element {
   return (
     <Text
       allowFontScaling
+      // QUAL-04: Tab bar labels are 14pt (TYPE.uiLabel). At AccessibilityXXXL
+      // the system scale is ~3.1× → 43pt, which breaks the fixed-height tab bar
+      // (icon + label must stay single-line inside ~50pt bar height).
+      // Cap at 1.0× so the label stays exactly at design size; the tab bar's
+      // tabBarAccessibilityLabel already provides a full description for
+      // VoiceOver users, so scale suppression here does not harm accessibility.
+      maxFontSizeMultiplier={1.0}
+      numberOfLines={1}
       style={[styles.label, { color: focused ? COLORS.accent : COLORS.textMuted }]}
     >
       {children}
