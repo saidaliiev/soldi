@@ -205,7 +205,10 @@ const styles = StyleSheet.create({
   },
   overFundedLabel: {
     ...TYPE.uiLabel,
-    color: COLORS.sage,
+    // CR-04: TYPE.uiLabel = 14pt medium = body text → WCAG AA §1.4.3 requires 4.5:1.
+    // COLORS.sage is 3.23:1 on background — fails body threshold.
+    // COLORS.sageDark (#5C6B4A) is ~5.1:1 on background — PASS.
+    color: COLORS.sageDark,
     textAlign: 'center',
     marginTop: 2,
   },

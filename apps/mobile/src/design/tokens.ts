@@ -29,12 +29,13 @@ export const COLORS = {
 
   // Sage — success, savings, "money in"
   // D-09 / QUAL-02 remediation: #9DA88C was 2.22:1 on cream BG (graphic 3:1 fail).
-  // Darkened to #7E8B6C → 3.23:1 on background, 3.34:1 on surface. PASS.
-  // Note: overFundedLabel uses TYPE.uiLabel (14pt medium = body text, 4.5 required)
-  // on background — at 3.23:1 this still fails strict body threshold; tracked in
-  // SUMMARY as a known stub. A dedicated "sageDark" text token is the correct fix
-  // (deferred — overFundedLabel is a rare edge-case label, not primary UI copy).
+  // Darkened to #7E8B6C → 3.23:1 on background, 3.34:1 on surface. PASS for graphic.
+  // CR-04: sage fails WCAG AA §1.4.3 body-text 4.5:1 threshold (3.23:1 on background).
+  // sageDark (#5C6B4A) is the text-safe variant — ~5.1:1 on background (#F7F1E8).
+  // Use sageDark for all text rendered with TYPE.uiLabel/uiBody/uiMeta on background.
+  // Use sage only for graphic elements (ring arcs, decorative fills).
   sage: '#7E8B6C',
+  sageDark: '#5C6B4A', // CR-04: text-safe sage — 5.1:1 on #F7F1E8 (WCAG AA body 4.5:1 ✓)
   sageSoft: '#B5C0A5',
   sageDeep: '#7A876A',
 

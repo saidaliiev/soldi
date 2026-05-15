@@ -132,15 +132,19 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     entry('accent', COLORS.accent, 'surface', SURF, 3.0,
       'TYPE.tabular/uiButton = 16pt semibold (>=14pt bold = large text, §1.4.3)'),
 
-    // ---- sage (jar ring label in TYPE.uiLabel = 14pt medium → borderline;
-    //      overFundedLabel uses TYPE.uiLabel so body rule applies; however sage
-    //      is primarily a graphic token. Per D-09 we use 3.0 for sage (graphic
-    //      element standard §1.4.11) and note the uiLabel edge case in SUMMARY)
+    // ---- sage (ring arc — graphic element only, §1.4.11 non-text contrast 3:1)
+    // sage MUST NOT be used for body/label text — use sageDark for text.
     // Remediated D-09: #9DA88C → #7E8B6C (was 2.22:1, now ≥3.0:1)
     entry('sage', COLORS.sage, 'background', BG, 3.0,
-      'Primarily graphic (ring arc); §1.4.11 non-text contrast 3:1'),
+      'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
     entry('sage', COLORS.sage, 'surface', SURF, 3.0,
-      'Primarily graphic (ring arc); §1.4.11 non-text contrast 3:1'),
+      'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
+
+    // ---- sageDark (overFundedLabel in TYPE.uiLabel = 14pt medium = body text)
+    // CR-04: overFundedLabel was using sage (3.23:1) which fails §1.4.3 body 4.5:1.
+    // sageDark (#5C6B4A) is ~5.1:1 on background — PASS.
+    entry('sageDark', COLORS.sageDark, 'background', BG, 4.5),
+    entry('sageDark', COLORS.sageDark, 'surface', SURF, 4.5),
 
     // ---- success/income (income amounts in TYPE.tabular = 16pt semibold) ---
     entry('success', COLORS.success, 'background', BG, 3.0,
