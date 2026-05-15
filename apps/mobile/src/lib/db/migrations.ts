@@ -17,6 +17,7 @@ import {
   SCHEMA_002,
   SCHEMA_003,
   SCHEMA_004_MERCHANT_OVERRIDES_V2,
+  SCHEMA_005,
   SEED_DEFAULT_CATEGORIES,
 } from './schema.sql';
 
@@ -51,5 +52,11 @@ export const MIGRATIONS: readonly Migration[] = [
     // on a normalized merchant_key. See SCHEMA_004_MERCHANT_OVERRIDES_V2.
     version: 4,
     sql: SCHEMA_004_MERCHANT_OVERRIDES_V2,
+  },
+  {
+    // Phase 4 plan 04-01 — Goal Jars data layer: jars + jar_contributions tables.
+    // See SCHEMA_005 in schema.sql.ts.
+    version: 5,
+    sql: SCHEMA_005,
   },
 ] as const;

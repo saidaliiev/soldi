@@ -213,3 +213,35 @@ ALTER TABLE merchant_overrides_v2 RENAME TO merchant_overrides;
 CREATE INDEX idx_merchant_overrides_key ON merchant_overrides(merchant_key)
 `;
 
+// ---------------------------------------------------------------------------
+// SCHEMA_005: Phase 4 plan 04-01 — Goal Jars data layer
+//
+// Two tables:
+//   jars              — user-created savings goals (name, target, icon, rule)
+//   jar_contributions — credits applied to a jar (round-up or manual)
+//
+// rule_json stores a JarRule JSON blob (kind:'roundup', unitCents: 100|500|1000)
+// so the sweep logic (04-02) can decode it without schema changes.
+// All amounts are INTEGER cents (positive only for contributions).
+// No network boundary: jars are 100% local-only in Phase 4.
+// ---------------------------------------------------------------------------
+export const SCHEMA_005 = `
+CREATE TABLE IF NOT EXISTS jars (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  target_cents INTEGER NOT NULL,
+  icon TEXT NOT NULL,
+  rule_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS jar_contributions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  jar_id INTEGER NOT NULL REFERENCES jars(id),
+  amount_cents INTEGER NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('roundup','manual')),
+  tx_id INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_jar_contributions_jar ON jar_contributions(jar_id)
+`;
+
