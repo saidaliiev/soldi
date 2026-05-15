@@ -35,8 +35,12 @@ import type { JarRule } from './types';
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the Unix timestamp (ms) of the last round-up sweep for the given jar.
+ * Returns the Unix timestamp (seconds) of the last round-up sweep for the given jar.
  * Returns 0 if no round-up contributions exist yet — first sweep considers all history.
+ *
+ * Unit: Unix seconds — matches transactions.created_at convention (jarsRepo line 36:
+ * Math.floor(Date.now() / 1000)). Do NOT store ms here or the cutoff filter
+ * `transactions.created_at > ?` will never match after the first sweep.
  *
  * T-04-02-03: reads only created_at (not merchant/description).
  */
@@ -117,13 +121,18 @@ export function sweepToJar(
   }
 
   // 6. Insert ONE aggregate contribution row (T-04-02-03 auditable ledger row)
+  // CR-01: store created_at as Unix seconds (Math.floor(now/1000)) to match
+  // transactions.created_at convention. Storing ms caused lastSweepAt() to
+  // return ~1.7e12 which is greater than every transaction's Unix-second
+  // created_at (~1.7e9), making the cutoff filter match nothing on all
+  // subsequent sweeps.
   insertContribution(
     {
       jarId,
       amountCents: contributedCents,
       source: 'roundup',
       txId: null, // aggregates many tx — no single tx reference
-      createdAt: now,
+      createdAt: Math.floor(now / 1000),
     },
     db,
   );
