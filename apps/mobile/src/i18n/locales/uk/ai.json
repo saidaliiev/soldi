@@ -1,5 +1,4 @@
 {
-  "_comment": "TODO Phase 4: translate to Ukrainian",
-  "fab_label": "Ask SOLDI",
-  "fab_hint": "Opens the AI assistant"
+  "fab_label": "Запитайте SOLDI",
+  "fab_hint": "Відкриває ШІ-асистента"
 }

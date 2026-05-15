@@ -29,6 +29,7 @@ import { COLORS } from '@design/tokens';
 import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
 import { initI18n, i18n } from '@lib/i18n';
+import { useOnboardingStore } from '@stores/onboarding';
 import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
 import { PropagationToast } from '@/src/features/transactions/PropagationToast';
 import { ChatBottomSheet } from '@/src/features/chat/ChatBottomSheet';
@@ -38,6 +39,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function RootLayout() {
+  // D-07: read persisted language for root key-bump remount.
+  // When LanguageToggle calls setLanguage, this selector re-fires → language
+  // changes → key on I18nextProvider changes → full subtree remount.
+  // This retranslates module-scope t(), Intl.DateTimeFormat date headers, and
+  // FlashList sticky headers that don't update via useTranslation() alone.
+  const language = useOnboardingStore((s) => s.language) ?? 'en';
+
   const [oswaldLoaded] = useOswald({
     Oswald: Oswald_500Medium,
     Oswald_300Light,
@@ -97,7 +105,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <I18nextProvider i18n={i18n}>
+        {/* key={language} — D-07 root key-bump: changing language forces a full
+            remount of the I18nextProvider subtree, retranslating module-scope
+            t() calls, Intl.DateTimeFormat date headers, and FlashList sticky
+            headers. Brief flash on explicit user language-switch is accepted. */}
+        <I18nextProvider key={language} i18n={i18n}>
           <Stack
             screenOptions={{
               contentStyle: { backgroundColor: COLORS.background },
@@ -117,6 +129,10 @@ export default function RootLayout() {
             <Stack.Screen
               name="transactions/search"
               options={{ presentation: 'modal', headerShown: false }}
+            />
+            <Stack.Screen
+              name="settings"
+              options={{ title: 'Settings', presentation: 'card' }}
             />
           </Stack>
           <RecategorizeBottomSheet />
