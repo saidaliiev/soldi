@@ -31,6 +31,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -55,6 +56,8 @@ export function DonutChart({
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
+  // WR-07: t() for the "Total" center label so it updates on language switch
+  const { t } = useTranslation();
   const totalCents = breakdown.totalExpenseCents;
   const [selectedId, setSelectedId] = useState<number | 'other' | null>(null);
   const firstFrameLogged = useRef(false);
@@ -201,7 +204,7 @@ export function DonutChart({
         {selectedSlice == null ? (
           <>
             <Text style={styles.totalLabel} allowFontScaling>
-              Total
+              {t('dashboard.donut_total_label')}
             </Text>
             <Text style={styles.totalAmount} allowFontScaling>
               {totalFormatted}
