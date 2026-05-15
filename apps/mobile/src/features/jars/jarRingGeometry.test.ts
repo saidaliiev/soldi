@@ -90,7 +90,7 @@ test("jarRingArcPath: fraction=0.25 start x is approximately cx (12 o'clock star
   const cx = radius; // center, matching chatChartGeometry idiom
   const path = jarRingArcPath(0.25, radius, strokeWidth);
   // Extract first numeric pair after 'M '
-  const match = path.match(/^M\s+([\d.+-]+)\s+([\d.+-]+)/);
+  const match = path.match(/^M\s+([\d.+-]+)[\s,]+([\d.+-]+)/);
   assert.ok(match, 'path has M x y at start');
   const startX = parseFloat(match![1]!);
   // At 12 o'clock, x = cx (within 1 unit float rounding)
