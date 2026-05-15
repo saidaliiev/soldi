@@ -39,3 +39,38 @@ jobs:
 
       - name: Jest unit tests
         run: npm test -- --watchAll=false --passWithNoTests
+
+  # ---------------------------------------------------------------------------
+  # ai-eval: manually triggered Anthropic eval harness (workflow_dispatch ONLY).
+  #
+  # This job runs the Deno eval harness against 103 curated fixtures and asserts
+  # >= 85% accuracy (Phase 3 ROADMAP success criterion #1). It is intentionally
+  # NOT triggered on push/pull_request because each run makes real Anthropic API
+  # calls (billable). Trigger manually from the GitHub Actions UI or via:
+  #   gh workflow run ci.yml --field reason="accuracy check"
+  #
+  # Required secret: ANTHROPIC_API_KEY (set in repo Settings → Secrets → Actions)
+  # ---------------------------------------------------------------------------
+  ai-eval:
+    name: AI eval harness (>= 85% accuracy gate)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Run eval harness
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd supabase
+          deno run \
+            --allow-env \
+            --allow-net \
+            --allow-read \
+            functions/ai-categorize/eval/run.ts
