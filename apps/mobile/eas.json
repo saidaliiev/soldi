@@ -35,6 +35,18 @@
         "EXPO_PUBLIC_ENV": "preview"
       }
     },
+    "testflight": {
+      "autoIncrement": true,
+      "distribution": "store",
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "channel": "testflight",
+      "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_ENV": "production"
+      }
+    },
     "production": {
       "autoIncrement": true,
       "ios": {
@@ -48,6 +60,13 @@
     }
   },
   "submit": {
+    "testflight": {
+      "ios": {
+        "appleId": "REPLACE_WITH_APPLE_ID_BEFORE_SUBMIT",
+        "ascAppId": "REPLACE_WITH_ASC_APP_ID_BEFORE_SUBMIT",
+        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID_BEFORE_SUBMIT"
+      }
+    },
     "production": {
       "ios": {
         "appleId": "REPLACE_WITH_APPLE_ID_BEFORE_SUBMIT",
