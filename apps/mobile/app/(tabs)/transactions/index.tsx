@@ -134,6 +134,11 @@ export default function TransactionListScreen(): React.JSX.Element {
           }
           getItemType={(item) => item.kind}
           stickyHeaderIndices={[...stickyIndices]}
+          // QUAL-05 / FlashList v2.0.2: estimatedItemSize (v1 API) does not exist
+          // in v2. In v2, heights are measured after first layout pass — no prop
+          // available to pre-declare them. getItemType (already present) is the
+          // v2 mechanism for recycling homogeneous item pools efficiently.
+          // keyExtractor provides stable identity so recycler doesn't remount rows.
           renderItem={({ item }) => {
             if (item.kind === 'header') {
               return <DateHeader date={item.date} subtotalCents={item.subtotalCents} />;
