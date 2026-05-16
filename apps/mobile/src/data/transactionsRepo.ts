@@ -16,6 +16,7 @@
 
 import { getDB } from '@lib/db';
 import { nowSeconds } from '@lib/time';
+import { slugForCategoryName } from '@data/categoriesRepo';
 import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
 import { buildFilterSql } from '../features/transactions/filterCompose';
 import type { FilterState, Transaction } from '../features/transactions/types';
@@ -241,7 +242,15 @@ function joinRowToTransaction(row: JoinRow): Transaction {
     merchantName: row.merchant_name,
     categoryId: row.category_id,
     categoryName: row.category_name,
-    categoryIconSlug: row.icon_slug,
+    // icon_slug is now the canonical `categories.slug` (migration 002). Pre-002
+    // rows (or a NULL slug) fall back to a name-derived slug so the icon never
+    // collapses to the Misc placeholder when a name is available.
+    categoryIconSlug:
+      row.icon_slug != null && row.icon_slug.length > 0
+        ? row.icon_slug
+        : row.category_name != null
+          ? slugForCategoryName(row.category_name)
+          : null,
     categoryColor: row.color,
     dateSec: row.date,
   };
@@ -276,7 +285,7 @@ export function listByFilter(filter: FilterState): readonly Transaction[] {
             t.merchant_name AS merchant_name,
             t.category_id  AS category_id,
             c.name_en      AS category_name,
-            c.icon_name    AS icon_slug,
+            c.slug         AS icon_slug,
             c.color        AS color,
             t.date         AS date
        FROM transactions t
@@ -351,7 +360,7 @@ export function getTransactionById(id: number): Transaction | null {
             t.merchant_name AS merchant_name,
             t.category_id  AS category_id,
             c.name_en      AS category_name,
-            c.icon_name    AS icon_slug,
+            c.slug         AS icon_slug,
             c.color        AS color,
             t.date         AS date
        FROM transactions t

@@ -42,7 +42,10 @@ type Props = {
 export function CategoryListRow({ category, onPress }: Props): React.JSX.Element {
   const { i18n } = useTranslation();
   const displayName = localizedCategoryName(category, i18n.language);
-  const Icon = resolveIcon(category.iconName);
+  // Resolve by canonical slug, not icon_name: the seed stored Lucide ids
+  // ("shopping-cart") in icon_name which never match ICON_REGISTRY (keyed by
+  // slug). category.slug is migration-002 backfilled / name-derived.
+  const Icon = resolveIcon(category.slug);
   const { draggingId, dropTargetId, setDraggingId, setDropTargetId, onDrop } = useDragMerge();
   const scale = useSharedValue(1);
 

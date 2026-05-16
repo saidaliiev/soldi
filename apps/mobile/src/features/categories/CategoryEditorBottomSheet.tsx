@@ -67,7 +67,10 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
         if (c != null) {
           setCurrent(c);
           setName(c.nameEn);
-          const slug = (c.iconName in ICON_REGISTRY ? c.iconName : DEFAULT_ICON) as IconSlug;
+          // Preselect by canonical slug (icon_name holds legacy Lucide ids that
+          // never match ICON_REGISTRY). Alias-only slugs aren't pickable, so
+          // they correctly fall to DEFAULT_ICON here.
+          const slug = (c.slug in ICON_REGISTRY ? c.slug : DEFAULT_ICON) as IconSlug;
           setIconSlug(slug);
           setColor(c.color);
         }

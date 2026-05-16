@@ -79,3 +79,24 @@ export type IconSlug = keyof typeof ICON_REGISTRY;
 
 /** All slugs in registry display order (used by IconPicker). */
 export const ICON_SLUGS: readonly IconSlug[] = Object.keys(ICON_REGISTRY) as IconSlug[];
+
+/**
+ * Seed category slugs that have no dedicated component of their own. Migration
+ * 002 backfills these slugs (groceries/transport/… → see schema.sql.ts), but
+ * five of them never had a 1:1 icon: they fall back here to the closest
+ * existing component instead of the Misc three-dots placeholder.
+ *
+ * Kept OUT of ICON_REGISTRY/ICON_SLUGS on purpose so IconPicker still shows
+ * exactly the 30 canonical icons (no duplicate Restaurant/Family entries) and
+ * IconSlug stays the canonical union. resolveIcon consults this on a miss.
+ *
+ * eating-out → restaurant and kids → family are exact; mobile/transfers/
+ * refunds are approximate (no phone/transfer/refund art in v1 — polish later).
+ */
+export const SLUG_ALIASES: Readonly<Record<string, IconSlug>> = {
+  'eating-out': 'restaurant',
+  mobile: 'electronics',
+  transfers: 'investments',
+  refunds: 'salary',
+  kids: 'family',
+};

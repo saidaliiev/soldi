@@ -12,7 +12,7 @@
 
 import React from 'react';
 
-import { ICON_REGISTRY, ICON_SLUGS, type IconSlug } from './_iconRegistry';
+import { ICON_REGISTRY, ICON_SLUGS, SLUG_ALIASES, type IconSlug } from './_iconRegistry';
 import { Misc } from './Misc';
 
 export { ICON_REGISTRY, ICON_SLUGS, type IconSlug };
@@ -28,6 +28,13 @@ export function resolveIcon(
   slug: string | null | undefined,
 ): React.FC<{ color: string; size?: number }> {
   if (slug == null) return Misc as React.FC<{ color: string; size?: number }>;
-  const found = (ICON_REGISTRY as Record<string, React.FC<{ color: string; size?: number }>>)[slug];
-  return found ?? (Misc as React.FC<{ color: string; size?: number }>);
+  const registry = ICON_REGISTRY as Record<string, React.FC<{ color: string; size?: number }>>;
+  const found = registry[slug];
+  if (found != null) return found;
+  // Seed slug with no dedicated component (eating-out, kids, …) — map to the
+  // closest canonical icon before giving up to the Misc placeholder.
+  const aliasKey = SLUG_ALIASES[slug];
+  const aliased = aliasKey != null ? registry[aliasKey] : undefined;
+  if (aliased != null) return aliased;
+  return Misc as React.FC<{ color: string; size?: number }>;
 }
