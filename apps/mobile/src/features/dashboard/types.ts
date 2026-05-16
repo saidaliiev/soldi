@@ -18,7 +18,8 @@
 export type CategorySlice = {
   readonly categoryId: number;
   readonly slug: string; // canonical English-derived slug (e.g. "eating-out", "other")
-  readonly nameEn: string;
+  readonly nameEn: string; // canonical identifier — slug derivation, never display-localized
+  readonly nameUk: string; // Ukrainian display name (falls back to nameEn for the synthetic "Other")
   readonly color: string; // hex from D-22 swatch set; "Other" uses COLORS.textMuted
   readonly amountCents: number; // absolute, positive
   readonly percentage: number; // 0..1 of monthly expense total

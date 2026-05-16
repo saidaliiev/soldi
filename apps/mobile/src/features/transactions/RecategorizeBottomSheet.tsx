@@ -27,7 +27,7 @@ import {
   BottomSheetPrimitive,
   type BottomSheetPrimitiveRef,
 } from '@/src/components/BottomSheet/BottomSheetPrimitive';
-import { listCategoriesEnriched } from '@data/categoriesRepo';
+import { listCategoriesEnriched, localizedCategoryName } from '@data/categoriesRepo';
 import { updateCategory as updateTxCategory, getTransactionById } from '@data/transactionsRepo';
 import {
   upsertForMerchant,
@@ -52,7 +52,7 @@ function resolveIcon(slug: string | null | undefined) {
 }
 
 export function RecategorizeBottomSheet(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const open = useRecategorizeStore((s) => s.open);
   const targetTxId = useRecategorizeStore((s) => s.targetTxId);
   const onPicked = useRecategorizeStore((s) => s.onPicked);
@@ -190,10 +190,10 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
                 key={`recent-${cat.id}`}
                 onPress={() => handlePick(cat.id)}
                 accessibilityRole="button"
-                accessibilityLabel={`Set category ${cat.nameEn}`}
+                accessibilityLabel={`Set category ${localizedCategoryName(cat, i18n.language)}`}
                 hitSlop={4}
               >
-                <CategoryChip slug={cat.slug} name={cat.nameEn} color={cat.color} size="md" />
+                <CategoryChip slug={cat.slug} name={localizedCategoryName(cat, i18n.language)} color={cat.color} size="md" />
               </Pressable>
             ))}
           </ScrollView>
@@ -214,12 +214,12 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
             <Pressable
               onPress={() => handlePick(item.id)}
               accessibilityRole="button"
-              accessibilityLabel={`Set category ${item.nameEn}`}
+              accessibilityLabel={`Set category ${localizedCategoryName(item, i18n.language)}`}
               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             >
               <Icon color={item.color} size={20} />
               <Text style={styles.rowLabel} numberOfLines={1} allowFontScaling>
-                {item.nameEn}
+                {localizedCategoryName(item, i18n.language)}
               </Text>
               {isSelected && (
                 <Text style={styles.check} allowFontScaling>

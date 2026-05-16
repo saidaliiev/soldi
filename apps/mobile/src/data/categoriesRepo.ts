@@ -135,6 +135,26 @@ export function colorForCategorySlug(slug: string): string {
   return DEFAULT_CATEGORY_COLORS[slug] ?? COLORS.textMuted;
 }
 
+/**
+ * Resolves the display name for a category in the active language.
+ *
+ * `name_en` stays the canonical identifier (slug derivation, SQL grouping,
+ * analytics) — this helper is render-layer only. Accepts either the i18next
+ * two-letter language ('uk') or an Intl locale ('uk-UA'); both resolve via a
+ * case-insensitive 'uk' prefix test. Falls back to `nameEn` when the Ukrainian
+ * name is absent/empty (custom categories may not carry a uk name).
+ */
+export function localizedCategoryName(
+  cat: { readonly nameEn: string; readonly nameUk?: string | null },
+  language: string,
+): string {
+  if (language.toLowerCase().startsWith('uk')) {
+    const uk = cat.nameUk;
+    if (uk != null && uk.length > 0) return uk;
+  }
+  return cat.nameEn;
+}
+
 // ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------

@@ -22,8 +22,10 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { localizedCategoryName } from '@data/categoriesRepo';
 import { TYPE } from '@design/typography';
 import { resolveIcon } from '@design/icons/categories';
 import { ChevronRight } from '@design/icons/chevrons/ChevronRight';
@@ -38,6 +40,8 @@ type Props = {
 };
 
 export function CategoryListRow({ category, onPress }: Props): React.JSX.Element {
+  const { i18n } = useTranslation();
+  const displayName = localizedCategoryName(category, i18n.language);
   const Icon = resolveIcon(category.iconName);
   const { draggingId, dropTargetId, setDraggingId, setDropTargetId, onDrop } = useDragMerge();
   const scale = useSharedValue(1);
@@ -81,7 +85,7 @@ export function CategoryListRow({ category, onPress }: Props): React.JSX.Element
         onLongPress={handleLongPress}
         onPressIn={handleHoverIn}
         accessibilityRole="button"
-        accessibilityLabel={`${category.nameEn}, tap to edit`}
+        accessibilityLabel={`${displayName}, tap to edit`}
         style={({ pressed }) => [
           styles.row,
           isDropTarget && styles.dropTarget,
@@ -93,7 +97,7 @@ export function CategoryListRow({ category, onPress }: Props): React.JSX.Element
           <Icon color={category.color} size={24} />
         </View>
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
-          {category.nameEn}
+          {displayName}
         </Text>
         <ChevronRight color={COLORS.textMuted} size={16} />
       </Pressable>

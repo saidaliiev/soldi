@@ -36,6 +36,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
+import { localizedCategoryName } from '@data/categoriesRepo';
 import { markFirstFrame } from '@lib/perf';
 import { buildDonutArcs, computeSliceAngles } from './donutArcs';
 import type { CategoryBreakdown, CategorySlice } from './types';
@@ -161,7 +162,7 @@ export function DonutChart({
     if (top == null) return 'Spending donut chart. No data this month.';
     const topPercent = Math.round(top.percentage * 100);
     const topAmount = formatMoney({ amountCents: top.amountCents, currency }, locale);
-    return `Spending donut chart. ${top.nameEn} ${topAmount}, ${topPercent}%. Double-tap a slice to see details.`;
+    return `Spending donut chart. ${localizedCategoryName(top, locale)} ${topAmount}, ${topPercent}%. Double-tap a slice to see details.`;
   })();
 
   return (
@@ -214,7 +215,7 @@ export function DonutChart({
         ) : (
           <>
             <Text style={styles.sliceName} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
-              {selectedSlice.nameEn}
+              {localizedCategoryName(selectedSlice, locale)}
             </Text>
             <Text style={styles.sliceAmount} allowFontScaling>
               {formatMoney({ amountCents: selectedSlice.amountCents, currency }, locale)}

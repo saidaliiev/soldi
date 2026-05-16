@@ -20,6 +20,7 @@ import { router } from 'expo-router';
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
+import { localizedCategoryName } from '@data/categoriesRepo';
 import { BaseCategoryIcon } from '@/src/design/icons/categories/BaseCategoryIcon';
 import { useCategoryEditorStore } from '@/src/features/categories/store';
 import type { CategorySlice } from './types';
@@ -38,6 +39,7 @@ export function CategoryRow({
   currency = 'EUR',
 }: Props): React.JSX.Element {
   const formatted = formatMoney({ amountCents: slice.amountCents, currency }, locale);
+  const displayName = localizedCategoryName(slice, locale);
   const percentInt = Math.round(slice.percentage * 100);
   const barWidth = maxAmountCents > 0 ? slice.amountCents / maxAmountCents : 0;
   // 40% alpha appended via 8-bit hex suffix — same pattern as the tab-bar border.
@@ -59,14 +61,14 @@ export function CategoryRow({
       onPress={handlePress}
       onLongPress={handleLongPress}
       accessibilityRole="button"
-      accessibilityLabel={`${slice.nameEn}: ${formatted}, ${percentInt}%`}
+      accessibilityLabel={`${displayName}: ${formatted}, ${percentInt}%`}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.topLine}>
         <View style={[styles.dot, { backgroundColor: slice.color }]} />
         <BaseCategoryIcon color={slice.color} size={20} />
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
-          {slice.nameEn}
+          {displayName}
         </Text>
         <View style={styles.spacer} />
         <Text style={styles.amount} allowFontScaling>

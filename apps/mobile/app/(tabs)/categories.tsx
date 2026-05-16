@@ -20,6 +20,7 @@ import { TYPE } from '@design/typography';
 import {
   listCategoriesEnriched,
   getCategoryById,
+  localizedCategoryName,
   type Category,
 } from '@data/categoriesRepo';
 import { useCategoryEditorStore } from '@/src/features/categories/store';
@@ -32,7 +33,7 @@ import { mergeCategories } from '@/src/features/categories/categoryMutations';
 type MergeRequest = { readonly fromId: number; readonly toId: number };
 
 export default function CategoriesScreen(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const openForEdit = useCategoryEditorStore((s) => s.openForEdit);
   const openForCreate = useCategoryEditorStore((s) => s.openForCreate);
   const [categories, setCategories] = React.useState<readonly Category[]>([]);
@@ -120,7 +121,10 @@ export default function CategoriesScreen(): React.JSX.Element {
         <ConfirmModal
           visible={merge != null}
           title={t('categories.merge_title')}
-          body={t('categories.merge_confirm_body', { from: fromCat.nameEn, to: toCat.nameEn })}
+          body={t('categories.merge_confirm_body', {
+            from: localizedCategoryName(fromCat, i18n.language),
+            to: localizedCategoryName(toCat, i18n.language),
+          })}
           confirmLabel={t('categories.merge_confirm')}
           cancelLabel={t('categories.cancel')}
           destructive

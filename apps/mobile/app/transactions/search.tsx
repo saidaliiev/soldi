@@ -38,7 +38,7 @@ import { router, Stack } from 'expo-router';
 
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { listCategoriesEnriched } from '@data/categoriesRepo';
+import { listCategoriesEnriched, localizedCategoryName } from '@data/categoriesRepo';
 import { parseAmount, toCents } from '@lib/money';
 import { CategoryChip } from '@/src/features/transactions/CategoryChip';
 import { useFilterStore } from '@/src/features/transactions/filterStore';
@@ -57,7 +57,7 @@ function isValidIsoDate(s: string): boolean {
 }
 
 export default function SearchFilterModal(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const storeSearch = useFilterStore((s) => s.search);
   const storeCategoryIds = useFilterStore((s) => s.categoryIds);
   const storeMinCents = useFilterStore((s) => s.minCents);
@@ -260,7 +260,7 @@ export default function SearchFilterModal(): React.JSX.Element {
                     onPress={() => toggleCategoryId(cat.id)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: selected }}
-                    accessibilityLabel={cat.nameEn}
+                    accessibilityLabel={localizedCategoryName(cat, i18n.language)}
                     style={styles.checkRow}
                   >
                     <View style={styles.checkbox}>
@@ -272,7 +272,7 @@ export default function SearchFilterModal(): React.JSX.Element {
                     </View>
                     <CategoryChip
                       slug={cat.slug}
-                      name={cat.nameEn}
+                      name={localizedCategoryName(cat, i18n.language)}
                       color={cat.color}
                       size="md"
                     />

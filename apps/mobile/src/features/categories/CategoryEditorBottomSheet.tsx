@@ -28,7 +28,7 @@ import {
   renameCategory,
   deleteCategory,
 } from './categoryMutations';
-import { getCategoryById } from '@data/categoriesRepo';
+import { getCategoryById, localizedCategoryName } from '@data/categoriesRepo';
 import type { Category } from './types';
 import { type IconSlug, ICON_REGISTRY } from '@design/icons/categories/_iconRegistry';
 
@@ -45,7 +45,7 @@ function validationKey(reason: 'empty' | 'too_long' | 'invalid_chars' | 'duplica
 }
 
 export function CategoryEditorBottomSheet(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const open = useCategoryEditorStore((s) => s.open);
   const targetId = useCategoryEditorStore((s) => s.targetId);
   const close = useCategoryEditorStore((s) => s.close);
@@ -135,7 +135,11 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
       >
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
           <Text style={styles.header} accessibilityRole="header" allowFontScaling>
-            {isEditMode ? (current?.nameEn ?? '') : t('categories.cta_new')}
+            {isEditMode
+              ? current != null
+                ? localizedCategoryName(current, i18n.language)
+                : ''
+              : t('categories.cta_new')}
           </Text>
 
           <TextInput
@@ -205,13 +209,13 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
         <ConfirmModal
           visible={showDeleteConfirm}
           title={t('categories.delete_title')}
-          body={t('categories.delete_body', { name: current.nameEn })}
+          body={t('categories.delete_body', { name: localizedCategoryName(current, i18n.language) })}
           confirmLabel={t('categories.delete_confirm')}
           cancelLabel={t('categories.cancel')}
           destructive
           onConfirm={handleDeleteConfirm}
           onCancel={() => setShowDeleteConfirm(false)}
-          confirmAccessibilityLabel={`${t('categories.delete_confirm')} ${current.nameEn}`}
+          confirmAccessibilityLabel={`${t('categories.delete_confirm')} ${localizedCategoryName(current, i18n.language)}`}
         />
       ) : null}
     </View>

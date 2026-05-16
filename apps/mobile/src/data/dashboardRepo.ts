@@ -98,22 +98,24 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
   const result = db.executeSync(
     `SELECT t.category_id AS category_id,
             COALESCE(c.name_en, 'Other') AS name_en,
+            COALESCE(c.name_uk, c.name_en, 'Other') AS name_uk,
             COALESCE(-SUM(t.amount_cents), 0) AS abs_total
      FROM transactions t
      LEFT JOIN categories c ON c.id = t.category_id
      WHERE t.amount_cents < 0
        AND t.date >= ? AND t.date < ?
-     GROUP BY t.category_id, c.name_en
+     GROUP BY t.category_id, c.name_en, c.name_uk
      ORDER BY abs_total DESC`,
     [b.startSec, b.endSec]
   );
 
   if (result.rows.length === 0) return empty;
 
-  type Agg = { categoryId: number; nameEn: string; absTotal: number };
+  type Agg = { categoryId: number; nameEn: string; nameUk: string; absTotal: number };
   const aggs: Agg[] = result.rows.map((row) => ({
     categoryId: (row['category_id'] as number | null) ?? -1,
     nameEn: ((row['name_en'] as string | null) ?? 'Other'),
+    nameUk: ((row['name_uk'] as string | null) ?? 'Other'),
     absTotal: Math.max(0, (row['abs_total'] as number) ?? 0),
   }));
 
@@ -130,6 +132,7 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
       categoryId: a.categoryId,
       slug,
       nameEn: a.nameEn,
+      nameUk: a.nameUk,
       color: colorForCategorySlug(slug),
       amountCents: a.absTotal,
       percentage: a.absTotal / total,
@@ -144,6 +147,9 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
         categoryId: -1,
         slug: 'other',
         nameEn: 'Other',
+        // Synthetic aggregate slice — mirrors the existing hardcoded English
+        // 'Other' literal with the seeded Ukrainian for the misc bucket.
+        nameUk: 'Інше',
         color: COLORS.textMuted,
         amountCents: sumOther,
         percentage: sumOther / total,

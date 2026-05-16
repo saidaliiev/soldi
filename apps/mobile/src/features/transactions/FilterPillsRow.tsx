@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
-import { listCategoriesEnriched } from '@data/categoriesRepo';
+import { listCategoriesEnriched, localizedCategoryName } from '@data/categoriesRepo';
 
 import { useFilterStore } from './filterStore';
 import { isEmptyFilter } from './filterCompose';
@@ -56,7 +56,10 @@ export function FilterPillsRow(): React.JSX.Element | null {
     try {
       const cats = listCategoriesEnriched();
       const names = filter.categoryIds
-        .map((id) => cats.find((c) => c.id === id)?.nameEn)
+        .map((id) => {
+          const c = cats.find((cat) => cat.id === id);
+          return c != null ? localizedCategoryName(c, i18n.language) : undefined;
+        })
         .filter((n): n is string => typeof n === 'string');
       label = names.join(', ');
     } catch {

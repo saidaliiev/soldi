@@ -12,6 +12,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -32,15 +33,19 @@ export function MonthlyTotalHero({
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const formatted = formatMoney({ amountCents: totalCents, currency }, locale);
   const monthLabel = formatMonthLabel(monthKey, locale);
+  // monthLabel is already locale-aware (Intl long month/year via formatMonthLabel);
+  // only the surrounding template was hardcoded English.
+  const spentLabel = t('dashboard.total_spent_in', { month: monthLabel });
 
   return (
     <View style={styles.container}>
       <Text
         style={styles.number}
         accessibilityRole="text"
-        accessibilityLabel={`Total spent in ${monthLabel}: ${formatted}`}
+        accessibilityLabel={`${spentLabel}: ${formatted}`}
         allowFontScaling
         // QUAL-04: Oswald 64pt hero number — cap at 1.3× so AccessibilityXXXL
         // (system scale ≈ 3.1×) renders at ~83pt instead of 198pt, which still
@@ -61,7 +66,7 @@ export function MonthlyTotalHero({
         maxFontSizeMultiplier={1.6}
         numberOfLines={2}
       >
-        {`Total spent in ${monthLabel}`}
+        {spentLabel}
       </Text>
     </View>
   );
