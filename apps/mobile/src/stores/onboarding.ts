@@ -26,11 +26,14 @@ export type OnboardingState = {
   dataSource: DataSource | null;
   /** True when the user has completed the full onboarding flow. */
   completed: boolean;
+  /** Phase 5 — ONBD-04: biometric app-open gate enabled flag. */
+  biometricEnabled: boolean;
 
   // Setters
   setLanguage: (lng: 'en' | 'uk') => void;
   setDataSource: (source: DataSource) => void;
   setCompleted: (value: boolean) => void;
+  setBiometricEnabled: (value: boolean) => void;
   reset: () => void;
 };
 
@@ -63,6 +66,7 @@ const initialState = {
   language: null,
   dataSource: null,
   completed: false,
+  biometricEnabled: false,   // default OFF — user must explicitly enable (D-03 pattern)
 } as const;
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -73,6 +77,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       setLanguage: (lng) => set({ language: lng }),
       setDataSource: (source) => set({ dataSource: source }),
       setCompleted: (value) => set({ completed: value }),
+      setBiometricEnabled: (value) => set({ biometricEnabled: value }),
       reset: () => set(initialState),
     }),
     {

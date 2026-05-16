@@ -22,7 +22,8 @@ export type SecureKey =
   | 'monobank_token'
   | 'monobank_token_hash'
   | 'soldi-onboarding'
-  | 'soldi-tx-filter';
+  | 'soldi-tx-filter'
+  | 'soldi-biometric';
 
 // ---------------------------------------------------------------------------
 // API

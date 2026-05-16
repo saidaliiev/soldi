@@ -53,7 +53,11 @@
     "csv_too_large": "File is over 5MB. Try a smaller export.",
     "csv_unparseable": "Couldn't read this file. Please check the format.",
     "csv_mapping_failed": "Couldn't find the date/amount/merchant columns. Manual mapping comes in a future update.",
-    "csv_no_rows_imported": "No transactions imported. Categories may be missing."
+    "csv_no_rows_imported": "No transactions imported. Categories may be missing.",
+    "biometric_title": "Keep your finances private",
+    "biometric_subtitle": "Use Face ID or Touch ID to protect your spending data.",
+    "biometric_enable": "Enable Face ID / Touch ID",
+    "biometric_skip": "Skip for now"
   },
   "dashboard": {
     "this_month": "This month",

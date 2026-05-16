@@ -3,5 +3,13 @@
   "language_section": "Мова",
   "language_en": "English",
   "language_uk": "Українська",
-  "open_a11y": "Відкрити налаштування"
+  "open_a11y": "Відкрити налаштування",
+  "security_section": "Безпека",
+  "biometric_label": "Face ID / Touch ID",
+  "biometric_description": "Вимагати біометрію при відкритті",
+  "notifications_section": "Сповіщення",
+  "digest_toggle_label": "Щоденний дайджест витрат",
+  "digest_toggle_description": "Зведення о 09:00",
+  "data_section": "Дані",
+  "export_label": "Експорт CSV"
 }

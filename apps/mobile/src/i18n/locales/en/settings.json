@@ -3,5 +3,13 @@
   "language_section": "Language",
   "language_en": "English",
   "language_uk": "Ukrainian",
-  "open_a11y": "Open settings"
+  "open_a11y": "Open settings",
+  "security_section": "Security",
+  "biometric_label": "Face ID / Touch ID",
+  "biometric_description": "Require biometric authentication on open",
+  "notifications_section": "Notifications",
+  "digest_toggle_label": "Daily spending digest",
+  "digest_toggle_description": "09:00 morning summary",
+  "data_section": "Data",
+  "export_label": "Export CSV"
 }
