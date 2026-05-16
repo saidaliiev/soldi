@@ -10,8 +10,6 @@
  * Catch logs err.name only — never jar name + amount together (T-05-09 / CLAUDE.md).
  */
 
-import * as Notifications from 'expo-notifications';
-
 import { jarBalanceCents, getJar } from '../jars/jarsRepo';
 
 // ---------------------------------------------------------------------------
@@ -49,6 +47,12 @@ export async function checkAndFireMilestone(
     for (const threshold of MILESTONE_THRESHOLDS) {
       if (prevRatio < threshold && newRatio >= threshold) {
         const pct = Math.round(threshold * 100);
+        // Deferred import: expo-notifications pulls react-native, whose Flow
+        // source the node:test+tsx runner cannot transform. Dynamic import
+        // keeps it out of the static graph; under Node it rejects and is
+        // swallowed by the catch (fire-and-graceful — no notification in
+        // tests, contribution already committed). On device it resolves.
+        const Notifications = await import('expo-notifications');
         await Notifications.scheduleNotificationAsync({
           content: {
             title: jar.name,

@@ -11,7 +11,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { openTestDB, runMigrations, getSchemaVersion } from '@/src/lib/db';
+import { runMigrations, getSchemaVersion } from '@/src/lib/db';
+import { openTestDB } from '@/src/lib/db/testDb';
 import {
   createJar,
   listJars,

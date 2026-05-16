@@ -19,7 +19,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { openTestDB, runMigrations } from '@/src/lib/db';
+import { runMigrations } from '@/src/lib/db';
+import { openTestDB } from '@/src/lib/db/testDb';
 import { createJar, jarBalanceCents, insertContribution } from './jarsRepo.js';
 import { sweepToJar, lastSweepAt } from './sweepRepo.js';
 
@@ -113,12 +114,15 @@ test('second immediate sweep contributes 0 — cutoff advanced after first sweep
 
   insertTx(db, -437, 'EUR', t0 - 1000);
 
+  // sweepToJar's `now` is MILLISECONDS (Date.now() contract — it stores the
+  // sweep timestamp as Math.floor(now/1000) seconds). t0 is a seconds value
+  // (matches transactions.created_at), so pass t0*1000.
   // First sweep at t0
-  const first = sweepToJar(jarId, t0, db);
+  const first = sweepToJar(jarId, t0 * 1000, db);
   assert.ok(first.contributedCents > 0, 'first sweep must contribute');
 
-  // Second sweep at t0 + 1 (no new transactions after t0)
-  const second = sweepToJar(jarId, t0 + 1, db);
+  // Second sweep at t0 + 1s (no new transactions after t0)
+  const second = sweepToJar(jarId, (t0 + 1) * 1000, db);
   assert.strictEqual(second.contributedCents, 0);
   // Balance unchanged
   assert.strictEqual(second.newBalanceCents, first.newBalanceCents);
@@ -182,7 +186,8 @@ test('lastSweepAt returns the sweep timestamp after a successful sweep', () => {
   );
   insertTx(db, -437, 'EUR', sweepTime - 500);
 
-  sweepToJar(jarId, sweepTime, db);
+  // `now` is milliseconds (see note above); sweepTime is a seconds value.
+  sweepToJar(jarId, sweepTime * 1000, db);
 
   assert.strictEqual(lastSweepAt(jarId, db), sweepTime);
 });

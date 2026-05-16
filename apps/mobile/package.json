@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "lint:i18n": "node ./scripts/check-i18n-parity.mjs"
+    "lint:i18n": "node ./scripts/check-i18n-parity.mjs",
+    "test": "node --import tsx --import ./scripts/test-setup.ts --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@expo-google-fonts/eb-garamond": "^0.4.2",

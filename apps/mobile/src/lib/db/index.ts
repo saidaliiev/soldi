@@ -12,7 +12,12 @@
  * - PRAGMA user_version must receive a literal integer (no binding support for PRAGMA)
  */
 
-import { open } from '@op-engineering/op-sqlite';
+// op-sqlite is a native module — importing it at module scope evaluates the
+// expo async-require/winter runtime, which references the RN-only global
+// `__DEV__` and throws `ReferenceError: __DEV__ is not defined` under Node.
+// The unit-test runner (node:test + tsx) imports this file for `openTestDB`
+// /`runMigrations` without ever calling `getDB()`, so the native open is
+// deferred to call time via require(). Type-only import is erased — safe.
 import type { DB as OPSQLiteDB } from '@op-engineering/op-sqlite';
 
 import { MIGRATIONS } from './migrations';
@@ -35,18 +40,17 @@ let _db: DB | null = null;
  */
 export function getDB(): DB {
   if (_db === null) {
+    // Deferred native import (see note on the type-only import above).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { open } = require('@op-engineering/op-sqlite') as typeof import('@op-engineering/op-sqlite');
     _db = open({ name: 'soldi.db' });
   }
   return _db;
 }
 
-/**
- * Opens a fresh DB connection under the provided name (no singleton caching).
- * Used by node-only unit tests to create isolated temp databases.
- */
-export function openTestDB(name: string): DB {
-  return open({ name });
-}
+// NOTE: `openTestDB` deliberately lives in ./testDb (NOT here). It pulls the
+// better-sqlite3 Node adapter; keeping it out of this app-graph module is what
+// stops Metro from bundling better-sqlite3 into the iOS/Android binary.
 
 // ---------------------------------------------------------------------------
 // Schema version

@@ -16,7 +16,6 @@ import type { DB } from '@op-engineering/op-sqlite';
 
 import { getDB } from '@/src/lib/db';
 import type { Jar, JarContribution } from './types';
-import { checkAndFireMilestone } from '../notifications/jarMilestoneNotification';
 
 // ---------------------------------------------------------------------------
 // createJar
@@ -133,7 +132,11 @@ export function insertContribution(
 
   // NOTIF-02: fire-and-graceful — milestone failure must never block the contribution.
   // Floating promise is intentional: the notification is a best-effort side-effect.
-  void checkAndFireMilestone(c.jarId, prevBalanceCents);
+  // Lazy require decouples the data layer from the notification/expo-notifications
+  // graph (keeps jarsRepo node-testable; also breaks the prior import cycle).
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const notif = require('../notifications/jarMilestoneNotification') as typeof import('../notifications/jarMilestoneNotification');
+  void notif.checkAndFireMilestone(c.jarId, prevBalanceCents);
 
   return id;
 }
