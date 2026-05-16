@@ -37,6 +37,7 @@ import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
 import { initI18n, i18n } from '@lib/i18n';
 import { markColdStart, markAppReady } from '@lib/perf';
+import { initObservability } from '@lib/observability';
 import { useOnboardingStore } from '@stores/onboarding';
 import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
 import { PropagationToast } from '@/src/features/transactions/PropagationToast';
@@ -50,6 +51,11 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 // perf.ts captures Date.now() at import time; markColdStart() is the auditable
 // call-site confirming the mark is intentional (grep target in SUMMARY).
 markColdStart();
+
+// T-05-16/17: Crash monitoring init — no-ops gracefully when EXPO_PUBLIC_SENTRY_DSN
+// is absent (P0 #7); idempotent; must run before the render gate so perf.ts
+// measurements can enrich into Sentry once keys are provided.
+initObservability();
 
 // D-01: 5-minute background threshold — a code constant, not a user setting.
 const RESUME_LOCK_MS = 5 * 60 * 1000;
