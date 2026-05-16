@@ -16,7 +16,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
 - [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet (2026-05-15: code-complete, no open code gaps; human_needed — SC#1 accuracy / SC#3 latency / SC#5 offline-on-device, gated on P0 #5 Supabase + #6 Anthropic key. Mark [x] after 03-HUMAN-UAT passes.)
 - [x] **Phase 4: Jars + i18n + Accessibility** — monobank-style jars + full Ukrainian + WCAG AA pass (completed 2026-05-15)
-- [ ] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, 50-user beta
+- [ ] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, Internal TestFlight launch
 - [ ] **Phase 6: App Store Submission + Launch** — Review, screenshots, case study, public launch
 
 ## Phase Details
@@ -145,27 +145,36 @@ Plans:
 
 ### Phase 5: Polish + TestFlight Beta
 
-**Goal**: 50 TestFlight users experience the app for 7 days with 99.5%+ crash-free and a polished settings/notifications layer.
+**Goal**: A polished settings/security/notifications layer plus a measured performance pass, ending with an Internal TestFlight build live and run by at least one internal tester.
 **Mode**: mvp
 **Depends on**: Phase 4
 **Requirements**: ONBD-04, SET-01, SET-03, SET-04, NOTIF-01, NOTIF-02, QUAL-05, QUAL-06
+**Wave Structure**: Wave 1 → 05-01 (Settings + biometric gate + CSV export). Wave 2 (parallel, both depend on 05-01) → 05-02 (notifications) + 05-03 (performance pass). Wave 3 → 05-04 (Internal TestFlight build + launch).
+**Scope reconciliation (D-04)**: Phase 5 completes on beta LAUNCH — Internal TestFlight build uploaded + ≥1 internal tester runs it (no Apple beta review). The original SC#6 ("50 users active 7+ days, crash-free ≥99.5%") is reassigned to Phase 6 as DIST-02.
 **Success Criteria** (what must be TRUE):
 
-  1. Biometric (FaceID/TouchID) gate triggers on cold start when enabled
-  2. User can export all data as CSV from settings
-  3. 09:00 local daily digest notification fires
+  1. Biometric (FaceID/TouchID) gate triggers on cold start when enabled (and on resume after > 5 min backgrounded — D-01)
+  2. User can export all data as transactions.csv + jars.csv via the iOS share-sheet from settings
+  3. 09:00 local daily digest notification fires (opt-in, editorial voice, zero-spend literal)
   4. Jar milestone notifications fire at 25/50/100%
-  5. Cold start under 2 seconds on iPhone SE 2020 (perfetto/Sentry-measured)
-  6. TestFlight external beta with 50 users active 7+ days, crash-free ≥99.5%
+  5. Cold start under 2 seconds on iPhone SE 2020 (Sentry-optional / on-device measured); Skia first frame < 100ms
+  6. Internal TestFlight build uploaded and run by ≥1 internal tester (D-04; 50-user/7-day/99.5% results → Phase 6 DIST-02)
 
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
 
-- [ ] 05-01: Settings screen + biometric toggle + CSV data export
-- [ ] 05-02: Local push notifications (daily digest 09:00, jar milestones) via expo-notifications
-- [ ] 05-03: Performance pass (cold start, list scroll, chart render) — measure + tune Reanimated/FlashList/Skia
-- [ ] 05-04: TestFlight beta recruitment (Ukrainian-diaspora Telegram channels) + crash monitoring + iterative fixes
+- [ ] 05-01-PLAN.md — Settings screen + biometric app-open gate (cold start + > 5 min resume + passcode fallback) + onboarding opt-in + transactions.csv/jars.csv share-sheet export
+
+**Wave 2** *(parallel; both blocked on 05-01)*
+
+- [ ] 05-02-PLAN.md — Local push notifications: 09:00 opt-in editorial daily digest + 25/50/100% jar-milestone notifications via expo-notifications
+- [ ] 05-03-PLAN.md — Performance pass: Sentry-optional cold-start + Skia first-frame instrumentation, then tune to < 2s cold start / < 100ms first frame on iPhone SE 2020
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 05-04-PLAN.md — Internal TestFlight EAS profile + graceful crash monitoring + build/upload + ≥1 internal tester (beta LAUNCH, D-04)
 
 ### Phase 6: App Store Submission + Launch
 
@@ -201,7 +210,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
 | 4. Jars + i18n + Accessibility | 4/4 | Complete   | 2026-05-15 |
-| 5. Polish + TestFlight Beta | 0/4 | Not started | - |
+| 5. Polish + TestFlight Beta | 0/4 | Planned (4 plans, 3 waves) | - |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
 
 ---
