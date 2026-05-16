@@ -165,7 +165,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Settings screen + biometric app-open gate (cold start + > 5 min resume + passcode fallback) + onboarding opt-in + transactions.csv/jars.csv share-sheet export
+- [x] 05-01-PLAN.md — Settings screen + biometric app-open gate (cold start + > 5 min resume + passcode fallback) + onboarding opt-in + transactions.csv/jars.csv share-sheet export
 
 **Wave 2** *(parallel; both blocked on 05-01)*
 
@@ -210,7 +210,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
 | 4. Jars + i18n + Accessibility | 4/4 | Complete   | 2026-05-15 |
-| 5. Polish + TestFlight Beta | 0/4 | Planned (4 plans, 3 waves) | - |
+| 5. Polish + TestFlight Beta | 1/4 | In Progress|  |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
 
 ---
