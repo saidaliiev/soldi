@@ -1,22 +1,23 @@
 /**
- * ai-categorize service tests — supabase client bootstrap + env-var guard.
+ * ai-categorize service tests — supabase LAZY client contract.
  *
- * Uses jest.isolateModules so each test case gets a fresh module registry
- * (the supabase singleton throws on import when env vars are absent).
+ * Contract (changed after crash incident 6485AB3B — TestFlight build 4):
+ * `@lib/supabase` must NEVER throw at import. expo-router eagerly evaluates
+ * the static import graph at cold start; an import-time throw aborts the app
+ * (SIGABRT) before any try/catch can run. Env validation is deferred to first
+ * use via getSupabase()/getSession(), where every caller is guarded.
  *
  * Convention mirrors apps/mobile/tests/monobank-mapper.test.ts:
  * - Pure TypeScript, no React Native renderer.
  * - process.env stubs for env var control.
- * - jest.mock for network isolation.
  *
  * Run: cd apps/mobile && npx jest tests/ai-categorize-service.test.ts
  */
 
-describe('supabase client bootstrap', () => {
+describe('supabase lazy client contract', () => {
   const ORIGINAL_ENV = process.env;
 
   beforeEach(() => {
-    // Clone env so we can mutate without polluting other tests
     process.env = { ...ORIGINAL_ENV };
     jest.resetModules();
   });
@@ -26,20 +27,8 @@ describe('supabase client bootstrap', () => {
     jest.resetModules();
   });
 
-  it('throws on import when EXPO_PUBLIC_SUPABASE_URL is missing', () => {
+  it('does NOT throw on import when env vars are missing (cold-start crash regression guard)', () => {
     delete process.env.EXPO_PUBLIC_SUPABASE_URL;
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-
-    expect(() => {
-      jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('../src/lib/supabase');
-      });
-    }).toThrow('EXPO_PUBLIC_SUPABASE_URL');
-  });
-
-  it('throws on import when EXPO_PUBLIC_SUPABASE_ANON_KEY is missing', () => {
-    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     delete process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
     expect(() => {
@@ -47,22 +36,64 @@ describe('supabase client bootstrap', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../src/lib/supabase');
       });
-    }).toThrow('EXPO_PUBLIC_SUPABASE_ANON_KEY');
+    }).not.toThrow();
   });
 
-  it('exports supabase client when both env vars are set', () => {
+  it('isSupabaseConfigured() reflects env presence', () => {
+    jest.isolateModules(() => {
+      delete process.env.EXPO_PUBLIC_SUPABASE_URL;
+      delete process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const m = require('../src/lib/supabase') as {
+        isSupabaseConfigured: () => boolean;
+      };
+      expect(m.isSupabaseConfigured()).toBe(false);
+
+      process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+      expect(m.isSupabaseConfigured()).toBe(true);
+    });
+  });
+
+  it('getSupabase() throws at CALL time when EXPO_PUBLIC_SUPABASE_URL is missing', () => {
+    delete process.env.EXPO_PUBLIC_SUPABASE_URL;
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const m = require('../src/lib/supabase') as {
+        getSupabase: () => unknown;
+      };
+      expect(() => m.getSupabase()).toThrow('EXPO_PUBLIC_SUPABASE_URL');
+    });
+  });
+
+  it('getSupabase() throws at CALL time when EXPO_PUBLIC_SUPABASE_ANON_KEY is missing', () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+    delete process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const m = require('../src/lib/supabase') as {
+        getSupabase: () => unknown;
+      };
+      expect(() => m.getSupabase()).toThrow('EXPO_PUBLIC_SUPABASE_ANON_KEY');
+    });
+  });
+
+  it('getSupabase() returns a cached client when both env vars are set', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
-    let supabaseModule: { supabase: unknown } | undefined;
-    expect(() => {
-      jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        supabaseModule = require('../src/lib/supabase') as { supabase: unknown };
-      });
-    }).not.toThrow();
-
-    expect(supabaseModule).toBeDefined();
-    expect(supabaseModule?.supabase).toBeDefined();
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const m = require('../src/lib/supabase') as {
+        getSupabase: () => unknown;
+      };
+      const a = m.getSupabase();
+      const b = m.getSupabase();
+      expect(a).toBeDefined();
+      expect(a).toBe(b); // cached singleton
+    });
   });
 });

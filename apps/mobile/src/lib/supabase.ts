@@ -1,72 +1,101 @@
 /**
- * SOLDI Supabase client singleton.
+ * SOLDI Supabase client — LAZY singleton.
  *
- * Exposes a single `supabase` client instance configured with:
- * - expo-secure-store as the auth session storage backend (never AsyncStorage —
- *   CLAUDE.md §Security rule: "No sensitive data in AsyncStorage ever").
- * - autoRefreshToken and persistSession enabled.
- * - detectSessionInUrl: false (no web OAuth redirects in a RN app).
+ * Scope: Supabase is **AI-pipeline only** (CLAUDE.md / PROJECT.md). The core
+ * app — dashboard, biometric gate, CSV export, local op-sqlite data — MUST
+ * launch with zero Supabase configuration. Therefore this module performs NO
+ * work and NO validation at import time.
  *
- * Fail-fast on import: if EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY
- * are missing the module throws immediately, matching the lib/http.ts discipline
- * of zero silent failures. This is also the contract asserted by
- * apps/mobile/tests/ai-categorize-service.test.ts.
+ * Regression guard (crash incident 6485AB3B, TestFlight build 4): the previous
+ * version validated env + created the client at module scope and `throw`- on
+ * absence. expo-router eagerly evaluates `app/**` and its static import graph
+ * at cold start; the chain
+ *   app/_layout.tsx -> ChatBottomSheet -> chatStore -> aiQuery -> @lib/supabase
+ * meant the import-time throw fired before React mounted, surfaced via Expo's
+ * errorRecoveryQueue, and aborted the app (SIGABRT) — bypassing the try/catch
+ * guards already present at every AI call site. Validation is now deferred to
+ * first real use; AI callers (aiQuery / aiCategorize) already catch and degrade
+ * gracefully. Mirrors the graceful-optional pattern in lib/observability.ts.
  *
- * Supabase project scope:
- * Auth-only project. Remote Postgres holds merchant_overrides + (Phase 4)
- * chat_session_logs. Transaction rows stay local (op-sqlite) per CONTEXT.md
- * D-17′..D-20′ FactsPack architecture.
+ * Client config:
+ * - expo-secure-store as auth session storage (never AsyncStorage —
+ *   CLAUDE.md §Security: "No sensitive data in AsyncStorage ever").
+ * - autoRefreshToken + persistSession enabled.
+ * - detectSessionInUrl: false (RN apps have no URL OAuth callback).
  */
 
 import { createClient } from '@supabase/supabase-js';
 import { secureStorageAdapter } from './secureStorage';
 
-// ---------------------------------------------------------------------------
-// Environment validation (fail-fast on import)
-// ---------------------------------------------------------------------------
+type SupabaseClientInstance = ReturnType<typeof createClient>;
 
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+let _client: SupabaseClientInstance | null = null;
 
-if (!SUPABASE_URL || SUPABASE_URL.trim() === '') {
-  throw new Error(
-    '[supabase] EXPO_PUBLIC_SUPABASE_URL is not set. ' +
-    'Add it to your .env.local file (Supabase Dashboard → Project Settings → API → Project URL).',
+/**
+ * True when both Supabase env vars are present. AI features call this to skip
+ * network work (and show a graceful "AI unavailable" path) when the optional
+ * backend is unconfigured, instead of throwing.
+ */
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  return (
+    typeof url === 'string' &&
+    url.trim() !== '' &&
+    typeof anonKey === 'string' &&
+    anonKey.trim() !== ''
   );
 }
 
-if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.trim() === '') {
-  throw new Error(
-    '[supabase] EXPO_PUBLIC_SUPABASE_ANON_KEY is not set. ' +
-    'Add it to your .env.local file (Supabase Dashboard → Project Settings → API → anon public key).',
-  );
+/**
+ * Lazily creates and caches the Supabase client.
+ *
+ * Throws a clear error if the env vars are absent — but only at CALL time, by
+ * which point every caller is inside a try/catch (chatStore.retryLast,
+ * aiCategorizeTrigger .catch) and degrades gracefully. NEVER call this at
+ * module scope: doing so reintroduces the cold-start crash.
+ */
+export function getSupabase(): SupabaseClientInstance {
+  if (_client !== null) {
+    return _client;
+  }
+
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || url.trim() === '') {
+    throw new Error(
+      '[supabase] EXPO_PUBLIC_SUPABASE_URL is not set. ' +
+        'Add it to .env / EAS build env (Supabase Dashboard → Project Settings → API → Project URL).',
+    );
+  }
+  if (!anonKey || anonKey.trim() === '') {
+    throw new Error(
+      '[supabase] EXPO_PUBLIC_SUPABASE_ANON_KEY is not set. ' +
+        'Add it to .env / EAS build env (Supabase Dashboard → Project Settings → API → anon public key).',
+    );
+  }
+
+  _client = createClient(url, anonKey, {
+    auth: {
+      storage: secureStorageAdapter,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false, // RN apps do not use URL-based OAuth callbacks
+    },
+  });
+  return _client;
 }
-
-// ---------------------------------------------------------------------------
-// Client singleton
-// ---------------------------------------------------------------------------
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    storage: secureStorageAdapter,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false, // RN apps do not use URL-based OAuth callbacks
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Session helper
-// ---------------------------------------------------------------------------
 
 /**
  * Returns the current Supabase session, or null if the user is not signed in.
  *
  * Usage: `const session = await getSession();`
- * Throws if Supabase auth layer fails (network error, keychain locked).
+ * Throws if Supabase is unconfigured or the auth layer fails (network error,
+ * keychain locked). All call sites are inside try/catch and degrade gracefully.
  */
 export async function getSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await getSupabase().auth.getSession();
   if (error) {
     throw new Error(`[supabase] getSession failed: ${error.message}`);
   }
