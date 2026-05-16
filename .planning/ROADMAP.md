@@ -16,7 +16,7 @@ Seven-phase, 13-week roadmap that takes SOLDI from empty git repo to live App St
 - [ ] **Phase 2: Dashboard + Transactions + Categories** — Animated overview + 60fps list + category CRUD
 - [ ] **Phase 3: AI Categorization + Chat** — Auto-categorization that learns + NL query bottom sheet (2026-05-15: code-complete, no open code gaps; human_needed — SC#1 accuracy / SC#3 latency / SC#5 offline-on-device, gated on P0 #5 Supabase + #6 Anthropic key. Mark [x] after 03-HUMAN-UAT passes.)
 - [x] **Phase 4: Jars + i18n + Accessibility** — monobank-style jars + full Ukrainian + WCAG AA pass (completed 2026-05-15)
-- [ ] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, Internal TestFlight launch
+- [x] **Phase 5: Polish + TestFlight Beta** — Settings, biometric, notifications, performance, Internal TestFlight launch (completed 2026-05-16)
 - [ ] **Phase 6: App Store Submission + Launch** — Review, screenshots, case study, public launch
 
 ## Phase Details
@@ -174,7 +174,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 05-04-PLAN.md — Internal TestFlight EAS profile + graceful crash monitoring + build/upload + ≥1 internal tester (beta LAUNCH, D-04)
+- [x] 05-04-PLAN.md — Internal TestFlight EAS profile + graceful crash monitoring + build/upload + ≥1 internal tester (beta LAUNCH, D-04)
 
 ### Phase 6: App Store Submission + Launch
 
@@ -210,7 +210,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
 | 4. Jars + i18n + Accessibility | 4/4 | Complete   | 2026-05-15 |
-| 5. Polish + TestFlight Beta | 3/4 | In Progress|  |
+| 5. Polish + TestFlight Beta | 4/4 | Complete   | 2026-05-16 |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
 
 ---
