@@ -34,21 +34,52 @@ decisions:
   - "beforeBreadcrumb filter drops any breadcrumb with a 'description' data key — prevents financial field names leaking into Sentry (CLAUDE.md security rule)"
   - "REPLACE_WITH_APPLE_ID_BEFORE_SUBMIT placeholders preserved in both submit.testflight and submit.production lanes — Apple IDs filled by user in Task 3 after P0 #3 Apple enrollment"
 metrics:
-  duration: ~20 min
+  duration: ~20 min config + launch session 2026-05-16
   completed: "2026-05-16"
-  tasks_completed: 1
+  tasks_completed: 3
   tasks_total: 3
   task_1_status: done
-  task_2_status: blocked-human-action
-  task_3_status: blocked-depends-on-task-2
+  task_2_status: done
+  task_3_status: done
   files_created: 1
   files_modified: 2
+  testflight_build: "4"
+  testflight_build_id: a29159a3-65b4-4b93-82de-4c7241588285
+  testflight_ipa: https://expo.dev/artifacts/eas/m5jPUiVShwMVj1gt1f3xJV.ipa
+  asc_app_id: "6770086922"
+  asc_submission: https://expo.dev/accounts/fartguy/projects/soldi/submissions/86769705-c5c1-405e-9a58-f918c83b4311
+  device_uat_status: pending-d04-on-device-confirm
 requirements: []
 ---
 
 # Phase 5 Plan 04: Internal TestFlight Beta Launch Summary
 
-**One-liner:** TestFlight Internal EAS build+submit profile added with Apple placeholder convention, plus a graceful-optional Sentry init wrapper wired at startup — launch steps blocked on P0 #3 (Apple Developer enrollment) and P0 #4 (eas init).
+**One-liner:** TestFlight Internal EAS build+submit profile added with Apple placeholder convention, plus a graceful-optional Sentry init wrapper wired at startup. **LAUNCHED 2026-05-16 (session 2):** P0 #3/#4 cleared, 4 EAS build attempts (2 real config bugs fixed), build #4 uploaded to App Store Connect TestFlight. Device D-04 confirm pending.
+
+## Launch Record — 2026-05-16 session 2 (Tasks 2-3 DONE)
+
+P0 #3 (Apple Developer Individual) active; P0 #4 EAS project linked `@fartguy/soldi` (`b842e5f5-...`). Submit auth via App Store Connect API key (`FJ9DL5B479`), non-interactive. ASC app record created → ascAppId `6770086922`. Build #4 `a29159a3` v1.0.0 → submitted to App Store Connect (submission `86769705-...`), Apple processing.
+
+**7 forward-only commits (main):**
+| Commit | Fix |
+|--------|-----|
+| `c139bda` | Removed invalid `@op-engineering/op-sqlite` config plugin (broke `expo config`→`eas init/build`); set real EAS projectId |
+| `14b4f42` | eas.json submit.testflight → ASC API key schema (non-interactive) |
+| `b3ec257` | ascAppId `6770086922` from App Store Connect record |
+| `6dd616d` | Deduped android biometric permissions (eas init artifact) |
+| `537250d` | Added `expo-updates` (eas update:configure) |
+| `1303ea8` | **Build #1 blocker**: `chat-empty.svg.tsx`→`chat-empty.tsx`, fixed Metro `.svg` assetExt resolution failure in ChatEmptyState |
+| `cab1a28` | **Build #3 blocker**: `SENTRY_DISABLE_AUTO_UPLOAD=true` in testflight env (sentry-cli failed: no org, Sentry intentionally skipped) |
+
+**Build attempts:** #1 ba63512c (JS bundle fail, chat-empty) → #3 60f2ff4f (Xcode/Sentry fail) → #4 a29159a3 **finished** → submitted.
+
+**Verification:** `expo export --platform ios` exit 1→0, tsc 0, expo lint 0 (each fix gated locally before rebuild).
+
+**Remaining (UAT, not task-blocking):** Apple processing → user adds self as Internal Tester → installs via TestFlight → D-04 bar (cold launch + biometric gate + dashboard render). Phase-level verification deferred until D-04 device confirm.
+
+---
+
+### (Historical) Original blocked-launch instructions below — superseded by Launch Record above
 
 ## What Was Built
 

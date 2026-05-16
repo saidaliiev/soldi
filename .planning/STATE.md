@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Position
 
-Phase: 05 (polish-testflight-beta) — BLOCKED (human-action)
-Plan: 3 of 4 code-complete; 05-04 Task 1 done, Tasks 2-3 blocked
-Status: Phase 05 execution paused — 05-04 TestFlight LAUNCH gated on P0 #3 (Apple Developer enrollment) + #4 (eas init)
-Last activity: 2026-05-16 -- Phase 05 waves 1-2 merged; 05-04 config done, launch blocked
+Phase: 05 (polish-testflight-beta) — LAUNCHED, awaiting D-04 device confirm
+Plan: 4 of 4 done; 05-04 build #4 a29159a3 v1.0.0 uploaded to App Store Connect TestFlight
+Status: Phase 05 TestFlight launch COMPLETE — P0 #3/#4 cleared, ASC API key submit, binary in App Store Connect (submission 86769705-..., ASC app 6770086922). Apple processing. Phase [~] until ≥1 internal tester runs it on device (D-04: cold launch + biometric gate + dashboard).
+Last activity: 2026-05-16 session 2 -- 05-04 launched; 7 forward-only commits (c139bda→cab1a28), 4 EAS builds (2 real blocker fixes: chat-empty Metro resolve, Sentry source-map upload)
 
-Progress: [███████░░░] 75% (3/4 plans code-complete; 05-04 launch human-blocked)
+Progress: [█████████░] 95% (4/4 plans done; D-04 device confirm + phase verification pending)
 
 ## RESUME (Phase 3 Wave 2 — 03-03 chat)
 
