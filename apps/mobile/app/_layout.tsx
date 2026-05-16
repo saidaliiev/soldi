@@ -22,8 +22,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
+import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import { COLORS } from '@design/tokens';
 import { queryClient } from '@api/queryClient';
@@ -38,6 +40,30 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // ignored
 });
 
+// D-01: 5-minute background threshold — a code constant, not a user setting.
+const RESUME_LOCK_MS = 5 * 60 * 1000;
+
+/**
+ * Prompts biometric / device passcode authentication.
+ * D-01: disableDeviceFallback=false → OS passcode offered on biometric failure.
+ * No app-level retry cap — iOS biometric lockout handles excessive failures.
+ * Returns true on success, false on any failure or throw.
+ * Never logs failure detail (CLAUDE.md security rule / T-05-01).
+ */
+async function authenticateDevice(): Promise<boolean> {
+  try {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Unlock Soldi',
+      fallbackLabel: 'Use Passcode',
+      disableDeviceFallback: false, // D-01: OS passcode fallback, no app retry cap
+    });
+    return result.success;
+  } catch {
+    // Never log biometric failure details (CLAUDE.md security rule)
+    return false;
+  }
+}
+
 export default function RootLayout() {
   // D-07: read persisted language for root key-bump remount.
   // When LanguageToggle calls setLanguage, this selector re-fires → language
@@ -45,6 +71,11 @@ export default function RootLayout() {
   // This retranslates module-scope t(), Intl.DateTimeFormat date headers, and
   // FlashList sticky headers that don't update via useTranslation() alone.
   const language = useOnboardingStore((s) => s.language) ?? 'en';
+  const biometricEnabled = useOnboardingStore((s) => s.biometricEnabled);
+
+  // T-05-01: biometricPassed gates the render — null returned until auth succeeds.
+  // Initialised to true when biometric is disabled (no gate needed).
+  const [biometricPassed, setBiometricPassed] = useState(!biometricEnabled);
 
   const [oswaldLoaded] = useOswald({
     Oswald: Oswald_500Medium,
@@ -104,7 +135,55 @@ export default function RootLayout() {
     })();
   }, []);
 
-  if (!fontsLoaded || !i18nReady || !dbReady) {
+  // T-05-01: Cold-start biometric gate — runs once after db/i18n/fonts are ready.
+  // If biometricEnabled is false, biometricPassed was initialised true → no-op.
+  // If true, authenticate and re-attempt on failure until success (never render
+  // partial UI on failed auth — T-05-01 ASVS L1 auth-on-open).
+  useEffect(() => {
+    if (!biometricEnabled) {
+      setBiometricPassed(true);
+      return;
+    }
+    if (!fontsLoaded || !i18nReady || !dbReady) return;
+
+    let cancelled = false;
+    void (async () => {
+      // Re-attempt on failure — never render partial UI on failed auth (T-05-01).
+      // iOS handles lockout after excessive failures.
+      while (true) {
+        const passed = await authenticateDevice();
+        if (cancelled) return;
+        if (passed) {
+          setBiometricPassed(true);
+          return;
+        }
+        // Failed auth (e.g. cancelled by user) — loop re-prompts immediately.
+        // No failure logging (CLAUDE.md security rule).
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [biometricEnabled, fontsLoaded, i18nReady, dbReady]);
+
+  // D-01: AppState resume gate — re-locks after > 5 minutes backgrounded.
+  useEffect(() => {
+    let backgroundedAt: number | null = null;
+
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'background') {
+        backgroundedAt = Date.now();
+      } else if (nextState === 'active' && backgroundedAt !== null) {
+        const elapsed = Date.now() - backgroundedAt;
+        backgroundedAt = null;
+        if (biometricEnabled && elapsed > RESUME_LOCK_MS) {
+          setBiometricPassed(false); // triggers render-gate → re-auth via cold-start effect
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [biometricEnabled]);
+
+  // T-05-01: Render gate — never render partial UI when auth is pending/failed.
+  if (!fontsLoaded || !i18nReady || !dbReady || !biometricPassed) {
     return null;
   }
 
