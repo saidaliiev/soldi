@@ -27,6 +27,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import * as LocalAuthentication from 'expo-local-authentication';
 
+// Side-effect import: registers foreground notification handler at module load
+// (must run before any notification can fire — T-05-07 / notificationHandler.ts)
+import '@/src/features/notifications/notificationHandler';
+import { scheduleDailyDigest } from '@/src/features/notifications/digestNotification';
+
 import { COLORS } from '@design/tokens';
 import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
@@ -72,6 +77,7 @@ export default function RootLayout() {
   // FlashList sticky headers that don't update via useTranslation() alone.
   const language = useOnboardingStore((s) => s.language) ?? 'en';
   const biometricEnabled = useOnboardingStore((s) => s.biometricEnabled);
+  const digestEnabled = useOnboardingStore((s) => s.digestEnabled);
 
   // T-05-01: biometricPassed gates the render — null returned until auth succeeds.
   // Initialised to true when biometric is disabled (no gate needed).
@@ -165,6 +171,11 @@ export default function RootLayout() {
   }, [biometricEnabled, fontsLoaded, i18nReady, dbReady]);
 
   // D-01: AppState resume gate — re-locks after > 5 minutes backgrounded.
+  // 05-02 extension: on every 'active' transition while digestEnabled, re-schedule
+  // the 09:00 digest with a freshly computed yesterday-spend body (D-03: iOS
+  // calendar triggers freeze content.body at schedule time — must rebuild daily).
+  // The digest re-schedule is a sibling of the biometric check, not nested inside
+  // the elapsed-time gate — it fires on every foreground regardless of elapsed time.
   useEffect(() => {
     let backgroundedAt: number | null = null;
 
@@ -174,13 +185,24 @@ export default function RootLayout() {
       } else if (nextState === 'active' && backgroundedAt !== null) {
         const elapsed = Date.now() - backgroundedAt;
         backgroundedAt = null;
+
+        // Biometric re-lock (05-01) — only when elapsed > threshold
         if (biometricEnabled && elapsed > RESUME_LOCK_MS) {
           setBiometricPassed(false); // triggers render-gate → re-auth via cold-start effect
+        }
+
+        // D-03 / NOTIF-01: re-schedule digest so body reflects THIS day's spend.
+        // Unconditional on elapsed time — cancel-before-reschedule is idempotent
+        // (T-05-10); graceful so a notification failure never affects the biometric branch.
+        if (digestEnabled) {
+          scheduleDailyDigest(true).catch(() => {
+            // err.name logged inside scheduleDailyDigest; swallow here
+          });
         }
       }
     });
     return () => sub.remove();
-  }, [biometricEnabled]);
+  }, [biometricEnabled, digestEnabled]);
 
   // T-05-01: Render gate — never render partial UI when auth is pending/failed.
   if (!fontsLoaded || !i18nReady || !dbReady || !biometricPassed) {

@@ -2,11 +2,12 @@
  * SOLDI Settings screen.
  *
  * D-06: stack route reached via gear in dashboard header (not a 5th tab).
- * Phase 5: Language + Security (biometric toggle) + Data (CSV export) sections.
+ * Phase 5: Language + Security (biometric toggle) + Notifications (digest
+ * toggle) + Data (CSV export) sections.
  *
  * Design: RN primitives, StyleSheet.create, tokens, TYPE.* presets.
  * Accessibility: every interactive element has accessibilityLabel + accessibilityRole.
- * Section order (Claude's discretion per CONTEXT.md): Language → Security → Data.
+ * Section order: Language → Security → Notifications → Data.
  */
 
 import React from 'react';
@@ -22,6 +23,7 @@ import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { LanguageToggle } from './LanguageToggle';
 import { BiometricToggle } from './BiometricToggle';
+import { DigestToggle } from './DigestToggle';
 import { ExportButton } from './ExportButton';
 
 export function SettingsScreen(): React.JSX.Element {
@@ -51,6 +53,16 @@ export function SettingsScreen(): React.JSX.Element {
         </Text>
         <View style={styles.card}>
           <BiometricToggle />
+        </View>
+      </View>
+
+      {/* Notifications section — 09:00 daily digest opt-in (NOTIF-01 / D-03) */}
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel} allowFontScaling>
+          {t('settings.notifications_section')}
+        </Text>
+        <View style={styles.card}>
+          <DigestToggle />
         </View>
       </View>
 

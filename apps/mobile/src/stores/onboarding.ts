@@ -28,12 +28,15 @@ export type OnboardingState = {
   completed: boolean;
   /** Phase 5 — ONBD-04: biometric app-open gate enabled flag. */
   biometricEnabled: boolean;
+  /** Phase 5 — NOTIF-01: 09:00 daily digest opt-in flag. Default OFF per D-03. */
+  digestEnabled: boolean;
 
   // Setters
   setLanguage: (lng: 'en' | 'uk') => void;
   setDataSource: (source: DataSource) => void;
   setCompleted: (value: boolean) => void;
   setBiometricEnabled: (value: boolean) => void;
+  setDigestEnabled: (value: boolean) => void;
   reset: () => void;
 };
 
@@ -67,6 +70,7 @@ const initialState = {
   dataSource: null,
   completed: false,
   biometricEnabled: false,   // default OFF — user must explicitly enable (D-03 pattern)
+  digestEnabled: false,      // default OFF — opt-in, in-context permission (D-03 / NOTIF-01)
 } as const;
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -78,6 +82,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       setDataSource: (source) => set({ dataSource: source }),
       setCompleted: (value) => set({ completed: value }),
       setBiometricEnabled: (value) => set({ biometricEnabled: value }),
+      setDigestEnabled: (value) => set({ digestEnabled: value }),
       reset: () => set(initialState),
     }),
     {
