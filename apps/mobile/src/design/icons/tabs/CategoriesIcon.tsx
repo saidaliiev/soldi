@@ -27,7 +27,9 @@ const PATH_D =
   // Punch-hole dot
   'M7.2 11.7 Q7.5 11.0 8.2 11.0 Q9.0 11.0 9.2 11.7 Q9.3 12.4 8.7 12.7 Q7.9 12.9 7.4 12.5 Q7.1 12.2 7.2 11.7 Z';
 
-export function CategoriesIcon({ color, size = 24 }: Props): React.JSX.Element {
+// React.memo — see DashboardIcon for rationale (primitive props, skip Skia
+// path recompute on TabLayout re-render).
+function CategoriesIconBase({ color, size = 24 }: Props): React.JSX.Element {
   const path = React.useMemo(() => Skia.Path.MakeFromSVGString(PATH_D), []);
   const scale = size / 24;
   if (path == null) return <Canvas style={{ width: size, height: size }} />;
@@ -44,3 +46,5 @@ export function CategoriesIcon({ color, size = 24 }: Props): React.JSX.Element {
     </Canvas>
   );
 }
+
+export const CategoriesIcon = React.memo(CategoriesIconBase);

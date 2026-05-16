@@ -18,6 +18,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -28,11 +29,16 @@ import { ExportButton } from './ExportButton';
 
 export function SettingsScreen(): React.JSX.Element {
   const { t } = useTranslation();
+  // Bottom inset only: the native Stack header (app/_layout.tsx
+  // name="settings", headerShown default true) already insets the top status
+  // bar — adding a top inset here would double-pad. insets.bottom clears the
+  // home-indicator so the last card / scroll end isn't occluded.
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: SPACING.xxl + insets.bottom }]}
       showsVerticalScrollIndicator={false}
       accessibilityLabel={t('settings.title')}
     >

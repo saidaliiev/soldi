@@ -52,7 +52,12 @@ import { COLORS, RADIUS, SPACING } from '@design/tokens';
 // On orientation change or iPad Split View, the cached value goes stale causing
 // the sheet to animate to the wrong snap position. Moved inside component as
 // useWindowDimensions() which is reactive. See restingHeight derivation below.
-const BACKDROP_ALPHA = '90'; // 0.56 in hex; sheet backdrops use a softer fade
+// Scrim alpha. Was '90' (0.56): textPrimary is warm brown (#2C1810), not
+// black, and the app bg is light cream — at 0.56 the background list stayed
+// visibly legible through the dim (looked like the sheet was transparent).
+// 'D9' = 0.85 gives a proper opaque scrim while keeping the warm-brown tint
+// (not a harsh pure-black overlay).
+const BACKDROP_ALPHA = 'D9'; // 0.85
 const HANDLE_MUTED_SUFFIX = '66'; // 40% alpha 8-bit hex
 
 export type BottomSheetPrimitiveRef = {

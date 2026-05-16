@@ -123,7 +123,9 @@ const JARS_TAB_D =
   'M5.2 9.0 L18.8 9.0 ' +
   'M9.6 4.0 L9.2 2.6 M14.4 4.0 L14.8 2.6';
 
-export function JarsIcon({ color, size = 24 }: Props): React.JSX.Element {
+// React.memo — JarsIcon is the 4th tab-bar icon; see DashboardIcon for
+// rationale (primitive props, skip Skia path recompute on TabLayout re-render).
+function JarsIconBase({ color, size = 24 }: Props): React.JSX.Element {
   const path = React.useMemo(() => Skia.Path.MakeFromSVGString(JARS_TAB_D), []);
   const scale = size / 24;
 
@@ -144,3 +146,5 @@ export function JarsIcon({ color, size = 24 }: Props): React.JSX.Element {
     </Canvas>
   );
 }
+
+export const JarsIcon = React.memo(JarsIconBase);

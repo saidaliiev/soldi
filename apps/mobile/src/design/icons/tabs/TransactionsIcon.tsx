@@ -32,7 +32,9 @@ const PATH_D =
   'M5.3 17.0 L5.6 17.0 ' +
   'M8.4 17.0 L18.8 16.9';
 
-export function TransactionsIcon({ color, size = 24 }: Props): React.JSX.Element {
+// React.memo — see DashboardIcon for rationale (primitive props, skip Skia
+// path recompute on TabLayout re-render).
+function TransactionsIconBase({ color, size = 24 }: Props): React.JSX.Element {
   const path = React.useMemo(() => Skia.Path.MakeFromSVGString(PATH_D), []);
   const scale = size / 24;
   if (path == null) return <Canvas style={{ width: size, height: size }} />;
@@ -49,3 +51,5 @@ export function TransactionsIcon({ color, size = 24 }: Props): React.JSX.Element
     </Canvas>
   );
 }
+
+export const TransactionsIcon = React.memo(TransactionsIconBase);

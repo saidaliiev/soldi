@@ -35,7 +35,11 @@ const PATH_D =
   // bottom-right tile
   'M13.4 13.2 L20.6 13.4 Q21.0 13.4 21.0 13.8 L21.0 20.8 Q21.0 21.2 20.6 21.2 L13.4 21.2 Q13.0 21.2 13.0 20.8 Z';
 
-export function DashboardIcon({ color, size = 24 }: Props): React.JSX.Element {
+// React.memo: tab icons re-render whenever TabLayout re-renders (tab focus
+// change, i18n language switch). Without memo each render re-runs
+// Skia.Path.MakeFromSVGString + remounts the Canvas. Props are primitive
+// (color, size) so the default shallow comparator is correct.
+function DashboardIconBase({ color, size = 24 }: Props): React.JSX.Element {
   const path = React.useMemo(() => Skia.Path.MakeFromSVGString(PATH_D), []);
   const scale = size / 24;
   if (path == null) {
@@ -55,3 +59,5 @@ export function DashboardIcon({ color, size = 24 }: Props): React.JSX.Element {
     </Canvas>
   );
 }
+
+export const DashboardIcon = React.memo(DashboardIconBase);
