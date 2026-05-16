@@ -45,7 +45,8 @@
       "env": {
         "APP_VARIANT": "production",
         "EXPO_PUBLIC_ENV": "production",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://b027527d99c606003408aea179c217ee@o4511168991133696.ingest.de.sentry.io/4511400894857296"
       }
     },
     "production": {
