@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { ChatEmptyIllustration } from '@design/illustrations/chat-empty.svg';
+import { ChatEmptyIllustration } from '@design/illustrations/chat-empty';
 import { PromptSuggestionChip } from './PromptSuggestionChip';
 
 type Props = {
