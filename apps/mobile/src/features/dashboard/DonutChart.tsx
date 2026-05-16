@@ -36,6 +36,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
+import { markFirstFrame } from '@lib/perf';
 import { buildDonutArcs, computeSliceAngles } from './donutArcs';
 import type { CategoryBreakdown, CategorySlice } from './types';
 
@@ -101,18 +102,18 @@ export function DonutChart({
     opacity: canvasOpacity.value,
   }));
 
-  // ---- D-27: dev-only first-frame timing -----------------------------------
+  // ---- QUAL-06: Skia first-frame mark (perf.ts) ----------------------------
+  // Fires once on the first render pass where the chart has data to paint.
+  // markFirstFrame() is idempotent — safe across React re-renders (ref guard
+  // kept for clarity, but perf.ts guards internally as well).
+  // T-05-12: markFirstFrame() logs only the numeric ms — no financial data.
 
-  if (__DEV__ && !firstFrameLogged.current) {
-    console.time('donut-first-frame');
+  if (!firstFrameLogged.current) {
     firstFrameLogged.current = true;
-    // Schedule the matching timeEnd after the first paint.
+    // Defer one frame so the mark fires after the Skia canvas has committed,
+    // not before it — gives a more accurate first-paint measurement.
     setTimeout(() => {
-      try {
-        console.timeEnd('donut-first-frame');
-      } catch {
-        // already ended — ignore
-      }
+      markFirstFrame();
     }, 0);
   }
 

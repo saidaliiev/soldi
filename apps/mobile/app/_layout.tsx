@@ -36,6 +36,7 @@ import { COLORS } from '@design/tokens';
 import { queryClient } from '@api/queryClient';
 import { getDB, runMigrations } from '@lib/db';
 import { initI18n, i18n } from '@lib/i18n';
+import { markColdStart, markAppReady } from '@lib/perf';
 import { useOnboardingStore } from '@stores/onboarding';
 import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
 import { PropagationToast } from '@/src/features/transactions/PropagationToast';
@@ -44,6 +45,11 @@ import { ChatBottomSheet } from '@/src/features/chat/ChatBottomSheet';
 SplashScreen.preventAutoHideAsync().catch(() => {
   // ignored
 });
+
+// QUAL-05: Cold-start instrumentation — module-load mark (origin timestamp).
+// perf.ts captures Date.now() at import time; markColdStart() is the auditable
+// call-site confirming the mark is intentional (grep target in SUMMARY).
+markColdStart();
 
 // D-01: 5-minute background threshold — a code constant, not a user setting.
 const RESUME_LOCK_MS = 5 * 60 * 1000;
@@ -208,6 +214,12 @@ export default function RootLayout() {
   if (!fontsLoaded || !i18nReady || !dbReady || !biometricPassed) {
     return null;
   }
+
+  // QUAL-05: Cold-start mark — gate is open, first interactive render is imminent.
+  // biometric auth time IS included in coldStartMs (user-perceived time to interactive).
+  // Called here (not in an effect) so it fires on the same synchronous pass that
+  // produces the first real render. Idempotent — safe across React re-renders.
+  markAppReady();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
