@@ -42,6 +42,12 @@ import { useOnboardingStore } from '@stores/onboarding';
 import { RecategorizeBottomSheet } from '@/src/features/transactions/RecategorizeBottomSheet';
 import { PropagationToast } from '@/src/features/transactions/PropagationToast';
 import { ChatBottomSheet } from '@/src/features/chat/ChatBottomSheet';
+// Sentry.wrap (below) needs the namespace; init itself is owned solely by
+// initObservability() (lib/observability.ts) — privacy-filtered (beforeBreadcrumb
+// drops financial fields), DSN from EXPO_PUBLIC_SENTRY_DSN, no sendDefaultPii.
+// The sentry-wizard-injected Sentry.init({ sendDefaultPii: true }) was removed:
+// it duplicated init and over-collected PII against CLAUDE.md fintech privacy.
+import * as Sentry from '@sentry/react-native';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // ignored
@@ -81,7 +87,7 @@ async function authenticateDevice(): Promise<boolean> {
   }
 }
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   // D-07: read persisted language for root key-bump remount.
   // When LanguageToggle calls setLanguage, this selector re-fires → language
   // changes → key on I18nextProvider changes → full subtree remount.
@@ -268,4 +274,4 @@ export default function RootLayout() {
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
-}
+});

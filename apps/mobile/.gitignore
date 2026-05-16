@@ -43,3 +43,5 @@ app-example
 /android
 # Test DB artifacts
 t-*.db
+
+.env.local
