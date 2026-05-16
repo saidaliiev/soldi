@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Position
 
-Phase: 05 (polish-testflight-beta) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 05
-Last activity: 2026-05-16 -- Phase 05 execution started
+Phase: 05 (polish-testflight-beta) — BLOCKED (human-action)
+Plan: 3 of 4 code-complete; 05-04 Task 1 done, Tasks 2-3 blocked
+Status: Phase 05 execution paused — 05-04 TestFlight LAUNCH gated on P0 #3 (Apple Developer enrollment) + #4 (eas init)
+Last activity: 2026-05-16 -- Phase 05 waves 1-2 merged; 05-04 config done, launch blocked
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 75% (3/4 plans code-complete; 05-04 launch human-blocked)
 
 ## RESUME (Phase 3 Wave 2 — 03-03 chat)
 
