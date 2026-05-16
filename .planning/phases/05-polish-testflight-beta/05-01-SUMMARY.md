@@ -49,12 +49,14 @@ decisions:
   - "biometricPassed initialised to !biometricEnabled so gate is transparent when feature is disabled"
   - "Cold-start auth loop re-prompts on failure — never renders partial UI (T-05-01 ASVS L1)"
 metrics:
-  duration: ~45 min
+  duration: ~50 min
   completed: "2026-05-16"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
+  task_3_status: resolved-device-deferred
   files_created: 4
   files_modified: 9
+requirements: [ONBD-04, SET-01, SET-03, SET-04]
 ---
 
 # Phase 5 Plan 01: Biometric Gate + Settings Security/Data + CSV Export Summary
@@ -85,13 +87,54 @@ metrics:
 - `src/features/settings/ExportButton.tsx`: `Pressable` calling `buildExportFiles()` then two sequential `Sharing.shareAsync()` calls (D-02 — expo-sharing shares one file at a time); graceful try/catch; busy/button a11y; 44pt min tap target
 - `src/features/settings/SettingsScreen.tsx`: Security section (`BiometricToggle`) + Data section (`ExportButton`) added in place; "Phase 5" placeholder comment removed; section order: Language → Security → Data
 
-### Task 3: Device verification — checkpoint:human-verify (not yet approved)
+### Task 3: Device verification — checkpoint-resolved (device-deferred)
 
-UAT items for physical iPhone verification:
-1. Settings → enable Face ID/Touch ID → cancel prompt → toggle stays OFF; succeed → toggle ON, persists across restart
-2. Gate enabled → background > 5 min → foreground → biometric prompt fires; < 5 min → no prompt
-3. Fresh onboarding → biometric opt-in step appears; Skip → gate off; Enable → gate on
-4. Settings → Export CSV → share-sheet offers transactions.csv (no description column), then jars.csv (with contribution ledger)
+`checkpoint:human-verify` auto-approved by orchestrator (AUTO_MODE). No physical
+iPhone available in this environment — per Phase 3/4 deferral pattern, the four
+device verification items are recorded as UAT pending P0 #1 (see
+"Human Verification Required" section below). Task 3 is **resolved (device-deferred)**,
+not failed. Code-side acceptance gates (tsc, lint, i18n parity, source greps) all
+pass — see Verification Gate Results.
+
+## Requirement IDs Covered
+
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| ONBD-04 | Onboarding opt-in to biometric gate | Code-complete (UAT pending P0 #1) |
+| SET-01 | Toggle biometric gate from Settings | Code-complete (UAT pending P0 #1) |
+| SET-03 | Export all data as CSV via share-sheet | Code-complete (UAT pending P0 #1) |
+| SET-04 | FaceID/TouchID enforcement on app open | Code-complete (UAT pending P0 #1) |
+
+## Verification Gate Results
+
+Run from `apps/mobile/` (jest N/A — no harness, known infra gap per STATE.md):
+
+| Gate | Command | Exit Code |
+|------|---------|-----------|
+| TypeScript | `npx tsc --noEmit` | **0** |
+| Lint | `npx expo lint` | **0** |
+| i18n parity | `node scripts/check-i18n-parity.mjs` | **0** (13 settings keys en/uk) |
+
+All source grep-gates from Task 1 + Task 2 acceptance_criteria verified passing
+(soldi-biometric in SecureKey union, biometricEnabled in store, zero AsyncStorage
+import, authenticateAsync + setBiometricEnabled success-branch, biometricPassed in
+render gate + resume listener, RESUME_LOCK_MS constant, AppState.addEventListener,
+≥2 executeSync + jar_contributions in exportRepo, no description SELECT, both CSV
+filenames written to Paths.cache, BiometricToggle + ExportButton in SettingsScreen
+with placeholder comment removed).
+
+## Human Verification Required (UAT — pending P0 #1)
+
+These items require a physical iPhone (P0 #1: `cd apps/mobile && npx expo start`,
+open Expo Go, scan QR). Deferred using the same pattern Phase 3/4 used for
+device-blocked items. `/gsd:verify-work` should pick these up.
+
+| # | Verification Item | Expected Behavior |
+|---|-------------------|-------------------|
+| UAT-05-01-1 | Settings biometric toggle enable/cancel/relaunch | Settings → enable Face ID/Touch ID → cancel OS prompt → toggle returns OFF (not persisted). Enable again + succeed → toggle stays ON, persists across force-quit + relaunch. On cold relaunch with gate ON the biometric prompt blocks app UI until success; failing biometrics offers device passcode (no app retry cap). |
+| UAT-05-01-2 | >5-min background resume re-prompt | Gate ON → background app > 5 minutes → foreground → biometric prompt fires again before UI renders. Background < 5 minutes → foreground → no prompt (UI renders immediately). |
+| UAT-05-01-3 | Fresh onboarding biometric opt-in | Reset app data → onboarding reaches the biometric opt-in step. "Skip for now" → proceeds to app with gate disabled. "Enable Face ID / Touch ID" → OS auth prompt → on success proceeds with gate enabled. |
+| UAT-05-01-4 | Two-file CSV export share-sheet | Settings → Data → Export CSV → iOS share-sheet appears for `transactions.csv`, then a second share-sheet for `jars.csv`. Saved/AirDropped: `transactions.csv` has columns id,date,amount_cents,currency,merchant,category_id,ai_category (NO description column); `jars.csv` has jar_id,jar_name,target_cents,contribution_cents,source,created_at and contains the jar contribution ledger rows. |
 
 ## Deviations from Plan
 
