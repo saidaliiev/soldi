@@ -169,8 +169,8 @@ Plans:
 
 **Wave 2** *(parallel; both blocked on 05-01)*
 
-- [ ] 05-02-PLAN.md — Local push notifications: 09:00 opt-in editorial daily digest + 25/50/100% jar-milestone notifications via expo-notifications
-- [ ] 05-03-PLAN.md — Performance pass: Sentry-optional cold-start + Skia first-frame instrumentation, then tune to < 2s cold start / < 100ms first frame on iPhone SE 2020
+- [x] 05-02-PLAN.md — Local push notifications: 09:00 opt-in editorial daily digest + 25/50/100% jar-milestone notifications via expo-notifications
+- [x] 05-03-PLAN.md — Performance pass: Sentry-optional cold-start + Skia first-frame instrumentation, then tune to < 2s cold start / < 100ms first frame on iPhone SE 2020
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -210,7 +210,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6
 | 2. Dashboard + Transactions + Categories | 0/4 | Not started | - |
 | 3. AI Categorization + Chat | 3/3 | Complete   | 2026-05-15 |
 | 4. Jars + i18n + Accessibility | 4/4 | Complete   | 2026-05-15 |
-| 5. Polish + TestFlight Beta | 1/4 | In Progress|  |
+| 5. Polish + TestFlight Beta | 3/4 | In Progress|  |
 | 6. App Store Submission + Launch | 0/3 | Not started | - |
 
 ---
