@@ -16,6 +16,7 @@ import type { DB } from '@op-engineering/op-sqlite';
 
 import { getDB } from '@/src/lib/db';
 import type { Jar, JarContribution } from './types';
+import { checkAndFireMilestone } from '../notifications/jarMilestoneNotification';
 
 // ---------------------------------------------------------------------------
 // createJar
@@ -105,6 +106,11 @@ export function jarBalanceCents(jarId: number, db: DB = getDB()): number {
 
 /**
  * Inserts a jar_contributions row and returns its id.
+ *
+ * Phase 5 (NOTIF-02): captures prevBalanceCents BEFORE the insert, performs
+ * the existing insert unchanged, then fires a milestone notification AFTER
+ * the insert commits. The notification call is fire-and-graceful — it never
+ * rolls back or blocks the contribution. Return type is unchanged (number).
  */
 export function insertContribution(
   c: {
@@ -116,11 +122,20 @@ export function insertContribution(
   },
   db: DB = getDB(),
 ): number {
+  // Capture balance BEFORE insert so milestone detector can compute prevRatio
+  const prevBalanceCents = jarBalanceCents(c.jarId, db);
+
   const result = db.executeSync(
     'INSERT INTO jar_contributions (jar_id, amount_cents, source, tx_id, created_at) VALUES (?, ?, ?, ?, ?)',
     [c.jarId, c.amountCents, c.source, c.txId, c.createdAt],
   );
-  return result.insertId ?? 0;
+  const id = result.insertId ?? 0;
+
+  // NOTIF-02: fire-and-graceful — milestone failure must never block the contribution.
+  // Floating promise is intentional: the notification is a best-effort side-effect.
+  void checkAndFireMilestone(c.jarId, prevBalanceCents);
+
+  return id;
 }
 
 // ---------------------------------------------------------------------------
