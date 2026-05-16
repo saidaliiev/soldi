@@ -62,9 +62,10 @@
   "submit": {
     "testflight": {
       "ios": {
-        "appleId": "REPLACE_WITH_APPLE_ID_BEFORE_SUBMIT",
-        "ascAppId": "REPLACE_WITH_ASC_APP_ID_BEFORE_SUBMIT",
-        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID_BEFORE_SUBMIT"
+        "ascApiKeyPath": "/mnt/c/Users/saida/Documents/Projects/API/AuthKey_FJ9DL5B479.p8",
+        "ascApiKeyId": "FJ9DL5B479",
+        "ascApiKeyIssuerId": "d743efe5-b41d-422a-9345-c67ff3b054d5",
+        "ascAppId": "REPLACE_WITH_ASC_APP_ID_BEFORE_SUBMIT"
       }
     },
     "production": {
