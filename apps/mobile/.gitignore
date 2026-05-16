@@ -43,5 +43,7 @@ app-example
 /android
 # Test DB artifacts
 t-*.db
+# op-sqlite dev artifact (getDB opens 'soldi.db' when the app runs locally)
+soldi.db
 
 .env.local
