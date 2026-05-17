@@ -54,7 +54,9 @@ Tokens are at `apps/mobile/src/design/tokens.ts`. Components must import from th
 - `#667EEA` AI-slop blue, `#8B7AB8` AI-slop purple, `#E8E0FF` lavender
 - `#10B981` bright Tailwind green (use `sage`)
 - `#1A73E8`, `#2563EB` fintech blue
-- Neon gradients, glassmorphism, floating blur cards
+- Neon gradients
+- Glassmorphism / floating blur cards ON CONTENT (lists, dashboard cards, chat bubbles) — still banned, AI-slop pattern
+- EXCEPTION: iOS 26 native Liquid Glass (`expo-glass-effect`) IS allowed on system chrome ONLY — tab bar, nav, bottom-sheet backgrounds — warm-tinted, with mandatory non-glass fallback for iOS<26. Never on content surfaces.
 - Emoji as UI icons (SVG only — tab bar, categories, jars)
 - Inline `style` objects with hex colors — must use tokens
 
@@ -71,6 +73,8 @@ Tokens are at `apps/mobile/src/design/tokens.ts`. Components must import from th
 - All interactive elements: `accessibilityLabel` + `accessibilityRole`
 - Minimum tap target: 44×44pt
 - `LinearGradient` colors: spread the tuple — `colors={[...GRADIENTS.primary]}`
+- Motion: only via `apps/mobile/src/design/motion.ts` vocabulary. No ad-hoc `Animated`/`withTiming` literals in components. reduce-motion (`AccessibilityInfo`) must be respected.
+- Glass: only via `apps/mobile/src/design/glass.ts`. Direct `expo-glass-effect` import in screens is banned. The non-glass fallback path is not optional.
 
 ## Security rules (fintech-grade defaults even though we don't touch real banks)
 
