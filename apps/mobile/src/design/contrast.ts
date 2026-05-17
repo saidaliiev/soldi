@@ -152,9 +152,9 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     entry('success', COLORS.success, 'surface', SURF, 3.0,
       'TYPE.tabular = 16pt semibold (>=14pt bold = large text, §1.4.3)'),
 
-    // ---- tab bar: active (accent) + inactive (textMuted) on surface --------
-    // active tint already covered by accent/surface above
-    // inactive tint = textMuted on surface already covered above
+    // ---- tab bar: NON-GLASS FALLBACK entries below; glass path entries below those ----
+    // accent/surface entry (above) covers accent as large-text graphic only (3:1).
+    // Active-tab label uses textPrimary — see glassFallbackChrome block below.
 
     // ---- glass tab bar NON-GLASS FALLBACK (Wave 0 spec §2.2 / R5) -----------
     // When isLiquidGlassAvailable() === false the tab bar is a solid surface
