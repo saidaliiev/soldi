@@ -10,7 +10,7 @@
  * SOLID editorial fill (never an empty/transparent bar).
  */
 
-import { GLASS } from './tokens';
+import { GLASS, ELEVATION } from './tokens';
 
 /**
  * Glass renders only when the native effect is actually available (iOS 26+).
@@ -77,4 +77,47 @@ export function composeGlassTint(hex6: string, alpha: number): string {
     .toUpperCase()
     .padStart(2, '0');
   return `${hex6.toUpperCase()}${aa}`;
+}
+
+export type TabBarChrome =
+  | {
+      readonly glass: true;
+      /** GlassView.glassEffectStyle */
+      readonly glassEffectStyle: 'regular';
+      /** GlassView.tintColor — warm wash, alpha baked in (#RRGGBBAA) */
+      readonly tintColor: string;
+      /** GlassView.isInteractive — chrome reacts to touches per spec §2.2 */
+      readonly isInteractive: true;
+    }
+  | {
+      readonly glass: false;
+      /** opaque solid editorial fill (mandatory non-glass fallback) */
+      readonly backgroundColor: string;
+      /** ELEVATION.floating — detached pill shadow on the fallback bar */
+      readonly shadow: typeof ELEVATION.floating;
+    };
+
+/**
+ * Resolve the FINAL RN-ready tab-bar chrome style. `safeGlass` is the result
+ * of isSafeToRenderGlass() (both native checks) injected from the RN boundary.
+ * Glass path: warm tint with alpha baked in, interactive, regular style.
+ * Fallback path: solid warm fill + floating shadow (NEVER an empty/transparent
+ * bar — the library's internal degrade gives a transparent View, so the
+ * component MUST use this backgroundColor explicitly).
+ */
+export function resolveTabBarChrome(safeGlass: boolean): TabBarChrome {
+  const surface = resolveChromeSurface(safeGlass);
+  if (surface.glass) {
+    return {
+      glass: true,
+      glassEffectStyle: 'regular',
+      tintColor: composeGlassTint(surface.tint, surface.tintAlpha),
+      isInteractive: true,
+    };
+  }
+  return {
+    glass: false,
+    backgroundColor: surface.backgroundColor,
+    shadow: ELEVATION.floating,
+  };
 }

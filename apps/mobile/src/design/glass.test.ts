@@ -4,8 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { shouldRenderGlass, resolveChromeSurface, isSafeToRenderGlass, composeGlassTint } from './glass.js';
-import { GLASS } from './tokens.js';
+import { shouldRenderGlass, resolveChromeSurface, isSafeToRenderGlass, composeGlassTint, resolveTabBarChrome } from './glass.js';
+import { GLASS, ELEVATION } from './tokens.js';
 
 test('shouldRenderGlass: true only when available', () => {
   assert.strictEqual(shouldRenderGlass(true), true);
@@ -49,4 +49,26 @@ test('composeGlassTint: rejects non-#RRGGBB input', () => {
   assert.throws(() => composeGlassTint('FAF5F0', 0.5), /#RRGGBB/);
   assert.throws(() => composeGlassTint('#FFF', 0.5), /#RRGGBB/);
   assert.throws(() => composeGlassTint('#FAF5F0FF', 0.5), /#RRGGBB/);
+});
+
+test('resolveTabBarChrome: glass path → tintColor hex8 + interactive, glass=true', () => {
+  const c = resolveTabBarChrome(true);
+  assert.strictEqual(c.glass, true);
+  assert.strictEqual(c.tintColor, '#FAF5F09E'); // composeGlassTint(chromeTint, 0.62)
+  assert.strictEqual(c.isInteractive, true);
+  assert.strictEqual(c.glassEffectStyle, 'regular');
+});
+
+test('resolveTabBarChrome: fallback path → solid bg + floating shadow, glass=false', () => {
+  const c = resolveTabBarChrome(false);
+  assert.strictEqual(c.glass, false);
+  assert.strictEqual(c.backgroundColor, GLASS.fallbackChromeBg);
+  assert.deepStrictEqual(c.shadow, ELEVATION.floating);
+});
+
+test('resolveTabBarChrome: discriminated union — no cross-branch field leak', () => {
+  const g = resolveTabBarChrome(true);
+  const f = resolveTabBarChrome(false);
+  assert.strictEqual('backgroundColor' in g, false);
+  assert.strictEqual('tintColor' in f, false);
 });
