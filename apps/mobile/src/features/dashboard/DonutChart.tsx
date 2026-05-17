@@ -6,12 +6,13 @@
  *   Center label: monthly total by default; morphs to category name + amount
  *   + percentage on slice tap (D-04, 200ms opacity + translateY).
  *
- * Animation on month change (D-05): arc paths are re-derived from the new
- * breakdown; we drive a single shared progress value with withTiming
- * (300ms Easing.out(Easing.cubic)) and the JS-side render reflects the
- * settled state. (Per-slice arc-path interpolation across distinct topologies
- * is a follow-up in plan 02-02 once usePathInterpolation lands — for now we
- * crossfade canvas opacity over the same 300ms window to avoid jank.)
+ * Animation on month change (D-05 — CLOSED, redesign Wave 2): arc slices are
+ * interpolated in ANGLE space keyed by stable categoryId (dashboardMotion.
+ * interpolateSliceAngles) and rebuilt to Skia paths per frame. First mount
+ * sweeps every slice in (MOTION.arcDraw 700ms); each month change morphs
+ * matched slices and grows/collapses enter/exit slices (MOTION.arcInterpolate
+ * 450ms). reduce-motion → final arcs immediately. Hit-testing uses the
+ * settled target angles, not the mid-animation geometry.
  *
  * Hit-testing: each canvas tap location is converted to polar angle relative
  * to canvas center; the corresponding slice id is resolved from the cached
@@ -26,10 +27,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
+  useAnimatedReaction,
   useSharedValue,
-  withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +38,9 @@ import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
 import { localizedCategoryName } from '@data/categoriesRepo';
 import { markFirstFrame } from '@lib/perf';
-import { buildDonutArcs, computeSliceAngles } from './donutArcs';
+import { computeSliceAngles, arcsFromSliceAngles, type SliceAngle } from './donutArcs';
+import { interpolateSliceAngles } from './dashboardMotion';
+import { useMotion } from '@design/useMotion';
 import type { CategoryBreakdown, CategorySlice } from './types';
 
 const CANVAS_SIZE = 200;
@@ -64,44 +66,62 @@ export function DonutChart({
   const [selectedId, setSelectedId] = useState<number | 'other' | null>(null);
   const firstFrameLogged = useRef(false);
 
-  // ---- Arc geometry --------------------------------------------------------
-
-  const arcs = useMemo(
-    () => buildDonutArcs(breakdown.top, breakdown.other, RADIUS, STROKE_WIDTH, GAP_DEG),
-    [breakdown.top, breakdown.other]
-  );
+  // ---- Arc geometry (settled target) --------------------------------------
 
   const angles = useMemo(
     () => computeSliceAngles(breakdown.top, breakdown.other, GAP_DEG),
     [breakdown.top, breakdown.other]
   );
 
-  // Pre-compute SkPath for each arc — useMemo so Skia doesn't reparse on every render.
-  const skPaths = useMemo(
-    () =>
-      arcs.map((a) => {
-        const p = Skia.Path.MakeFromSVGString(a.path);
-        return { skPath: p, color: a.color, categoryId: a.categoryId };
-      }),
-    [arcs]
+  // ---- D-05: angle-space interpolation (closes deferred D-05) --------------
+  // First mount: prev=[] ⇒ every slice sweeps in (MOTION.arcDraw). Each later
+  // breakdown change: prev=last settled angles ⇒ matched morph + enter/exit
+  // (MOTION.arcInterpolate). One mechanism, two presets. reduce-motion →
+  // progress jumps to 1 (final arcs, no tween) via useMotion's instant path.
+  const { withMotion } = useMotion();
+  const progress = useSharedValue(0);
+  const prevAnglesRef = useRef<readonly SliceAngle[]>([]);
+  const mountedRef = useRef(false);
+  const [tQuantized, setTQuantized] = useState(1);
+
+  useEffect(() => {
+    const preset = mountedRef.current ? 'arcInterpolate' : 'arcDraw';
+    mountedRef.current = true;
+    progress.value = 0;
+    progress.value = withMotion(1, preset);
+    setSelectedId(null); // reset slice selection on month change
+  }, [angles, progress, withMotion]);
+
+  // Quantize progress to 2 decimals before crossing to JS so duplicate frames
+  // skip setState; ≤7 Skia paths rebuilt per changed frame (bounded; perf
+  // budget verified Wave 6 per spec R3 — post-mount, cold-start unaffected).
+  useAnimatedReaction(
+    () => Math.round(progress.value * 100) / 100,
+    (q, prev) => {
+      if (q !== prev) runOnJS(setTQuantized)(q);
+    },
+    [],
   );
 
-  // ---- D-05: crossfade on month/breakdown change ---------------------------
+  const interpolated = useMemo(
+    () => interpolateSliceAngles(prevAnglesRef.current, angles, tQuantized),
+    [angles, tQuantized]
+  );
 
-  const canvasOpacity = useSharedValue(1);
+  // When the frame settles (t=1) the new angles become the next "prev".
   useEffect(() => {
-    canvasOpacity.value = 0.0;
-    canvasOpacity.value = withTiming(1.0, {
-      duration: 300,
-      easing: Easing.out(Easing.cubic),
-    });
-    // Reset any selected slice on month change — labels should reset.
-    setSelectedId(null);
-  }, [breakdown, canvasOpacity]);
+    if (tQuantized >= 1) prevAnglesRef.current = angles;
+  }, [tQuantized, angles]);
 
-  const canvasAnimStyle = useAnimatedStyle(() => ({
-    opacity: canvasOpacity.value,
-  }));
+  const skPaths = useMemo(
+    () =>
+      arcsFromSliceAngles(interpolated, RADIUS).map((a) => ({
+        skPath: Skia.Path.MakeFromSVGString(a.path),
+        color: a.color,
+        categoryId: a.categoryId,
+      })),
+    [interpolated]
+  );
 
   // ---- QUAL-06: Skia first-frame mark (perf.ts) ----------------------------
   // Fires once on the first render pass where the chart has data to paint.
@@ -170,7 +190,7 @@ export function DonutChart({
       {/* D-09 / QUAL-01: Canvas + child Paths are decorative — hidden from VoiceOver.
           The outer View summarises the chart content via accessibilityLabel above. */}
       <Animated.View
-        style={[styles.canvasWrap, canvasAnimStyle]}
+        style={styles.canvasWrap}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
