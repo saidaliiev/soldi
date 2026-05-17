@@ -47,3 +47,17 @@ export type MotionName = keyof typeof MOTION;
 export function degradeForReducedMotion(_preset: MotionPreset): ReducedMotionPreset {
   return { durationMs: 0, easing: 'linear', reduced: true };
 }
+
+/**
+ * Resolve a named motion preset for the current accessibility state. Single
+ * decision point: full preset when motion is allowed, the instant/linear
+ * reduced preset (duration 0) when reduce-motion is enabled. Pure — delegates
+ * to degradeForReducedMotion, never mutates MOTION. The reanimated boundary
+ * (useMotion.ts) calls this with AccessibilityInfo.isReduceMotionEnabled().
+ */
+export function selectMotionPreset(
+  name: MotionName,
+  reduceMotionEnabled: boolean,
+): MotionPreset | ReducedMotionPreset {
+  return reduceMotionEnabled ? degradeForReducedMotion(MOTION[name]) : MOTION[name];
+}
