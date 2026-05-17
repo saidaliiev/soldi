@@ -47,6 +47,9 @@ test('interpolateSliceAngles: matched slice morphs linearly at midpoint', () => 
 test('interpolateSliceAngles: entering slice grows from its leading edge', () => {
   const prev: SliceAngle[] = [];
   const next = [A(7, 10, 50)];
+  const zero = interpolateSliceAngles(prev, next, 0);
+  assert.strictEqual(zero[0]!.startDeg, 10);
+  assert.strictEqual(zero[0]!.endDeg, 10); // entering @ t=0 → zero-width at leading edge
   const half = interpolateSliceAngles(prev, next, 0.5);
   assert.strictEqual(half[0]!.startDeg, 10);
   assert.strictEqual(half[0]!.endDeg, 30); // lerp(10,50,0.5)
