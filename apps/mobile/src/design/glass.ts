@@ -12,7 +12,10 @@
 
 import { GLASS } from './tokens';
 
-/** Glass renders only when the native effect is actually available (iOS 26+). */
+/**
+ * Glass renders only when the native effect is actually available (iOS 26+).
+ * @see isSafeToRenderGlass — use when the GlassEffect API availability is also known (expo/expo#40911).
+ */
 export function shouldRenderGlass(isLiquidGlassAvailable: boolean): boolean {
   return isLiquidGlassAvailable === true;
 }
