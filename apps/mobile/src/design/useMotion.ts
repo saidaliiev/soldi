@@ -46,6 +46,12 @@ function resolveEasing(token: EasingToken): EasingFunction {
 /**
  * Subscribe to the OS reduce-motion setting. Mirrors GlassTabBar's
  * reduce-transparency pattern (initial read + change listener, cleanup).
+ *
+ * Initial state is `false` until the async `isReduceMotionEnabled()`
+ * resolves (AccessibilityInfo has no synchronous read). For on-mount
+ * animations this is a sub-frame window; the fallback is a brief animation
+ * start before the snap — accepted tradeoff vs complicating every consumer
+ * with a not-yet-known state.
  */
 export function useReduceMotion(): boolean {
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -77,7 +83,7 @@ export function useMotion(): { withMotion: WithMotion; reduceMotion: boolean } {
   const reduceMotion = useReduceMotion();
   const withMotion: WithMotion = (toValue, name) => {
     const preset = selectMotionPreset(name, reduceMotion);
-    if (preset.durationMs === 0) return toValue;
+    if ('reduced' in preset && preset.reduced) return toValue;
     return withTiming(toValue, {
       duration: preset.durationMs,
       easing: resolveEasing(preset.easing),
