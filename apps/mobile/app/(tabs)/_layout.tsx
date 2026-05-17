@@ -5,12 +5,15 @@
  *   - No lucide icons. No emoji. No raster images. Custom Skia-rendered
  *     SVG paths only (hand-drawn aesthetic, strokeWidth 1.6, round caps).
  *
- * Design contract (UI-SPEC §"Tab Bar"):
- *   active tint   = COLORS.accent
- *   inactive tint = COLORS.textMuted
+ * Design contract (UI-SPEC §"Tab Bar"; I-01 contrast resolution):
+ *   active icon   = COLORS.accent      (non-text indicator — WCAG §1.4.11 graphic 3:1)
+ *   active label  = COLORS.textPrimary (AA body 4.5:1 — accent@surface ~3.46:1 fails text)
+ *   inactive      = COLORS.textMuted
  *   background    = COLORS.surface
  *   top border    = 1pt COLORS.textMuted @ 20% alpha
  *   label preset  = TYPE.uiLabel
+ * Audited in src/design/contrast.ts (accent/surface@3.0 graphic; textPrimary &
+ *   textMuted /surface @4.5 body). Live code MUST match that table (I-01).
  *
  * Accessibility: each tab declares role="tab" + label + selected state via
  *   tabBarAccessibilityLabel and Tabs.Screen options.
@@ -51,7 +54,10 @@ function TabLabel({ focused, children }: TabLabelProps): React.JSX.Element {
       // VoiceOver users, so scale suppression here does not harm accessibility.
       maxFontSizeMultiplier={1.0}
       numberOfLines={1}
-      style={[styles.label, { color: focused ? COLORS.accent : COLORS.textMuted }]}
+      // I-01: active label = textPrimary (15:1 AA body). accent stays ONLY on
+      // the active icon (non-text indicator, WCAG §1.4.11 graphic 3:1) — accent
+      // #BF6F4F on surface #FAF5F0 is ~3.46:1, below the 4.5:1 text threshold.
+      style={[styles.label, { color: focused ? COLORS.textPrimary : COLORS.textMuted }]}
     >
       {children}
     </Text>
