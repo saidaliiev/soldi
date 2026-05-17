@@ -104,6 +104,7 @@ export type TabBarChrome =
  * Fallback path: solid warm fill + floating shadow (NEVER an empty/transparent
  * bar — the library's internal degrade gives a transparent View, so the
  * component MUST use this backgroundColor explicitly).
+ * Delegates to resolveChromeSurface (ChromeSurface fields: tint/tintAlpha/backgroundColor) — refactor both in the same commit.
  */
 export function resolveTabBarChrome(safeGlass: boolean): TabBarChrome {
   const surface = resolveChromeSurface(safeGlass);

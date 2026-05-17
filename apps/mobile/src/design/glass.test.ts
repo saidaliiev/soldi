@@ -54,7 +54,7 @@ test('composeGlassTint: rejects non-#RRGGBB input', () => {
 test('resolveTabBarChrome: glass path → tintColor hex8 + interactive, glass=true', () => {
   const c = resolveTabBarChrome(true);
   assert.strictEqual(c.glass, true);
-  assert.strictEqual(c.tintColor, '#FAF5F09E'); // composeGlassTint(chromeTint, 0.62)
+  assert.strictEqual(c.tintColor, composeGlassTint(GLASS.chromeTint, GLASS.chromeTintAlpha));
   assert.strictEqual(c.isInteractive, true);
   assert.strictEqual(c.glassEffectStyle, 'regular');
 });
@@ -69,6 +69,7 @@ test('resolveTabBarChrome: fallback path → solid bg + floating shadow, glass=f
 test('resolveTabBarChrome: discriminated union — no cross-branch field leak', () => {
   const g = resolveTabBarChrome(true);
   const f = resolveTabBarChrome(false);
+  // Runtime shape guard: ensures literals leak no cross-branch fields (TS covers compile-time).
   assert.strictEqual('backgroundColor' in g, false);
   assert.strictEqual('tintColor' in f, false);
 });
