@@ -5,8 +5,9 @@
  * Used by TransactionRow + the recategorize sheet's recent strip + the
  * filter modal's category multi-select rows.
  *
- * Icon resolution: ICON_REGISTRY (from 02-04). Falls back to Misc when the
- * category's icon_slug is unknown.
+ * Icon resolution: canonical resolveIcon (ICON_REGISTRY → SLUG_ALIASES →
+ * Misc). Must use the shared helper so seed slugs with no dedicated
+ * component (eating-out, kids, …) map to their alias icon instead of Misc.
  */
 
 import React from 'react';
@@ -14,8 +15,7 @@ import { View, Text, StyleSheet } from 'react-native';
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { ICON_REGISTRY } from '@design/icons/categories/_iconRegistry';
-import { Misc } from '@design/icons/categories/Misc';
+import { resolveIcon } from '@design/icons/categories';
 
 type Props = {
   readonly slug: string | null;
@@ -27,20 +27,13 @@ type Props = {
 const SUFFIX_BG = '33'; // 20% alpha 8-bit hex
 const SUFFIX_BORDER = '99'; // 60% alpha 8-bit hex
 
-function resolveIconComponent(slug: string | null) {
-  if (slug != null && slug in ICON_REGISTRY) {
-    return ICON_REGISTRY[slug as keyof typeof ICON_REGISTRY];
-  }
-  return Misc;
-}
-
 export function CategoryChip({
   slug,
   name,
   color,
   size = 'sm',
 }: Props): React.JSX.Element {
-  const Icon = resolveIconComponent(slug);
+  const Icon = resolveIcon(slug);
   const swatch = color ?? COLORS.textMuted;
   const iconSize = size === 'sm' ? 14 : 18;
   const styles = size === 'sm' ? smallStyles : mediumStyles;

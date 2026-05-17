@@ -33,8 +33,7 @@ import {
   upsertForMerchant,
   propagateCategoryToSimilar,
 } from '@data/merchantOverridesRepo';
-import { ICON_REGISTRY } from '@design/icons/categories/_iconRegistry';
-import { Misc } from '@design/icons/categories/Misc';
+import { resolveIcon } from '@design/icons/categories';
 import type { Category } from '@data/categoriesRepo';
 
 import { useRecategorizeStore } from './recategorizeStore';
@@ -43,13 +42,6 @@ import { normalizeMerchantKey } from './merchantNormalize';
 import { usePropagationStore } from './propagationStore';
 
 const SNAP_POINTS = ['65%'] as const;
-
-function resolveIcon(slug: string | null | undefined) {
-  if (slug != null && slug in ICON_REGISTRY) {
-    return ICON_REGISTRY[slug as keyof typeof ICON_REGISTRY];
-  }
-  return Misc;
-}
 
 export function RecategorizeBottomSheet(): React.JSX.Element {
   const { t, i18n } = useTranslation();
