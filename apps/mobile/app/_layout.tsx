@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 import * as LocalAuthentication from 'expo-local-authentication';
 
@@ -235,6 +236,7 @@ export default Sentry.wrap(function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <QueryClientProvider client={queryClient}>
         {/* key={language} — D-07 root key-bump: changing language forces a full
             remount of the I18nextProvider subtree, retranslating module-scope
@@ -272,6 +274,7 @@ export default Sentry.wrap(function RootLayout() {
           <StatusBar style="dark" />
         </I18nextProvider>
       </QueryClientProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 });
