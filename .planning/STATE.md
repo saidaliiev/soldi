@@ -30,6 +30,7 @@ Plan: 4 of 4 done; 05-04 build #4 a29159a3 v1.0.0 uploaded to App Store Connect 
 Status: Phase 05 TestFlight launch COMPLETE — P0 #3/#4 cleared, ASC API key submit, binary in App Store Connect (submission 86769705-..., ASC app 6770086922). Apple processing. Phase [~] until ≥1 internal tester runs it on device (D-04: cold launch + biometric gate + dashboard).
 Last activity: 2026-05-16 session 2 -- 05-04 launched; 7 forward-only commits (c139bda→cab1a28), 4 EAS builds (2 real blocker fixes: chat-empty Metro resolve, Sentry source-map upload)
 2026-05-17: Redesign Wave 0 (foundation) complete: motion.ts/glass.ts/tokens/deps/governance landed, UI-inert, gates green (tsc:0 lint:0 174/0 export:0). Next: Wave 1 (glass tab bar) — requires Xcode-26 EAS image decision (spec R1).
+2026-05-17: Redesign Wave 1 (glass tab bar) CODE complete: glass.ts safe-gate/tint/resolveTabBarChrome (node-tested), GlassTabBar.tsx (sole expo-glass-effect importer), _layout wired, eas image=latest (R1 gate). Gates green (tsc0/lint0/181-0/export0). Device-UAT DEFERRED to batched W1+W2 EAS build (after TestFlight #6) — .planning/phases/redesign/W1-DEVICE-UAT.md.
 
 Progress: [█████████░] 95% (4/4 plans done; D-04 device confirm + phase verification pending)
 
