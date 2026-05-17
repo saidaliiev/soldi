@@ -12,7 +12,7 @@
  * arcs, FAB/sharedMonth carry without movement.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import { Easing, withTiming, type EasingFunction } from 'react-native-reanimated';
 
@@ -81,13 +81,13 @@ export type WithMotion = (toValue: number, name: MotionName) => number;
  */
 export function useMotion(): { withMotion: WithMotion; reduceMotion: boolean } {
   const reduceMotion = useReduceMotion();
-  const withMotion: WithMotion = (toValue, name) => {
+  const withMotion = useCallback<WithMotion>((toValue, name) => {
     const preset = selectMotionPreset(name, reduceMotion);
     if ('reduced' in preset && preset.reduced) return toValue;
     return withTiming(toValue, {
       duration: preset.durationMs,
       easing: resolveEasing(preset.easing),
     });
-  };
+  }, [reduceMotion]);
   return { withMotion, reduceMotion };
 }

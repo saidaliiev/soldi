@@ -45,7 +45,7 @@ export function MonthlyTotalHero({
   currency = 'EUR',
 }: Props): React.JSX.Element {
   const { t } = useTranslation();
-  const { withMotion } = useMotion();
+  const { withMotion, reduceMotion } = useMotion();
 
   const monthLabel = formatMonthLabel(monthKey, locale);
   const spentLabel = t('dashboard.total_spent_in', { month: monthLabel });
@@ -57,10 +57,18 @@ export function MonthlyTotalHero({
   const [displayCents, setDisplayCents] = useState(0);
 
   useEffect(() => {
-    animatedCents.value = prevCentsRef.current; // settle at the start point
+    if (reduceMotion) {
+      // reduce-motion: settle on the final total immediately, no count-up.
+      animatedCents.value = totalCents;
+      prevCentsRef.current = totalCents;
+      setDisplayCents(totalCents);
+      return;
+    }
+    // JSI synchronous — the withTiming below reads this as its start value.
+    animatedCents.value = prevCentsRef.current;
     animatedCents.value = withMotion(totalCents, 'heroCountUp');
     prevCentsRef.current = totalCents;
-  }, [totalCents, animatedCents, withMotion]);
+  }, [totalCents, animatedCents, withMotion, reduceMotion]);
 
   // Mirror the SharedValue onto JS state for Intl formatting (Intl can't run
   // in a worklet). Quantize to whole cents so duplicate frames skip setState.
