@@ -1,7 +1,8 @@
 /**
- * SOLDI tab bar wiring — three+1 tabs (Overview / Transactions / Categories
- * / Jars). The actual bar is the warm Liquid Glass `GlassTabBar` (redesign
- * Wave 1) with a mandatory solid editorial fallback for iOS<26.
+ * SOLDI tab bar wiring — four tabs (Overview / Transactions / Categories /
+ * Jars) plus one hidden route (explore). The actual bar is the warm Liquid
+ * Glass `GlassTabBar` (redesign Wave 1) with a mandatory solid editorial
+ * fallback for iOS<26.
  *
  * This file only wires expo-router → GlassTabBar. Color/contrast contract
  * (I-01, audited in src/design/contrast.ts) and the glass/fallback decision
