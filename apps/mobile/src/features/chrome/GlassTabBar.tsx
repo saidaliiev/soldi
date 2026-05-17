@@ -96,10 +96,10 @@ export function GlassTabBar({
 
   const tabs = state.routes
     .filter((route) => {
-      const opts = descriptors[route.key]?.options as
-        | (BottomTabNavigationOptions & { href?: unknown })
-        | undefined;
-      return opts?.href !== null;
+      const descriptor = descriptors[route.key];
+      if (!descriptor) return false;
+      const opts = descriptor.options as BottomTabNavigationOptions & { href?: unknown };
+      return opts.href !== null;
     })
     .map((route) => {
       // Non-null: routes reaching here are guaranteed present in descriptors
@@ -109,6 +109,7 @@ export function GlassTabBar({
       const focused = state.index === routeIndex;
       const color = focused ? COLORS.accent : COLORS.textMuted; // icon = accent indicator (I-01)
       const labelColor = focused ? COLORS.textPrimary : COLORS.textMuted; // label AA body (I-01)
+      // tabBarLabel function overload intentionally unsupported (all SOLDI tabs use string title)
       const label =
         typeof options.tabBarLabel === 'string'
           ? options.tabBarLabel
@@ -136,8 +137,9 @@ export function GlassTabBar({
           style={styles.tab}
         >
           {Icon ? <Icon color={color} size={24} /> : null}
+          {/* maxFontSizeMultiplier=1.0: fixed pill height — label overflow would break
+              bar geometry. Deliberate a11y tradeoff; icon + AA contrast carry low-vision. */}
           <Text
-            allowFontScaling
             maxFontSizeMultiplier={1.0}
             numberOfLines={1}
             style={[styles.label, { color: labelColor }]}
