@@ -85,6 +85,34 @@ export function computeSliceAngles(
 }
 
 // ---------------------------------------------------------------------------
+// arcsFromSliceAngles
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a precomputed angle list to one SVG arc path per slice. Pure — the
+ * arc-path half of buildDonutArcs, exported so the Wave-2 donut animation
+ * (interpolated SliceAngle[] per frame) reuses the exact same geometry (DRY).
+ * Canvas-local center = (radius, radius); caller positions the path.
+ */
+export function arcsFromSliceAngles(
+  angles: readonly SliceAngle[],
+  radius: number
+): readonly DonutArc[] {
+  if (angles.length === 0) return [];
+  const cx = radius;
+  const cy = radius;
+  const arcs: DonutArc[] = [];
+  for (const a of angles) {
+    arcs.push({
+      path: arcPath(cx, cy, radius, a.startDeg, a.endDeg),
+      color: a.color,
+      categoryId: a.categoryId,
+    });
+  }
+  return arcs;
+}
+
+// ---------------------------------------------------------------------------
 // buildDonutArcs
 // ---------------------------------------------------------------------------
 
@@ -111,30 +139,6 @@ export function buildDonutArcs(
   gapDeg: number
 ): readonly DonutArc[] {
   return arcsFromSliceAngles(computeSliceAngles(slices, other, gapDeg), radius);
-}
-
-/**
- * Map a precomputed angle list to one SVG arc path per slice. Pure — the
- * arc-path half of buildDonutArcs, exported so the Wave-2 donut animation
- * (interpolated SliceAngle[] per frame) reuses the exact same geometry (DRY).
- * Canvas-local center = (radius, radius); caller positions the path.
- */
-export function arcsFromSliceAngles(
-  angles: readonly SliceAngle[],
-  radius: number
-): readonly DonutArc[] {
-  if (angles.length === 0) return [];
-  const cx = radius;
-  const cy = radius;
-  const arcs: DonutArc[] = [];
-  for (const a of angles) {
-    arcs.push({
-      path: arcPath(cx, cy, radius, a.startDeg, a.endDeg),
-      color: a.color,
-      categoryId: a.categoryId,
-    });
-  }
-  return arcs;
 }
 
 // ---------------------------------------------------------------------------

@@ -153,14 +153,11 @@ test('buildDonutArcs: preserves input order in output', () => {
 // ---------------------------------------------------------------------------
 
 test('arcsFromSliceAngles: maps angle list to one arc per slice, color+id preserved', () => {
-  const angles = computeSliceAngles(
-    [
-      makeSlice(1, 600, 1000, '#AAAAAA'),
-      makeSlice(2, 400, 1000, '#BBBBBB'),
-    ] as never,
-    null,
-    2,
-  );
+  const slices: CategorySlice[] = [
+    makeSlice(1, 600, 1000, '#AAAAAA'),
+    makeSlice(2, 400, 1000, '#BBBBBB'),
+  ];
+  const angles = computeSliceAngles(slices, null, 2);
   const arcs = arcsFromSliceAngles(angles, 95);
   assert.strictEqual(arcs.length, 2);
   assert.strictEqual(arcs[0]!.color, '#AAAAAA');
