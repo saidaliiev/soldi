@@ -1,95 +1,35 @@
 /**
- * SOLDI tab bar — three tabs (Overview / Transactions / Categories).
+ * SOLDI tab bar wiring — three+1 tabs (Overview / Transactions / Categories
+ * / Jars). The actual bar is the warm Liquid Glass `GlassTabBar` (redesign
+ * Wave 1) with a mandatory solid editorial fallback for iOS<26.
  *
- * Replaces the Phase 1 Home/Explore placeholders. Per D-21:
- *   - No lucide icons. No emoji. No raster images. Custom Skia-rendered
- *     SVG paths only (hand-drawn aesthetic, strokeWidth 1.6, round caps).
+ * This file only wires expo-router → GlassTabBar. Color/contrast contract
+ * (I-01, audited in src/design/contrast.ts) and the glass/fallback decision
+ * live in GlassTabBar + the pure src/design/glass.ts. Do NOT re-add
+ * tabBarActiveTintColor/tabBarStyle here — GlassTabBar owns appearance.
  *
- * Design contract (UI-SPEC §"Tab Bar"; I-01 contrast resolution):
- *   active icon   = COLORS.accent      (non-text indicator — WCAG §1.4.11 graphic 3:1)
- *   active label  = COLORS.textPrimary (AA body 4.5:1 — accent@surface ~3.46:1 fails text)
- *   inactive      = COLORS.textMuted
- *   background    = COLORS.surface
- *   top border    = 1pt COLORS.textMuted @ 20% alpha
- *   label preset  = TYPE.uiLabel
- * Audited in src/design/contrast.ts (accent/surface@3.0 graphic; textPrimary &
- *   textMuted /surface @4.5 body). Live code MUST match that table (I-01).
- *
- * Accessibility: each tab declares role="tab" + label + selected state via
- *   tabBarAccessibilityLabel and Tabs.Screen options.
+ * Accessibility: each tab declares role="tab" + label + selected state
+ * inside GlassTabBar; titles/labels are i18n (update on language switch).
  */
 
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { COLORS } from '@design/tokens';
-import { TYPE } from '@design/typography';
-import {
-  DashboardIcon,
-  TransactionsIcon,
-  CategoriesIcon,
-  JarsIcon,
-} from '@/src/design/icons/tabs';
-
-// 20% alpha for the top border — `33` is the 8-bit alpha hex suffix pattern
-// already established in CLAUDE.md (the LinearGradient guidance).
-const BORDER_TOP_COLOR = `${COLORS.textMuted}33`;
-
-type TabLabelProps = {
-  readonly focused: boolean;
-  readonly children: string;
-};
-
-function TabLabel({ focused, children }: TabLabelProps): React.JSX.Element {
-  return (
-    <Text
-      allowFontScaling
-      // QUAL-04: Tab bar labels are 14pt (TYPE.uiLabel). At AccessibilityXXXL
-      // the system scale is ~3.1× → 43pt, which breaks the fixed-height tab bar
-      // (icon + label must stay single-line inside ~50pt bar height).
-      // Cap at 1.0× so the label stays exactly at design size; the tab bar's
-      // tabBarAccessibilityLabel already provides a full description for
-      // VoiceOver users, so scale suppression here does not harm accessibility.
-      maxFontSizeMultiplier={1.0}
-      numberOfLines={1}
-      // I-01: active label = textPrimary (15:1 AA body). accent stays ONLY on
-      // the active icon (non-text indicator, WCAG §1.4.11 graphic 3:1) — accent
-      // #BF6F4F on surface #FAF5F0 is ~3.46:1, below the 4.5:1 text threshold.
-      style={[styles.label, { color: focused ? COLORS.textPrimary : COLORS.textMuted }]}
-    >
-      {children}
-    </Text>
-  );
-}
+import { GlassTabBar } from '@/src/features/chrome/GlassTabBar';
 
 export default function TabLayout(): React.JSX.Element {
-  // WR-06: tab labels were hardcoded English — use t() so they update on
-  // language switch. Keys added to dashboard namespace (tab_overview etc.).
   const { t } = useTranslation();
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: COLORS.accent,
-        tabBarInactiveTintColor: COLORS.textMuted,
-        tabBarStyle: {
-          backgroundColor: COLORS.surface,
-          borderTopWidth: 1,
-          borderTopColor: BORDER_TOP_COLOR,
-        },
-      }}
+      tabBar={(props) => <GlassTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: t('dashboard.tab_overview'),
           tabBarAccessibilityLabel: t('dashboard.tab_overview'),
-          tabBarIcon: ({ focused }) => (
-            <DashboardIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
-          ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_overview')}</TabLabel>,
         }}
       />
       <Tabs.Screen
@@ -97,10 +37,6 @@ export default function TabLayout(): React.JSX.Element {
         options={{
           title: t('dashboard.tab_transactions'),
           tabBarAccessibilityLabel: t('dashboard.tab_transactions'),
-          tabBarIcon: ({ focused }) => (
-            <TransactionsIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
-          ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_transactions')}</TabLabel>,
         }}
       />
       <Tabs.Screen
@@ -108,10 +44,6 @@ export default function TabLayout(): React.JSX.Element {
         options={{
           title: t('dashboard.tab_categories'),
           tabBarAccessibilityLabel: t('dashboard.tab_categories'),
-          tabBarIcon: ({ focused }) => (
-            <CategoriesIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
-          ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_categories')}</TabLabel>,
         }}
       />
       <Tabs.Screen
@@ -119,21 +51,11 @@ export default function TabLayout(): React.JSX.Element {
         options={{
           title: t('dashboard.tab_jars'),
           tabBarAccessibilityLabel: t('dashboard.tab_jars'),
-          tabBarIcon: ({ focused }) => (
-            <JarsIcon color={focused ? COLORS.accent : COLORS.textMuted} size={24} />
-          ),
-          tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{t('dashboard.tab_jars')}</TabLabel>,
         }}
       />
-      {/* Hide the Phase 1 placeholder route from the tab bar without deleting
-          the file outright (let plan 02-03 swap it cleanly). */}
+      {/* Phase 1 placeholder — kept out of the tab bar (href:null). The
+          GlassTabBar filters href:null routes so this never renders a tab. */}
       <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  label: {
-    ...TYPE.uiLabel,
-  },
-});
