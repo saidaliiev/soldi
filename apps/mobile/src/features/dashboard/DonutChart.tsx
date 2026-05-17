@@ -81,15 +81,25 @@ export function DonutChart({
   const { withMotion } = useMotion();
   const progress = useSharedValue(0);
   const prevAnglesRef = useRef<readonly SliceAngle[]>([]);
+  const lastAnglesRef = useRef<readonly SliceAngle[]>(angles);
   const mountedRef = useRef(false);
-  const [tQuantized, setTQuantized] = useState(1);
+  const [tQuantized, setTQuantized] = useState(0);
+
+  // Month/breakdown change detected during render: capture the OLD angles as
+  // the morph "from", and reset progress synchronously BEFORE paint so the
+  // first painted frame is the previous geometry (t=0), never a snap to new.
+  if (lastAnglesRef.current !== angles) {
+    prevAnglesRef.current = lastAnglesRef.current;
+    lastAnglesRef.current = angles;
+    setTQuantized(0);
+  }
 
   useEffect(() => {
     const preset = mountedRef.current ? 'arcInterpolate' : 'arcDraw';
     mountedRef.current = true;
     progress.value = 0;
     progress.value = withMotion(1, preset);
-    setSelectedId(null); // reset slice selection on month change
+    setSelectedId(null);
   }, [angles, progress, withMotion]);
 
   // Quantize progress to 2 decimals before crossing to JS so duplicate frames
@@ -107,11 +117,6 @@ export function DonutChart({
     () => interpolateSliceAngles(prevAnglesRef.current, angles, tQuantized),
     [angles, tQuantized]
   );
-
-  // When the frame settles (t=1) the new angles become the next "prev".
-  useEffect(() => {
-    if (tQuantized >= 1) prevAnglesRef.current = angles;
-  }, [tQuantized, angles]);
 
   const skPaths = useMemo(
     () =>
