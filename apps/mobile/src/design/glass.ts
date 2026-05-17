@@ -41,3 +41,37 @@ export function resolveChromeSurface(isLiquidGlassAvailable: boolean): ChromeSur
   }
   return { glass: false, backgroundColor: GLASS.fallbackChromeBg, tintAlpha: 1 };
 }
+
+/**
+ * Glass is safe to render ONLY when BOTH native checks pass:
+ *  - isGlassEffectAPIAvailable(): the Liquid Glass API exists at runtime
+ *    (some iOS 26 BETA builds lack it → hard crash; expo/expo#40911).
+ *  - isLiquidGlassAvailable(): the effect is actually available on this device.
+ * The RN boundary (GlassTabBar) reads both natively and passes the booleans
+ * here so this module stays node-test importable (no expo-glass-effect import).
+ */
+export function isSafeToRenderGlass(
+  isGlassEffectApiAvailable: boolean,
+  isLiquidGlassAvailable: boolean,
+): boolean {
+  return isGlassEffectApiAvailable === true && isLiquidGlassAvailable === true;
+}
+
+/**
+ * Compose a `#RRGGBB` token + alpha (0–1) into an 8-digit `#RRGGBBAA` string.
+ * `GlassView.tintColor` is a single color prop (no separate alpha), so the
+ * warm-tint alpha (GLASS.chromeTintAlpha) must be encoded into the color.
+ * Alpha is clamped to [0,1]. Throws on malformed input (fail fast — a bad
+ * tint would silently break the chrome material).
+ */
+export function composeGlassTint(hex6: string, alpha: number): string {
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex6)) {
+    throw new Error(`composeGlassTint: expected #RRGGBB, got "${hex6}"`);
+  }
+  const clamped = Math.min(1, Math.max(0, alpha));
+  const aa = Math.round(clamped * 255)
+    .toString(16)
+    .toUpperCase()
+    .padStart(2, '0');
+  return `${hex6.toUpperCase()}${aa}`;
+}

@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { shouldRenderGlass, resolveChromeSurface } from './glass.js';
+import { shouldRenderGlass, resolveChromeSurface, isSafeToRenderGlass, composeGlassTint } from './glass.js';
 import { GLASS } from './tokens.js';
 
 test('shouldRenderGlass: true only when available', () => {
@@ -24,4 +24,27 @@ test('resolveChromeSurface: fallback path is opaque solid fill, glass=false', ()
   assert.strictEqual(s.glass, false);
   assert.strictEqual(s.backgroundColor, GLASS.fallbackChromeBg);
   assert.strictEqual(s.tintAlpha, 1);
+});
+
+test('isSafeToRenderGlass: true ONLY when both api+liquid available', () => {
+  assert.strictEqual(isSafeToRenderGlass(true, true), true);
+  assert.strictEqual(isSafeToRenderGlass(true, false), false);
+  assert.strictEqual(isSafeToRenderGlass(false, true), false);
+  assert.strictEqual(isSafeToRenderGlass(false, false), false);
+});
+
+test('composeGlassTint: #RRGGBB + alpha → #RRGGBBAA (uppercase, 2-digit)', () => {
+  assert.strictEqual(composeGlassTint('#FAF5F0', 0.62), '#FAF5F09E');
+  assert.strictEqual(composeGlassTint('#FAF5F0', 1), '#FAF5F0FF');
+  assert.strictEqual(composeGlassTint('#FAF5F0', 0), '#FAF5F000');
+});
+
+test('composeGlassTint: clamps alpha to [0,1]', () => {
+  assert.strictEqual(composeGlassTint('#FAF5F0', 1.5), '#FAF5F0FF');
+  assert.strictEqual(composeGlassTint('#FAF5F0', -0.2), '#FAF5F000');
+});
+
+test('composeGlassTint: rejects non-#RRGGBB input', () => {
+  assert.throws(() => composeGlassTint('FAF5F0', 0.5), /#RRGGBB/);
+  assert.throws(() => composeGlassTint('#FFF', 0.5), /#RRGGBB/);
 });
