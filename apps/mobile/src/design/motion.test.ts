@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { MOTION, degradeForReducedMotion, selectMotionPreset, type MotionPreset } from './motion.js';
+import { MOTION, degradeForReducedMotion, selectMotionPreset, type MotionPreset, type ReducedMotionPreset } from './motion.js';
 
 test('MOTION: every preset has positive duration and a named easing', () => {
   for (const [name, p] of Object.entries(MOTION)) {
@@ -43,12 +43,12 @@ test('selectMotionPreset: reduce-motion collapses to instant linear reduced pres
   const p = selectMotionPreset('heroCountUp', true);
   assert.strictEqual(p.durationMs, 0);
   assert.strictEqual(p.easing, 'linear');
-  assert.strictEqual((p as { reduced?: true }).reduced, true);
+  assert.strictEqual((p as ReducedMotionPreset).reduced, true);
 });
 
 test('selectMotionPreset: every MOTION name resolves in both modes', () => {
   for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring'] as const) {
-    assert.ok(selectMotionPreset(k, false).durationMs >= 0);
+    assert.ok(selectMotionPreset(k, false).durationMs > 0);
     assert.strictEqual(selectMotionPreset(k, true).durationMs, 0);
   }
 });
