@@ -156,6 +156,17 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     // active tint already covered by accent/surface above
     // inactive tint = textMuted on surface already covered above
 
+    // ---- glass tab bar NON-GLASS FALLBACK (Wave 0 spec §2.2 / R5) -----------
+    // When isLiquidGlassAvailable() === false the tab bar is a solid surface
+    // fill (GLASS.fallbackChromeBg === COLORS.surface). Tab labels:
+    //   inactive = textMuted in TYPE.uiMeta (12pt medium) → body text 4.5:1
+    //   active   = textPrimary in TYPE.uiMeta (12pt medium) → body text 4.5:1
+    //   (accent #BF6F4F on surface #FAF5F0 is ~3.46:1 < 4.5:1 body threshold;
+    //    accent demoted to non-text indicator — dot/underline; graphic 3:1 per
+    //    WCAG §1.4.11, to be audited under Wave 1 when indicator is built)
+    entry('textMuted', COLORS.textMuted, 'glassFallbackChrome', COLORS.surface, 4.5),
+    entry('textPrimary', COLORS.textPrimary, 'glassFallbackChrome', COLORS.surface, 4.5),
+
     // ---- error button: white label on error background ----------------------
     // Confirm button uses TYPE.uiButton = 16pt semibold (>=14pt bold = large text).
     // WCAG 2.1 §1.4.3 large-text threshold: 3.0:1.
