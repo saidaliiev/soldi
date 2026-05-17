@@ -110,6 +110,33 @@ export const SHADOWS = {
 } as const;
 
 /**
+ * Elevation scale. `card`/`modal` mirror SHADOWS; `floating` is the detached
+ * glass tab bar (Wave 1). Opacity kept <= 0.12 to preserve editorial warmth.
+ */
+export const ELEVATION = {
+  floating: {
+    shadowColor: COLORS.textPrimary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 26,
+    elevation: 12, // Android — above modal (6)
+  },
+} as const;
+
+/**
+ * Warm Liquid Glass tint layer. Used by glass.ts: `*Tint` is overlaid on the
+ * native GlassView (warm wash) and IS the fill on the non-glass fallback.
+ * Values are warm cream/terracotta — never neutral grey glass (anti-AI-slop).
+ */
+export const GLASS = {
+  chromeTint: '#FAF5F0', // == surface; tab bar / nav wash
+  sheetTint: '#F7F1E8', // == background; bottom-sheet wash
+  chromeTintAlpha: 0.62, // overlay alpha on native glass
+  sheetTintAlpha: 0.55,
+  fallbackChromeBg: '#FAF5F0', // solid fill when isLiquidGlassAvailable() === false
+} as const;
+
+/**
  * Banned values. Importing this list in tests prevents drift.
  */
 export const BANNED_COLORS = [
@@ -125,3 +152,5 @@ export type ColorToken = keyof typeof COLORS;
 export type GradientToken = keyof typeof GRADIENTS;
 export type SpacingToken = keyof typeof SPACING;
 export type RadiusToken = keyof typeof RADIUS;
+export type ElevationToken = keyof typeof ELEVATION;
+export type GlassToken = keyof typeof GLASS;
