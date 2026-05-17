@@ -13,7 +13,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildDonutArcs, computeSliceAngles } from './donutArcs.js';
+import { arcsFromSliceAngles, buildDonutArcs, computeSliceAngles } from './donutArcs.js';
 import type { CategorySlice } from './types.js';
 
 const COLOR_TEST = '#C97B5C';
@@ -146,4 +146,38 @@ test('buildDonutArcs: preserves input order in output', () => {
     result.map((a) => a.categoryId),
     [7, 3, 11]
   );
+});
+
+// ---------------------------------------------------------------------------
+// arcsFromSliceAngles: extracted arc-path generation (DRY for Wave 2 motion)
+// ---------------------------------------------------------------------------
+
+test('arcsFromSliceAngles: maps angle list to one arc per slice, color+id preserved', () => {
+  const angles = computeSliceAngles(
+    [
+      makeSlice(1, 600, 1000, '#AAAAAA'),
+      makeSlice(2, 400, 1000, '#BBBBBB'),
+    ] as never,
+    null,
+    2,
+  );
+  const arcs = arcsFromSliceAngles(angles, 95);
+  assert.strictEqual(arcs.length, 2);
+  assert.strictEqual(arcs[0]!.color, '#AAAAAA');
+  assert.strictEqual(arcs[0]!.categoryId, 1);
+  assert.ok(arcs[0]!.path.startsWith('M '));
+});
+
+test('arcsFromSliceAngles: empty angle list → empty arcs', () => {
+  assert.deepStrictEqual([...arcsFromSliceAngles([], 95)], []);
+});
+
+test('buildDonutArcs: output unchanged after arcsFromSliceAngles extraction (no regression)', () => {
+  const slices: CategorySlice[] = [
+    makeSlice(1, 700, 1000, '#AAAAAA'),
+    makeSlice(2, 300, 1000, '#BBBBBB'),
+  ];
+  const direct = buildDonutArcs(slices, null, 95, 10, 2);
+  const viaAngles = arcsFromSliceAngles(computeSliceAngles(slices, null, 2), 95);
+  assert.deepStrictEqual([...direct], [...viaAngles]);
 });

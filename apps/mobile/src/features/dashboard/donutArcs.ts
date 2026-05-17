@@ -110,13 +110,22 @@ export function buildDonutArcs(
   _strokeWidth: number,
   gapDeg: number
 ): readonly DonutArc[] {
-  const angles = computeSliceAngles(slices, other, gapDeg);
-  if (angles.length === 0) return [];
+  return arcsFromSliceAngles(computeSliceAngles(slices, other, gapDeg), radius);
+}
 
-  // Canvas-local center; the caller positions the SVG path on the canvas.
+/**
+ * Map a precomputed angle list to one SVG arc path per slice. Pure — the
+ * arc-path half of buildDonutArcs, exported so the Wave-2 donut animation
+ * (interpolated SliceAngle[] per frame) reuses the exact same geometry (DRY).
+ * Canvas-local center = (radius, radius); caller positions the path.
+ */
+export function arcsFromSliceAngles(
+  angles: readonly SliceAngle[],
+  radius: number
+): readonly DonutArc[] {
+  if (angles.length === 0) return [];
   const cx = radius;
   const cy = radius;
-
   const arcs: DonutArc[] = [];
   for (const a of angles) {
     arcs.push({
@@ -125,7 +134,6 @@ export function buildDonutArcs(
       categoryId: a.categoryId,
     });
   }
-
   return arcs;
 }
 
