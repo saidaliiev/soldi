@@ -2,7 +2,7 @@
   "propagation_one": "Оновлено 1 схожу транзакцію.",
   "propagation_many": "Оновлено {{count}} схожих транзакцій.",
   "propagation_undo": "Скасувати",
-  "sheet_title": "Запитайте SOLDI",
+  "sheet_title": "Запитайте Soldify",
   "close_a11y": "Закрити",
   "empty_phrase": "Запитайте що завгодно про ваші витрати.",
   "empty_subphrase": "Спробуйте одне з цих",
