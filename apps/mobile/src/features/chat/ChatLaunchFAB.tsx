@@ -61,25 +61,20 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
     mountScale.value = withDelay(200, withSpring(1, { damping: 18, stiffness: 180 }));
   }, [mountScale]);
 
-  // Scroll-driven reveal: hidden over the hero band, eased in past the
-  // threshold via MOTION.fabReveal. reduce-motion → instant via withMotion.
+  // Scroll-driven reveal: hidden over the hero band, shown past the
+  // threshold. Deliberate no-jank binary 0/1 driven on the UI thread by
+  // scrollY (plan §Task7 rationale) — the eased "feel" is the press scale
+  // via MOTION.fabReveal, not an opacity tween.
   const revealOpacity = useDerivedValue(() => {
     if (scrollY == null) return 1;
     return scrollY.value > SCROLL_HIDE_THRESHOLD ? 1 : 0;
-  });
-  const easedOpacity = useSharedValue(scrollY == null ? 1 : 0);
-  useDerivedValue(() => {
-    easedOpacity.value = revealOpacity.value; // tracked; tween applied below
   });
 
   const animStyle = useAnimatedStyle(() => {
     const combinedScale = mountScale.value * pressScale.value;
     return {
       transform: [{ scale: combinedScale }],
-      opacity:
-        scrollY == null
-          ? 1
-          : revealOpacity.value, // 0/1 target; eased by withMotion on change
+      opacity: scrollY == null ? 1 : revealOpacity.value,
     };
   });
 
