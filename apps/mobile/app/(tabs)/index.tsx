@@ -19,9 +19,10 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { ChatLaunchFAB } from '@/src/features/chat/ChatLaunchFAB';
 import { GearIcon } from '@/src/design/icons/system/GearIcon';
 
@@ -84,6 +85,13 @@ export default function DashboardScreen(): React.JSX.Element {
   const data = useMonthData(selected);
   const digest = useDigestData();
 
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
   const isFuture = useMemo(() => isFutureMonth(selected, today), [selected, today]);
   const showDigest = useMemo(() => isSameMonth(selected, today), [selected, today]);
 
@@ -117,10 +125,12 @@ export default function DashboardScreen(): React.JSX.Element {
       >
         <GearIcon color={COLORS.textSecondary} size={24} />
       </Pressable>
-      <ScrollView
+      <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
 
         <MonthSwiper
@@ -176,9 +186,9 @@ export default function DashboardScreen(): React.JSX.Element {
             </View>
           </>
         )}
-      </ScrollView>
-      {/* ChatLaunchFAB — absolute overlay; no scrollY SharedValue yet (Phase 5) */}
-      <ChatLaunchFAB />
+      </Animated.ScrollView>
+      {/* ChatLaunchFAB — absolute overlay; scroll-driven reveal via scrollY (Wave 2) */}
+      <ChatLaunchFAB scrollY={scrollY} />
     </SafeAreaView>
   );
 }

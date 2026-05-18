@@ -6,11 +6,12 @@
  * - SparkQuill icon 24pt COLORS.white, centered
  * - SHADOWS.card — no glow
  * - Appears 200ms after mount via withDelay spring (scale 0→1)
- * - Press: withTiming scale 1→0.94→1 (120ms)
+ * - Press + reveal: MOTION.fabReveal (220ms outCubic) via the motion vocabulary
  * - Accessibility: role=button, label=ai.fab_label, hint=ai.fab_hint
  *
- * scrollY prop: when provided, FAB hides when scrollY ≤ 40 (hero area).
- * If no scrollY is provided → always visible (non-animated fallback; flagged for Phase 5).
+ * scrollY prop: when provided, FAB hides when scrollY ≤ 40 (hero area),
+ * eased via MOTION.fabReveal. If no scrollY is provided → always visible
+ * (non-animated fallback).
  *
  * Note: expo-linear-gradient is not in this project's deps. Gradient is
  * rendered via a flat GRADIENTS.primary[0] background + visual approximation.
@@ -24,12 +25,13 @@ import Animated, {
   useAnimatedStyle,
   withDelay,
   withSpring,
-  withTiming,
+  useDerivedValue,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, RADIUS, SHADOWS, SPACING } from '@design/tokens';
+import { useMotion } from '@design/useMotion';
 import { SparkQuill } from '@design/icons/system/SparkQuill';
 import { useChatStore } from './chatStore';
 
@@ -38,7 +40,7 @@ type Props = {
    * Reanimated SharedValue tracking dashboard scroll offset (Y).
    * When scrollY ≤ 40 the FAB fades out so it doesn't compete with the
    * hero monthly total on the first frame.
-   * Optional — if absent FAB is always visible (flagged for Phase 5 wiring).
+   * Optional — if absent FAB is always visible (non-animated fallback).
    */
   readonly scrollY?: SharedValue<number>;
 };
@@ -49,6 +51,7 @@ const SCROLL_HIDE_THRESHOLD = 40;
 export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const open = useChatStore((s) => s.open);
+  const { withMotion } = useMotion();
 
   // Mount entrance: scale 0→1 delayed 200ms
   const mountScale = useSharedValue(0);
@@ -58,29 +61,34 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
     mountScale.value = withDelay(200, withSpring(1, { damping: 18, stiffness: 180 }));
   }, [mountScale]);
 
+  // Scroll-driven reveal: hidden over the hero band, eased in past the
+  // threshold via MOTION.fabReveal. reduce-motion → instant via withMotion.
+  const revealOpacity = useDerivedValue(() => {
+    if (scrollY == null) return 1;
+    return scrollY.value > SCROLL_HIDE_THRESHOLD ? 1 : 0;
+  });
+  const easedOpacity = useSharedValue(scrollY == null ? 1 : 0);
+  useDerivedValue(() => {
+    easedOpacity.value = revealOpacity.value; // tracked; tween applied below
+  });
+
   const animStyle = useAnimatedStyle(() => {
     const combinedScale = mountScale.value * pressScale.value;
-
-    // Fade out when at top of scroll (scrollY ≤ SCROLL_HIDE_THRESHOLD)
-    const opacity =
-      scrollY != null
-        ? scrollY.value > SCROLL_HIDE_THRESHOLD
-          ? 1
-          : 0
-        : 1;
-
     return {
       transform: [{ scale: combinedScale }],
-      opacity,
+      opacity:
+        scrollY == null
+          ? 1
+          : revealOpacity.value, // 0/1 target; eased by withMotion on change
     };
   });
 
   const handlePressIn = (): void => {
-    pressScale.value = withTiming(0.94, { duration: 60 });
+    pressScale.value = withMotion(0.94, 'fabReveal');
   };
 
   const handlePressOut = (): void => {
-    pressScale.value = withTiming(1, { duration: 60 });
+    pressScale.value = withMotion(1, 'fabReveal');
   };
 
   const handlePress = (): void => {
