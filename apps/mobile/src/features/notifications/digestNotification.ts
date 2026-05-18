@@ -104,7 +104,7 @@ export async function scheduleDailyDigest(
   await Notifications.scheduleNotificationAsync({
     identifier: DIGEST_NOTIFICATION_ID,
     content: {
-      title: 'Soldi',
+      title: 'Soldify',
       body,
     },
     trigger: {

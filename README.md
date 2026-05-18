@@ -1,4 +1,4 @@
-# SOLDI
+# Soldify
 
 A calm, beautiful personal finance and savings tracker for iOS. Built with React Native + Expo, Anthropic Claude AI, and a custom editorial design system.
 
@@ -53,7 +53,7 @@ Full design system at [`apps/mobile/src/design/`](apps/mobile/src/design/).
 ## Repository layout
 
 ```
-soldi/
+soldify/
 ├── apps/
 │   └── mobile/          # Expo + RN iOS app
 │       ├── app/         # expo-router screens

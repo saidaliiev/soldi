@@ -77,7 +77,7 @@ const RESUME_LOCK_MS = 5 * 60 * 1000;
 async function authenticateDevice(): Promise<boolean> {
   try {
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Unlock Soldi',
+      promptMessage: 'Unlock Soldify',
       fallbackLabel: 'Use Passcode',
       disableDeviceFallback: false, // D-01: OS passcode fallback, no app retry cap
     });
