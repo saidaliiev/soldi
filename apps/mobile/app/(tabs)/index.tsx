@@ -18,7 +18,7 @@
  * call in this path.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +37,7 @@ import { EmptyState } from '@/src/features/dashboard/EmptyState';
 import { DigestCard } from '@/src/features/dashboard/DigestCard';
 import { useMonthData } from '@/src/features/dashboard/useMonthData';
 import { useDigestData } from '@/src/features/dashboard/useDigestData';
-import { addMonths, isFutureMonth, isSameMonth } from '@/src/features/dashboard/monthMath';
+import { addMonths, isFutureMonth, isSameMonth, compareMonth } from '@/src/features/dashboard/monthMath';
 import type { MonthKey } from '@/src/features/dashboard/types';
 
 function currentMonthKey(today: Date = new Date()): MonthKey {
@@ -92,6 +92,13 @@ export default function DashboardScreen(): React.JSX.Element {
     },
   });
 
+  const prevSelectedRef = useRef<MonthKey>(selected);
+  const monthDirection = useMemo(() => {
+    const dir = compareMonth(selected, prevSelectedRef.current);
+    prevSelectedRef.current = selected;
+    return dir; // +1 = moved to a later month, -1 = earlier, 0 = no change
+  }, [selected]);
+
   const isFuture = useMemo(() => isFutureMonth(selected, today), [selected, today]);
   const showDigest = useMemo(() => isSameMonth(selected, today), [selected, today]);
 
@@ -140,7 +147,7 @@ export default function DashboardScreen(): React.JSX.Element {
           latestPlusOne={bounds.latestPlusOne}
         />
 
-        <MonthlyTotalHero totalCents={data.totalCents} monthKey={selected} />
+        <MonthlyTotalHero totalCents={data.totalCents} monthKey={selected} monthDirection={monthDirection} />
 
         {data.error && (
           <Pressable
@@ -162,7 +169,7 @@ export default function DashboardScreen(): React.JSX.Element {
           <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
         ) : (
           <>
-            <DonutChart breakdown={data.breakdown} />
+            <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
             {showDigest && (
               <View style={styles.digestWrap}>
                 <DigestCard data={digest} />

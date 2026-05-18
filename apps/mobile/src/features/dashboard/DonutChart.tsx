@@ -28,6 +28,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 import Animated, {
   useAnimatedReaction,
+  useAnimatedStyle,
   useSharedValue,
   runOnJS,
 } from 'react-native-reanimated';
@@ -51,12 +52,14 @@ const RADIUS = CANVAS_SIZE / 2 - STROKE_WIDTH / 2;
 
 type Props = {
   readonly breakdown: CategoryBreakdown;
+  readonly monthDirection?: number;
   readonly locale?: string;
   readonly currency?: string;
 };
 
 export function DonutChart({
   breakdown,
+  monthDirection = 0,
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
@@ -128,6 +131,25 @@ export function DonutChart({
     [interpolated]
   );
 
+  // Redesign Wave 2 — MOTION.sharedMonth: on month swipe the donut carries
+  // with the hero (synced direction-aware translateX + opacity entrance) so
+  // they read as one element moving. ±16pt per Checkpoint B. reduce-motion
+  // handled by withMotion's instant path (matches the arc-draw above).
+  const carryX = useSharedValue(0);
+  const carryOpacity = useSharedValue(1);
+  useEffect(() => {
+    if (monthDirection === 0) return;
+    carryX.value = monthDirection > 0 ? 16 : -16;
+    carryOpacity.value = 0;
+    carryX.value = withMotion(0, 'sharedMonth');
+    carryOpacity.value = withMotion(1, 'sharedMonth');
+  }, [breakdown, monthDirection, carryX, carryOpacity, withMotion]);
+
+  const carryStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: carryX.value }],
+    opacity: carryOpacity.value,
+  }));
+
   // ---- QUAL-06: Skia first-frame mark (perf.ts) ----------------------------
   // Fires once on the first render pass where the chart has data to paint.
   // markFirstFrame() is idempotent — safe across React re-renders (ref guard
@@ -191,7 +213,7 @@ export function DonutChart({
   })();
 
   return (
-    <View style={styles.container} accessibilityRole="image" accessibilityLabel={a11yLabel}>
+    <Animated.View style={[styles.container, carryStyle]} accessibilityRole="image" accessibilityLabel={a11yLabel}>
       {/* D-09 / QUAL-01: Canvas + child Paths are decorative — hidden from VoiceOver.
           The outer View summarises the chart content via accessibilityLabel above. */}
       <Animated.View
@@ -251,7 +273,7 @@ export function DonutChart({
           </>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

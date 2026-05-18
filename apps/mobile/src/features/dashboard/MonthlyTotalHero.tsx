@@ -16,9 +16,10 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedReaction,
+  useAnimatedStyle,
   useSharedValue,
   runOnJS,
 } from 'react-native-reanimated';
@@ -34,6 +35,7 @@ import type { MonthKey } from './types';
 type Props = {
   readonly totalCents: number;
   readonly monthKey: MonthKey;
+  readonly monthDirection?: number;
   readonly locale?: string;
   readonly currency?: string;
 };
@@ -41,6 +43,7 @@ type Props = {
 export function MonthlyTotalHero({
   totalCents,
   monthKey,
+  monthDirection = 0,
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
@@ -70,6 +73,25 @@ export function MonthlyTotalHero({
     prevCentsRef.current = totalCents;
   }, [totalCents, animatedCents, withMotion, reduceMotion]);
 
+  // Redesign Wave 2 — MOTION.sharedMonth: on month swipe the hero carries with
+  // the donut (synced direction-aware translateX + opacity entrance) so they
+  // read as one element moving. ±16pt per Checkpoint B. reduce-motion handled
+  // by withMotion's instant path (matches the count-up above).
+  const carryX = useSharedValue(0);
+  const carryOpacity = useSharedValue(1);
+  useEffect(() => {
+    if (monthDirection === 0) return;
+    carryX.value = monthDirection > 0 ? 16 : -16;
+    carryOpacity.value = 0;
+    carryX.value = withMotion(0, 'sharedMonth');
+    carryOpacity.value = withMotion(1, 'sharedMonth');
+  }, [monthKey, monthDirection, carryX, carryOpacity, withMotion]);
+
+  const carryStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: carryX.value }],
+    opacity: carryOpacity.value,
+  }));
+
   // Mirror the SharedValue onto JS state for Intl formatting (Intl can't run
   // in a worklet). Quantize to whole cents so duplicate frames skip setState.
   useAnimatedReaction(
@@ -84,7 +106,7 @@ export function MonthlyTotalHero({
   const finalFormatted = formatMoney({ amountCents: totalCents, currency }, locale);
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, carryStyle]}>
       <Animated.Text
         style={styles.number}
         accessibilityRole="text"
@@ -105,7 +127,7 @@ export function MonthlyTotalHero({
       >
         {spentLabel}
       </Text>
-    </View>
+    </Animated.View>
   );
 }
 
