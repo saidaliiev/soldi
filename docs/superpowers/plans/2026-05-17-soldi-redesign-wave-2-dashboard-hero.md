@@ -584,15 +584,13 @@ git commit -m "feat(design): useMotion boundary — vocabulary→reanimated, red
 
 ## ⏸ Checkpoint A — Open Design design-sync (BEFORE Task 5)
 
-**STOP. Do not start Task 5 until this checkpoint is cleared by the user.**
-
-Tasks 5–6 are the highest-visual work (hero count-up + donut draw/interpolate). Sync against the live mockups first:
-
-- [ ] Run `list_projects()` (open-design MCP) — confirm a SOLDI / dashboard project exists on the daemon.
-- [ ] Run `get_artifact(project="soldi")` (or the resolved dashboard project) — pull entry + tokens + assets in one call.
-- [ ] Compare the mockup against the implementation contract: hero number scale/weight/position, donut radius/stroke/gap, slice color order, count-up + arc-draw intent. Flag any drift vs `tokens.ts`/`typography.ts` (no token value changes — spec §2.4; surface mismatches, do not silently "fix" the mockup-vs-code gap).
-- [ ] If OD has no SOLDI project: note it, proceed on the in-code design contract (UI-SPEC + tokens) — checkpoint still recorded.
-- [ ] User confirms visual targets → resume Task 5.
+**RESOLVED — bypassed-per-policy (2026-05-18).** Tasks 5–7 were executed and
+committed before the design-sync policy and with Open Design dead (no
+`soldi`/`Soldify` OD project ever existed — forensic 2026-05-18). No OD sync
+occurred here. Accepted: the cumulative hero + donut + FAB surface all land
+before Task 8, so **Checkpoint B** covers them post-hoc against the local
+authority. Authority + procedure:
+`docs/superpowers/specs/2026-05-18-design-sync-local-authority.md`.
 
 ---
 
@@ -1009,27 +1007,44 @@ git commit -m "feat(dashboard): scroll-driven Chat FAB reveal via MOTION.fabReve
 
 ---
 
-## ⏸ Checkpoint B — Open Design design-sync (BEFORE Task 8)
+## ✅ Checkpoint B — RESOLVED (local-authority drift-sync, 2026-05-18)
 
-**STOP. Do not start Task 8 until this checkpoint is cleared by the user.**
+**RESOLVED 2026-05-18 (user-confirmed).** Open Design bypassed; drift-synced
+against local `docs/design/soldify-screens.html` per
+`docs/superpowers/specs/2026-05-18-design-sync-local-authority.md`.
+Structure/motion/spacing only — palette NOT compared (un-relocked Oat & Ink).
 
-Task 8 (`sharedMonth` carry + editorial spacing/hairline) is the most subjective "feel" work. Sync against mockups first:
+Authority found **stale vs user screenshots** (2026-05-18 161227: cohesive
+header, largest-category **card**, thin donut ring) — those are on the regen
+list, NOT Task 8 scope.
 
-- [ ] Re-run `get_artifact(project="soldi")` (or dashboard project) — get the latest design state (it may have moved since Checkpoint A).
-- [ ] Compare: month-transition intent (does the mockup imply a carry/slide direction? magnitude?), section spacing rhythm, presence/weight of any hairline/divider between hero and breakdown.
-- [ ] Confirm the `sharedMonth` carry magnitude (plan uses ±24pt translateX) + the editorial spacing change (`gap: SPACING.lg → SPACING.xl`, hairline `COLORS.textMuted @ 0.18`) match the mockup intent; adjust the concrete values here if the mockup disagrees (still token-driven).
-- [ ] User confirms → resume Task 8.
+Decisions (govern Task 8 below):
+
+- **1A — section gap stays `SPACING.lg` (24).** HTML rhythm = 24px; the planned
+  `gap: SPACING.lg → SPACING.xl` would *introduce* drift. Step 4(c) dropped.
+- **2C — `sharedMonth` carry kept, magnitude ±24pt → ±16pt.** A static mockup
+  cannot depict a month transition, so "no carry in HTML" ≠ "no carry"; keep
+  the direction-aware translateX carry but match the design's restraint (HTML
+  rise = 16px). Easing personality (`cubic-bezier(.22,1,.36,1)`) is tuned in
+  Task 10's existing easing pass — **not** a Task 8 `motion.ts` edit.
+- **3A — no hero↔breakdown hairline.** Authority places hairlines row↔row
+  between category rows; the 161227 target separates hero/breakdown via a card
+  edge + spacing, so a hero↔breakdown rule is wrong. Step 4(a)/(b) dropped;
+  row↔row hairline folded into the breakdown-card regen item.
+
+Net: Task 8 scope = the `sharedMonth` carry only (Steps 1–3, ±16pt). Step 4 is
+a no-op (gap) / deferred to regen (hairline).
 
 ---
 
-## Task 8: `sharedMonth` carry + editorial spacing/hairline pass
+## Task 8: `sharedMonth` carry (Checkpoint B-tuned, ±16pt) — spacing/hairline deferred
 
 **Files:**
 - Modify: `apps/mobile/app/(tabs)/index.tsx`
 - Modify: `apps/mobile/src/features/dashboard/MonthlyTotalHero.tsx`
 - Modify: `apps/mobile/src/features/dashboard/DonutChart.tsx`
 
-`sharedMonth` (spec §2.1) = hero + donut carried by the swipe: on month change both run a synced direction-aware translateX + opacity entrance (`MOTION.sharedMonth`, 380ms inOutCubic). Direction from existing pure `compareMonth(next, prev)` (monthMath). Plus the editorial spacing/hairline pass (spec §3 W2): token-driven section rhythm + a hairline divider between the hero and the breakdown.
+`sharedMonth` (spec §2.1) = hero + donut carried by the swipe: on month change both run a synced direction-aware translateX + opacity entrance (`MOTION.sharedMonth`; easing personality tuned in Task 10). Direction from existing pure `compareMonth(next, prev)` (monthMath). **Checkpoint B (2C): carry magnitude is ±16pt, not ±24pt** — match the design's motion restraint. The editorial spacing/hairline pass is **dropped from Task 8** per Checkpoint B 1A (gap stays `SPACING.lg`) + 3A (no hero↔breakdown hairline; row↔row hairline → breakdown-card regen item). Step 4 below is replaced with the deferral note.
 
 - [ ] **Step 1: Derive swipe direction in `index.tsx` and pass it down**
 
@@ -1085,7 +1100,7 @@ and destructure `monthDirection = 0` in the signature.
   const carryOpacity = useSharedValue(1);
   useEffect(() => {
     if (monthDirection === 0) return;
-    carryX.value = monthDirection > 0 ? 24 : -24;
+    carryX.value = monthDirection > 0 ? 16 : -16;
     carryOpacity.value = 0;
     carryX.value = withMotion(0, 'sharedMonth');
     carryOpacity.value = withMotion(1, 'sharedMonth');
@@ -1117,7 +1132,7 @@ In `DonutChart.tsx`:
   const carryOpacity = useSharedValue(1);
   useEffect(() => {
     if (monthDirection === 0) return;
-    carryX.value = monthDirection > 0 ? 24 : -24;
+    carryX.value = monthDirection > 0 ? 16 : -16;
     carryOpacity.value = 0;
     carryX.value = withMotion(0, 'sharedMonth');
     carryOpacity.value = withMotion(1, 'sharedMonth');
