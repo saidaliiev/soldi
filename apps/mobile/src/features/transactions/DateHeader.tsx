@@ -1,14 +1,17 @@
 /**
- * DateHeader — sticky header above each day's transaction group.
+ * DateHeader — sticky eyebrow above each day's transaction group.
  *
- * UI-SPEC §DateHeader:
- *   36pt height; left label (Today / Yesterday / Intl short date);
- *   right daily expense subtotal in TYPE.uiLabel COLORS.textSecondary
- *   tabular-nums; 1pt bottom border textMuted @ 20%.
+ * Wave 3 design-sync (soldify-screens.html:221, checkpoint RESOLVED
+ * 2026-05-19): an uppercase tracked Manrope eyebrow (moss/sageDark) followed
+ * by a hairline rule that extends to the right edge. The prior daily-expense
+ * subtotal was DROPPED to match the design-path-C authority (overrides the
+ * earlier UI-SPEC §DateHeader subtotal).
  *
  * formatDateHeader() returns the English literals "Today" / "Yesterday"
  * for the recency branches — this component swaps them for the i18n
- * translations before rendering.
+ * translations before rendering. Sticky over scrolling rows, so the row
+ * keeps an opaque COLORS.background fill (functional; the static mockup
+ * does not show this).
  */
 
 import React from 'react';
@@ -17,25 +20,19 @@ import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { formatMoney } from '@lib/money';
 
 import { formatDateHeader } from './dateGrouping';
 
 type Props = {
   readonly date: string; // YYYY-MM-DD
-  readonly subtotalCents: number;
   readonly today?: Date;
-  readonly currency?: string;
 };
 
-const BORDER_COLOR_SUFFIX = '33'; // 20% alpha
+// Delicate hairline rule: textMuted at ~15% — matches the codebase
+// `${COLORS.textMuted}<alpha>` convention (no central hairline token).
+const HAIRLINE_ALPHA = '26';
 
-export function DateHeader({
-  date,
-  subtotalCents,
-  today,
-  currency = 'EUR',
-}: Props): React.JSX.Element {
+export function DateHeader({ date, today }: Props): React.JSX.Element {
   const { t, i18n } = useTranslation();
   const todayDate = today ?? new Date();
   const locale = i18n.language === 'uk' ? 'uk-UA' : 'en-IE';
@@ -48,45 +45,36 @@ export function DateHeader({
         ? t('transactions.header_yesterday')
         : raw;
 
-  const subtotalFormatted = formatMoney(
-    { amountCents: subtotalCents, currency },
-    locale,
-  );
-
   return (
-    <View
-      style={styles.row}
-      accessibilityRole="header"
-      accessibilityLabel={`${label}, ${subtotalFormatted}`}
-    >
-      <Text style={styles.label} allowFontScaling>
+    <View style={styles.row} accessibilityRole="header" accessibilityLabel={label}>
+      <Text style={styles.eyebrow} numberOfLines={1} allowFontScaling>
         {label}
       </Text>
-      <Text style={styles.subtotal} allowFontScaling>
-        {subtotalFormatted}
-      </Text>
+      <View style={styles.hairline} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    height: 36,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    columnGap: SPACING.md,
     paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xs,
     backgroundColor: COLORS.background,
-    borderBottomWidth: 1,
-    borderBottomColor: `${COLORS.textMuted}${BORDER_COLOR_SUFFIX}`,
   },
-  label: {
-    ...TYPE.uiLabel,
-    color: COLORS.textPrimary,
+  eyebrow: {
+    ...TYPE.uiMeta,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: COLORS.sageDark,
   },
-  subtotal: {
-    ...TYPE.uiLabel,
-    color: COLORS.textSecondary,
-    fontVariant: ['tabular-nums'],
+  hairline: {
+    flex: 1,
+    height: 1,
+    backgroundColor: `${COLORS.textMuted}${HAIRLINE_ALPHA}`,
   },
 });

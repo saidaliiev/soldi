@@ -141,7 +141,7 @@ export default function TransactionListScreen(): React.JSX.Element {
           // keyExtractor provides stable identity so recycler doesn't remount rows.
           renderItem={({ item }) => {
             if (item.kind === 'header') {
-              return <DateHeader date={item.date} subtotalCents={item.subtotalCents} />;
+              return <DateHeader date={item.date} />;
             }
             return <TransactionRow tx={item.tx} locale={locale} />;
           }}
