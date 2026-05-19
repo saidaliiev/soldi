@@ -68,6 +68,17 @@
 3. Compare (structure + palette, both in scope post Slate & Sand): header continuity/no-seam + mark/title/online-badge, bubble shape/typography (editorial) for user vs AI, mini-chart treatment, input-row sheet (pill height, send button gradient), sheet glass vs the design's blur, spacing rhythm.
 4. Drift list. **STOP** — user confirms target (incl. the screenshots-supersede-HTML caveat) before Task 3/4/5. Do NOT edit the HTML.
 
+### Checkpoint RESOLVED — 2026-05-19 (user decisions, locked)
+
+Architecture reality found: `ChatBottomSheet` uses the **shared** `src/components/BottomSheet/BottomSheetPrimitive.tsx` (4 consumers: Chat + Recategorize + JarCreate + CategoryEditor; the latter 3 are W5-scope). Primitive hardcodes `styles.sheet.backgroundColor: COLORS.surface`, `overflow:hidden`, no glass/bg slot; owns open/close motion with ad-hoc literals; it is a `Modal` (no status-bar seam). Caveat (screenshots-supersede-HTML) is dashboard/activity-only — chat authority = HTML, no ambiguity. Chat bubbles/typing/KPI already match authority (editorial typography correct) — T4 is governance-only.
+
+1. **Sheet glass → opt-in prop on the shared primitive.** Add an OPTIONAL glass-surface prop to `BottomSheetPrimitive` (default = current solid `COLORS.surface`; W5 sheets pass nothing → byte-unchanged). `ChatBottomSheet` opts in: passes `resolveSheetChrome(isSafeToRenderGlass(api,avail))`; glass branch renders the W1 GlassView pattern, fallback = solid+`SHADOWS.modal` (mandatory). The primitive becomes a sanctioned `expo-glass-effect` boundary — reuse GlassTabBar's exact access pattern; gated + fallback non-optional.
+2. **Shared-primitive open/close motion → DEFER.** The primitive's ad-hoc `withSpring{damping,stiffness}` / `withTiming 220/200` are NOT chat-specific (4 sheets). W4 governance scope stays chat-files-only. Logged as **shared-primitive motion debt** for a dedicated task (governed via the now-spring-capable boundary from T1). T3 does NOT touch primitive motion. (T1's spring support still correct + needed for that future task.)
+3. **ChatInputRow → editorial only, no blur.** 58pt pill + accent-gradient send + spacing to authority; stays SOLID (input is composer-content-ish; glass-on-content banned, CLAUDE.md). Ad-hoc press literals → governed.
+4. **ChatMiniChart → keep single-accent.** Governed reveal motion + editorial polish only. Multi-color bars (authority) = **accepted drift** (needs a ChartPayload color-array change — functional, beyond an editorial wave). Logged.
+
+**Revised task deltas:** T3 = add opt-in glass to `BottomSheetPrimitive` + `ChatBottomSheet` opts in + fallback; DROP the seam-fix (N/A) and DROP the governed-spring-open/close (deferred per #2). T4 = pure governance swap (bubbles already editorial-correct) + minor header editorial (spark/online/title) if low-risk else log drift. T5 = ChatMiniChart governed reveal (single-accent), ChatInputRow 58pt+gradient solid, EmptyState/ErrorBanner literal→governed. T6 = gate + W4-UAT (opt-in glass path: iOS26 + fallback matrix; batched W3-5 build) + STATE (W4 code-complete, 'spring' gap closed, + NEW logged debt: shared-primitive motion governance).
+
 ---
 
 ## Task 1: `'spring'` in the motion boundary + `MOTION.chatBubbleEnter`
