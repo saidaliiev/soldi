@@ -17,14 +17,13 @@ import { Pressable, View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotion } from '@design/useMotion';
 import { ChevronRefresh } from '@design/icons/system/ChevronRefresh';
 import { useChatStore } from './chatStore';
 
@@ -42,18 +41,19 @@ export function ChatErrorBanner({ visible }: Props): React.JSX.Element | null {
   const bumpRetry = useChatStore((s) => s.bumpRetry);
   const retryCount = useChatStore((s) => s.retryCount);
 
+  const { withMotion } = useMotion();
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(-8);
 
   React.useEffect(() => {
     if (visible) {
-      opacity.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) });
-      translateY.value = withTiming(0, { duration: 200, easing: Easing.out(Easing.cubic) });
+      opacity.value = withMotion(1, 'chatBubbleEnter');
+      translateY.value = withMotion(0, 'chatBubbleEnter');
     } else {
-      opacity.value = withTiming(0, { duration: 150 });
-      translateY.value = withTiming(-8, { duration: 150 });
+      opacity.value = withMotion(0, 'fabReveal');
+      translateY.value = withMotion(-8, 'fabReveal');
     }
-  }, [visible, opacity, translateY]);
+  }, [visible, opacity, translateY, withMotion]);
 
   const animStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

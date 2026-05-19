@@ -14,14 +14,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withDelay,
-  withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotion } from '@design/useMotion';
 import { ChatEmptyIllustration } from '@design/illustrations/chat-empty';
 import { PromptSuggestionChip } from './PromptSuggestionChip';
 
@@ -32,19 +30,17 @@ type Props = {
 export function ChatEmptyState({ onSubmitPrompt }: Props): React.JSX.Element {
   const { t } = useTranslation();
 
+  const { withMotion } = useMotion();
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(8);
 
+  // Governed enter (was ad-hoc withDelay(150, withTiming 300 cubic)). The
+  // 150ms lead is dropped — the boundary exposes no governed delay primitive
+  // and CLAUDE.md bans ad-hoc literals; a clean fade-in is the compliant form.
   React.useEffect(() => {
-    opacity.value = withDelay(
-      150,
-      withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) }),
-    );
-    translateY.value = withDelay(
-      150,
-      withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) }),
-    );
-  }, [opacity, translateY]);
+    opacity.value = withMotion(1, 'chatBubbleEnter');
+    translateY.value = withMotion(0, 'chatBubbleEnter');
+  }, [opacity, translateY, withMotion]);
 
   const animStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

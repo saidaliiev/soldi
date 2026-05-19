@@ -38,6 +38,8 @@ export const MOTION = {
   listRowEnter: { durationMs: 260, easing: 'outCubic' },
   /** Subtle chat bubble / element enter (Wave 4; replaces the scattered ad-hoc chat withTiming literals). */
   chatBubbleEnter: { durationMs: 280, easing: 'outCubic' },
+  /** Snappy press-scale feedback (Wave 4; replaces ad-hoc ~50ms press literals — fabReveal is too slow for a tap). */
+  pressFeedback: { durationMs: 90, easing: 'outCubic' },
   /** Bottom-sheet open/close spring (chat / recategorize). */
   sheetSpring: { durationMs: 420, easing: 'spring' },
 } as const satisfies Record<string, MotionPreset>;

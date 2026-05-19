@@ -27,7 +27,6 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +34,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotion } from '@design/useMotion';
 import { PaperPlane } from '@design/icons/system/PaperPlane';
 import { MicMuted } from '@design/icons/system/MicMuted';
 import { useChatStore } from './chatStore';
@@ -79,6 +79,7 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillText]);
 
+  const { withMotion } = useMotion();
   const sendScale = useSharedValue(1);
   const sendAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: sendScale.value }],
@@ -175,11 +176,11 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
 
   const handlePressIn = (): void => {
     if (isDisabled) return;
-    sendScale.value = withTiming(0.92, { duration: 50 });
+    sendScale.value = withMotion(0.92, 'pressFeedback');
   };
 
   const handlePressOut = (): void => {
-    sendScale.value = withTiming(1, { duration: 70 });
+    sendScale.value = withMotion(1, 'pressFeedback');
   };
 
   const handleMicPress = (): void => {
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     gap: SPACING.sm,
-    minHeight: 56,
+    minHeight: 58, // Wave 4: authority input pill is 58pt
   },
   input: {
     ...TYPE.uiBody,
@@ -278,14 +279,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendButton: {
-    width: 40,
-    height: 40,
+    // Wave 4: authority send is a 42pt accent pill (gradient approximated
+    // by solid COLORS.accent — expo-linear-gradient is not a dependency;
+    // documented accepted drift, no new native dep for an editorial wave).
+    width: 42,
+    height: 42,
     borderRadius: RADIUS.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButtonActive: {
-    backgroundColor: COLORS.accentSoft,
+    backgroundColor: COLORS.accent,
   },
   sendButtonDisabled: {
     backgroundColor: COLORS.textMuted,

@@ -5,15 +5,20 @@
  * to actual COLORS values. Unknown token names fall back to textMuted
  * (T-03-03-04 UI-side defense in depth).
  *
- * Entrance animation: withDelay(300, withTiming(progress 0→1, 600ms)).
+ * Entrance (Wave 4): governed fade-in via MOTION.chatBubbleEnter. The prior
+ * doc-comment claimed a withDelay(300, withTiming 600ms) entrance that was
+ * never actually implemented in code — replaced with the governed,
+ * reduce-motion-aware boundary form (spec §3 "ChatMiniChart motion").
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { Canvas, Path, Skia } from '@shopify/react-native-skia';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotion } from '@design/useMotion';
 import { sparklinePath, donutArcs, barLayout } from './chatChartGeometry';
 import type { ChartPayload } from '@services/aiQuery';
 
@@ -161,14 +166,23 @@ type Props = {
 };
 
 export function ChatMiniChart({ chart }: Props): React.JSX.Element {
+  const { withMotion } = useMotion();
+  const opacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    opacity.value = withMotion(1, 'chatBubbleEnter');
+  }, [opacity, withMotion]);
+
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
   return (
-    <View style={styles.container} accessible={false}>
+    <Animated.View style={[styles.container, animStyle]} accessible={false}>
       {chart.kind === 'sparkline' && (
         <MiniSparkline values={chart.values} color="accent" />
       )}
       {chart.kind === 'donut' && <MiniDonut slices={chart.slices} />}
       {chart.kind === 'bar' && <MiniBar bars={chart.bars} />}
-    </View>
+    </Animated.View>
   );
 }
 

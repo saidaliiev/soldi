@@ -14,7 +14,7 @@ test('MOTION: every preset has positive duration and a named easing', () => {
 });
 
 test('MOTION: expected presets exist', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
     assert.ok(MOTION[k], `MOTION.${k} missing`);
   }
 });
@@ -47,7 +47,7 @@ test('selectMotionPreset: reduce-motion collapses to instant linear reduced pres
 });
 
 test('selectMotionPreset: every MOTION name resolves in both modes', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
     assert.ok(selectMotionPreset(k, false).durationMs > 0);
     assert.strictEqual(selectMotionPreset(k, true).durationMs, 0);
   }
@@ -81,6 +81,14 @@ test('MOTION.chatBubbleEnter is a subtle decelerate preset (Wave 4)', () => {
     'chatBubbleEnter must stay subtle (≤320ms)',
   );
   assert.strictEqual(MOTION.chatBubbleEnter.easing, 'outCubic');
+});
+
+test('MOTION.pressFeedback is a fast tap preset (Wave 4)', () => {
+  assert.ok(
+    MOTION.pressFeedback.durationMs > 0 && MOTION.pressFeedback.durationMs <= 120,
+    'pressFeedback must stay snappy (≤120ms) — a press blip, not an enter',
+  );
+  assert.strictEqual(MOTION.pressFeedback.easing, 'outCubic');
 });
 
 test('selectMotionPreset: sheetSpring resolves PURE (no throw — throw was boundary-only) (Wave 4)', () => {
