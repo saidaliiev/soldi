@@ -81,25 +81,28 @@ export default function TransactionListScreen(): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.safe} accessibilityLabel="Transactions screen">
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: t('transactions.tab_title'),
-          headerRight: () => (
-            <Pressable
-              onPress={openSearch}
-              accessibilityRole="button"
-              accessibilityLabel="Open search and filter"
-              hitSlop={12}
-              style={styles.searchButton}
-            >
-              <Text style={styles.searchIcon} allowFontScaling>
-                ⌕
-              </Text>
-            </Pressable>
-          ),
-        }}
-      />
+      {/* Wave 3 T5: native header dropped — an in-body Oswald title with
+          the SafeAreaView fill continuous from the status-bar edge through
+          the title kills the two-tone seam (design-sync defect #1) by
+          construction, mirroring the shipped W2 dashboard header. */}
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <View style={styles.header}>
+        <Text style={styles.title} allowFontScaling numberOfLines={1}>
+          {t('transactions.tab_title')}
+        </Text>
+        <Pressable
+          onPress={openSearch}
+          accessibilityRole="button"
+          accessibilityLabel="Open search and filter"
+          hitSlop={12}
+          style={styles.searchButton}
+        >
+          <Text style={styles.searchIcon} allowFontScaling>
+            ⌕
+          </Text>
+        </Pressable>
+      </View>
 
       <FilterPillsRow />
 
@@ -155,6 +158,18 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+  },
+  title: {
+    ...TYPE.displayM,
+    color: COLORS.textPrimary,
   },
   searchButton: {
     minWidth: 44,
