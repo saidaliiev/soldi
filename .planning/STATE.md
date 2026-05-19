@@ -149,6 +149,7 @@ None yet.
 | Languages | DE/FR/ES/IT/PL localization | Deferred to v1.5 | Init |
 | Features | Receipt OCR, Dark mode, Predictive projection | Deferred to v1.5 | Init |
 | Monetization | Premium tier + RevenueCat | Deferred to v2.0 | Init |
+| Infra | Android emulator setup for this WSL2 dev env (ANDROID_HOME, SDK, AVD) — user-flagged future need; NOT blocking (iOS-first; glass needs TestFlight not emu) | Deferred | 2026-05-19 |
 
 ## Session Continuity
 
