@@ -25,15 +25,15 @@ export type ReducedMotionPreset = {
 
 export const MOTION = {
   /** Hero total counts 0 → value on mount (MonthlyTotalHero). */
-  heroCountUp: { durationMs: 600, easing: 'outCubic' },
+  heroCountUp: { durationMs: 720, easing: 'outCubic' }, // Task 10: +120ms longer settle reads "expensive" (decelerates, not snaps); still <1s
   /** Donut arcs draw in on first mount (DonutChart). */
-  arcDraw: { durationMs: 700, easing: 'outCubic' },
+  arcDraw: { durationMs: 760, easing: 'outCubic' }, // Task 10: +60ms — staggered entrance subdivides this window per slice; keeps each sub-sweep unrushed
   /** Donut arcs morph between months (closes deferred D-05). */
-  arcInterpolate: { durationMs: 450, easing: 'inOutCubic' },
+  arcInterpolate: { durationMs: 450, easing: 'inOutCubic' }, // Task 10: unchanged — morph already tuned, stagger does not touch interpolate path
   /** Scroll-driven FAB hide/reveal (ChatLaunchFAB). */
   fabReveal: { durationMs: 220, easing: 'outCubic' },
   /** Shared-element carry on month-swipe (hero number + donut). */
-  sharedMonth: { durationMs: 380, easing: 'inOutCubic' },
+  sharedMonth: { durationMs: 340, easing: 'inOutCubic' }, // Task 10: -40ms snappier — gesture-driven carry should feel crisp/responsive, not laggy
   /** Bottom-sheet open/close spring (chat / recategorize). */
   sheetSpring: { durationMs: 420, easing: 'spring' },
 } as const satisfies Record<string, MotionPreset>;

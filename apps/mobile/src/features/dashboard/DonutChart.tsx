@@ -40,13 +40,18 @@ import { formatMoney } from '@lib/money';
 import { localizedCategoryName } from '@data/categoriesRepo';
 import { markFirstFrame } from '@lib/perf';
 import { computeSliceAngles, arcsFromSliceAngles, type SliceAngle } from './donutArcs';
-import { interpolateSliceAngles } from './dashboardMotion';
+import { interpolateSliceAngles, staggeredProgress } from './dashboardMotion';
 import { useMotion } from '@design/useMotion';
 import type { CategoryBreakdown, CategorySlice } from './types';
 
 const CANVAS_SIZE = 200;
 const STROKE_WIDTH = 10;
 const GAP_DEG = 2;
+// Task 10 Step 1 — mount stagger overlap. 0=fully sequential (too mechanical
+// the other way), 1=simultaneous (the pre-Task-10 behavior). 0.55 keeps slices
+// clearly leading one another while overlapping enough to read as one fluid
+// sweep, not a discrete march. Mount-draw only; month-change stays global.
+const STAGGER_OVERLAP = 0.55;
 // Stroke centerline radius — outer ring = CANVAS_SIZE/2 = 100, half-stroke = 5.
 const RADIUS = CANVAS_SIZE / 2 - STROKE_WIDTH / 2;
 
@@ -116,20 +121,45 @@ export function DonutChart({
     [],
   );
 
-  const interpolated = useMemo(
-    () => interpolateSliceAngles(prevAnglesRef.current, angles, tQuantized),
-    [angles, tQuantized]
-  );
+  // Mount arc-draw is exactly the prev=[] case (file docstring: "prev=[] ⇒
+  // every slice enters ⇒ the same code is the mount arc-draw"). Only there do
+  // we stagger per slice; every later breakdown change keeps the GLOBAL
+  // interpolate path (matched morph + enter/exit) untouched — month-change
+  // must NOT stagger. reduce-motion: withMotion snaps progress→1 instantly so
+  // tQuantized=1 ⇒ staggeredProgress(1,…)=1 for every slice ⇒ final arcs (no
+  // tween), identical to the global path's t=1 — instant branch unaffected.
+  const isMountDraw = prevAnglesRef.current.length === 0;
 
-  const skPaths = useMemo(
-    () =>
-      arcsFromSliceAngles(interpolated, RADIUS).map((a) => ({
-        skPath: Skia.Path.MakeFromSVGString(a.path),
-        color: a.color,
-        categoryId: a.categoryId,
-      })),
-    [interpolated]
-  );
+  const skPaths = useMemo(() => {
+    if (isMountDraw) {
+      const n = angles.length;
+      // Each slice sweeps in on its own staggered sub-window of tQuantized.
+      // interpolateSliceAngles(prev=[], angles, tSlice) grows slice i from its
+      // leading edge — the established "entering" semantics, now per-slice.
+      return angles.flatMap((slice, i) => {
+        const tSlice = staggeredProgress(tQuantized, i, n, STAGGER_OVERLAP);
+        return arcsFromSliceAngles(
+          interpolateSliceAngles([], [slice], tSlice),
+          RADIUS,
+        ).map((a) => ({
+          skPath: Skia.Path.MakeFromSVGString(a.path),
+          color: a.color,
+          categoryId: a.categoryId,
+        }));
+      });
+    }
+    // Month-change: GLOBAL interpolation, unchanged from Task 6.
+    const interpolated = interpolateSliceAngles(
+      prevAnglesRef.current,
+      angles,
+      tQuantized,
+    );
+    return arcsFromSliceAngles(interpolated, RADIUS).map((a) => ({
+      skPath: Skia.Path.MakeFromSVGString(a.path),
+      color: a.color,
+      categoryId: a.categoryId,
+    }));
+  }, [angles, tQuantized, isMountDraw]);
 
   // Redesign Wave 2 — MOTION.sharedMonth: on month swipe the donut carries
   // with the hero (synced direction-aware translateX + opacity entrance) so

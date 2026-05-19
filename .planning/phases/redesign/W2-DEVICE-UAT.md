@@ -37,3 +37,14 @@ this checklist is the qualitative feel + reduce-motion gate.
 - [ ] Static screenshot (no motion) is unchanged vs pre-Wave-2 (settled state).
 - [ ] EmptyState / future-month / error paths unaffected (no donut → no anim).
 - [ ] Language switch still updates labels live.
+
+## Polish Pass (Task 10) device checks
+- [ ] Staggered donut draw reads premium not mechanical — slices sweep in
+      sequentially (each clearly leading the next), not all at once and not a
+      discrete one-by-one march (STAGGER_OVERLAP=0.55, arcDraw 760ms).
+- [ ] Count-up settle feels expensive — decelerates into the final number
+      (not linear, not an abrupt stop); ~720ms outCubic reads unhurried.
+- [ ] sharedMonth carry reads as one cohesive motion — hero + donut move
+      together, snappier (~340ms) without feeling laggy or two-stage.
+- [ ] No exit-slice ghost (removed slices fully vanish, no 1px residue) and
+      no matched-slice color flicker at the chosen stagger on 6→5→7 changes.

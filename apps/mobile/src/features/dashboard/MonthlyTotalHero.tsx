@@ -15,7 +15,7 @@
  * Motion-only; the static screenshot (no motion) shows the settled total.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedReaction,
@@ -29,6 +29,7 @@ import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { useMotion } from '@design/useMotion';
 import { formatMoney } from '@lib/money';
+import { quantizeCents } from './dashboardMotion';
 import { formatMonthLabel } from './monthMath';
 import type { MonthKey } from './types';
 
@@ -93,13 +94,26 @@ export function MonthlyTotalHero({
   }));
 
   // Mirror the SharedValue onto JS state for Intl formatting (Intl can't run
-  // in a worklet). Quantize to whole cents so duplicate frames skip setState.
-  useAnimatedReaction(
-    () => Math.round(animatedCents.value),
-    (cents, prev) => {
-      if (cents !== prev) runOnJS(setDisplayCents)(cents);
+  // in a worklet). The worklet reads the raw value (quantize stays on JS —
+  // quantizeCents needs totalCents which is JS-side); JS quantizes with an
+  // exact-target snap so the final frame lands EXACTLY on totalCents (Task 10
+  // Step 3 — no off-by-one when withTiming settles at e.g. 12344.9997).
+  const applyCents = useCallback(
+    (raw: number) => {
+      setDisplayCents((prev) => {
+        const next = quantizeCents(raw, totalCents);
+        return next === prev ? prev : next;
+      });
     },
-    [],
+    [totalCents],
+  );
+  useAnimatedReaction(
+    () => animatedCents.value,
+    (raw, prev) => {
+      if (raw !== prev) runOnJS(applyCents)(raw);
+    },
+    // dep: rebuild on month change so the snap uses the current totalCents, not a stale mount closure
+    [applyCents],
   );
 
   const formatted = formatMoney({ amountCents: displayCents, currency }, locale);
