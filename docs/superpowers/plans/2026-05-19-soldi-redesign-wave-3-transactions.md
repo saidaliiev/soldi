@@ -59,6 +59,16 @@
 3. Compare (structure + palette, both in scope post Slate & Sand relock): header continuity (no two-tone seam), filter-pill rhythm, date-header eyebrow style + hairline weight/alpha, row hairline separators, row typography hierarchy (merchant vs category meta vs amount), section/row spacing rhythm, tab-bar active state.
 4. Produce a drift list. **STOP** — user reviews drift, confirms target, then Task 3/4 proceed. Do NOT edit the HTML.
 
+### Checkpoint RESOLVED — 2026-05-19 (user decisions, locked)
+
+1. **DateHeader → match authority:** uppercase tracked eyebrow label (moss `#586A45`) + hairline rule extending right of the label; **drop the daily subtotal** (overrides the impl's prior UI-SPEC subtotal; design-path-C authority wins). a11y label keeps date; subtotal removed from a11y string too.
+2. **TransactionRow category → adopt authority:** replace `CategoryChip` on this surface with a circular tinted category-icon badge + plain muted category text (`TYPE.ui*` muted). `CategoryChip` component stays used on other surfaces (untouched).
+3. **TransactionRow expense color → conform:** expense amount = `COLORS.accent` (`#9C5B41`), income stays `COLORS.income` (`#586A45`). (Straight authority-conformance.)
+4. **TransactionRow inter-row hairline → conform:** add the 1px content-width hairline between rows. (Straight authority-conformance.)
+5. **Header → in-body large title:** drop the RN native `Stack` header; render an in-body Oswald 30px "Activity" title with the screen top fill continuous from the safe-area edge through the title (kills seam-defect #1 by construction; consistent with the shipped W2 dashboard header). Search affordance moves into the body header region.
+6. **FilterPillsRow → accepted drift (logged, not silently fixed):** authority shows a persistent segment filter (All/Expense/Income/Rent); the app's filter UX is the search modal + dismissable active-filter chips. Adding an inline segment control is a new feature, out of scope for an editorial wave (plan T5 = "no behavior change"). FilterPillsRow keeps the active-filter-chips model; only editorial palette/spacing polish applied. Recorded as intentional design-sync drift per the design-sync-local-authority "surface, don't force" rule.
+7. **T6 → extend the boundary:** add a worklet-safe governed-snap helper to `useMotion.ts` (resolved `{duration,easing}` from `MOTION.fabReveal`, reduce-motion aware, callable from a reanimated gesture worklet). This is a deliberate, user-approved new sanctioned boundary pattern (the W2 `withMotion` is JS-only and cannot reach a gesture `onEnd` worklet — verified: all W2 call sites are JS-context). Update Task 6 accordingly.
+
 ---
 
 ## Task 1: Pure `MOTION.listRowEnter` preset (node-safe, additive)

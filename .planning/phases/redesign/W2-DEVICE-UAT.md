@@ -48,3 +48,6 @@ this checklist is the qualitative feel + reduce-motion gate.
       together, snappier (~340ms) without feeling laggy or two-stage.
 - [ ] No exit-slice ghost (removed slices fully vanish, no 1px residue) and
       no matched-slice color flicker at the chosen stagger on 6→5→7 changes.
+
+---
+**Batched build also covers Wave 3** — run `W3-DEVICE-UAT.md` in the same device pass (one EAS build = W1+W2+W3; user decision 2026-05-19).
