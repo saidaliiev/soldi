@@ -24,6 +24,17 @@
  *     because the Modal closes and the OS returns focus naturally).
  *   - accessibilityViewIsModal on the sheet container prevents background
  *     content from being reachable by VoiceOver swipe.
+ *
+ * Wave 4: SANCTIONED expo-glass-effect boundary (2nd, after GlassTabbar;
+ * approved at the W4 checkpoint). OPT-IN only via the `glassSurface` prop —
+ * default path is byte-identical solid COLORS.surface, so the 3 other
+ * consumers (Recategorize / JarCreate / CategoryEditor — W5 scope) are
+ * untouched. When opted in: native availability + reduce-transparency are
+ * read at this boundary, the pure glass.ts resolveSheetChrome decides, glass
+ * is an absolute-fill GlassView BEHIND content (transform stays on the plain
+ * Animated.View — no animated native view), fallback = solid + SHADOWS.modal
+ * (mandatory, never transparent). Open/close motion is intentionally NOT
+ * governed here (W4 checkpoint #2: shared-primitive-motion is deferred debt).
  */
 
 import React from 'react';
@@ -45,8 +56,14 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import {
+  GlassView,
+  isGlassEffectAPIAvailable,
+  isLiquidGlassAvailable,
+} from 'expo-glass-effect';
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
+import { isSafeToRenderGlass, resolveSheetChrome } from '@design/glass';
 
 // WR-03: SCREEN_HEIGHT was computed once at module load via Dimensions.get().
 // On orientation change or iPad Split View, the cached value goes stale causing
@@ -78,6 +95,13 @@ type Props = {
    * RN Modal teardown naturally returns OS focus — still not a dead end.
    */
   readonly returnFocusRef?: React.RefObject<React.ElementRef<typeof View> | null>;
+  /**
+   * Wave 4 OPT-IN: render the sheet surface as warm Liquid Glass (only
+   * ChatBottomSheet passes this). Omitted/false → byte-identical solid
+   * COLORS.surface (W5 sheets unaffected). Glass gated by native
+   * availability + reduce-transparency with a mandatory solid fallback.
+   */
+  readonly glassSurface?: boolean;
   readonly children?: React.ReactNode;
 };
 
@@ -89,10 +113,37 @@ function parsePercent(s: string): number {
 
 export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Props>(
   function BottomSheetPrimitive(
-    { snapPoints, onChange, accessibilityLabel, returnFocusRef, children },
+    { snapPoints, onChange, accessibilityLabel, returnFocusRef, glassSurface, children },
     ref,
   ) {
     const [visible, setVisible] = React.useState(false);
+
+    // Glass boundary (Wave 4, opt-in). reduce-transparency may still report
+    // glass available under a11y limits → force the solid fallback. Mirrors
+    // the GlassTabBar (Wave 1) native-availability pattern exactly.
+    const [reduceTransparency, setReduceTransparency] = React.useState(false);
+    React.useEffect(() => {
+      let mounted = true;
+      AccessibilityInfo.isReduceTransparencyEnabled().then((v) => {
+        if (mounted) setReduceTransparency(v);
+      });
+      const sub = AccessibilityInfo.addEventListener(
+        'reduceTransparencyChanged',
+        (v) => setReduceTransparency(v),
+      );
+      return () => {
+        mounted = false;
+        sub.remove();
+      };
+    }, []);
+
+    const wantGlass = glassSurface === true;
+    const safeGlass =
+      wantGlass &&
+      !reduceTransparency &&
+      isSafeToRenderGlass(isGlassEffectAPIAvailable(), isLiquidGlassAvailable());
+    const sheetChrome = wantGlass ? resolveSheetChrome(safeGlass) : null;
+    const renderGlass = sheetChrome?.glass === true;
     // WR-03: use reactive screen height — stale module-load value caused
     // wrong snap position after orientation change or iPad Split View.
     const { height: screenHeight } = useWindowDimensions();
@@ -210,8 +261,33 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
           <GestureDetector gesture={pan}>
             <Animated.View
               accessibilityViewIsModal
-              style={[styles.sheet, { height: restingHeight }, sheetStyle]}
+              style={[
+                styles.sheet,
+                // Default + glass-fallback supply an opaque fill; the glass
+                // path supplies the material via the GlassView child below.
+                !wantGlass
+                  ? { backgroundColor: COLORS.surface }
+                  : sheetChrome != null && !sheetChrome.glass
+                    ? { backgroundColor: sheetChrome.backgroundColor }
+                    : null,
+                wantGlass && sheetChrome != null && !sheetChrome.glass
+                  ? sheetChrome.shadow
+                  : null,
+                { height: restingHeight },
+                sheetStyle,
+              ]}
             >
+              {/* Wave 4: warm-glass material behind content (opt-in, gated).
+                  pointerEvents none → pan/scroll reach the children. */}
+              {renderGlass && sheetChrome != null && sheetChrome.glass && (
+                <GlassView
+                  pointerEvents="none"
+                  style={StyleSheet.absoluteFill}
+                  glassEffectStyle={sheetChrome.glassEffectStyle}
+                  tintColor={sheetChrome.tintColor}
+                  isInteractive={sheetChrome.isInteractive}
+                />
+              )}
               {/* D-09 / QUAL-03: headerRef is the VoiceOver focus landing target on open */}
               <View
                 ref={headerRef}
@@ -241,7 +317,8 @@ const styles = StyleSheet.create({
     backgroundColor: `${COLORS.textPrimary}${BACKDROP_ALPHA}`,
   },
   sheet: {
-    backgroundColor: COLORS.surface,
+    // backgroundColor is supplied dynamically: default + glass-fallback →
+    // opaque (COLORS.surface / chrome bg); glass path → GlassView child.
     borderTopLeftRadius: RADIUS.xl,
     borderTopRightRadius: RADIUS.xl,
     overflow: 'hidden',

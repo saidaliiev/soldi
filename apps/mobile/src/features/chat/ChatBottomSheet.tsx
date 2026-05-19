@@ -82,6 +82,7 @@ export function ChatBottomSheet(): React.JSX.Element {
     <BottomSheetPrimitive
       ref={sheetRef}
       snapPoints={SNAP_POINTS}
+      glassSurface
       onChange={(index) => {
         // index === 0 means sheet was dragged closed
         if (index === 0 && isOpen) {
