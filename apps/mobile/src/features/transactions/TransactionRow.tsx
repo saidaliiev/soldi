@@ -1,15 +1,20 @@
 /**
- * TransactionRow — 72pt row with swipe-left "Categorize" reveal.
+ * TransactionRow — row with swipe-left "Categorize" reveal.
  *
- * UI-SPEC §TransactionRow + §Animation Contract:
- *   - 72pt height, merchant + category chip on left, amount on right.
- *   - Sign-colored amount (expense=accent, income=sage), tabular-nums.
- *   - Swipe-left worklet on react-native-gesture-handler v2 / reanimated v4;
- *     clamp at -120pt, snap open at -60pt threshold, withSpring(damping 20,
- *     stiffness 200).
- *   - Reveal action labeled t('transactions.action_categorize'); tap opens
- *     RecategorizeBottomSheet via useRecategorizeStore.openFor(tx.id).
- *   - Row tap → router.push(`/transactions/${tx.id}`) (detail screen).
+ * Wave 3 design-sync (soldify-screens.html:222-244, checkpoint RESOLVED
+ * 2026-05-19): circular tinted category-icon badge + plain muted category
+ * meta text (CategoryChip dropped ON THIS SURFACE only — still used by the
+ * recategorize sheet / filter modal). Expense amount conforms to the
+ * authority `--accent` (COLORS.accent); income stays COLORS.income. A
+ * content hairline separates rows. A subtle one-shot list-enter (governed
+ * MOTION.listRowEnter via useRowEnter) plays on the list's first paint and
+ * is recycle-safe (no animation on scroll/FlashList recycle).
+ *
+ * UI-SPEC §Animation Contract (preserved): swipe-left worklet, clamp at
+ * -120pt, snap open at -60pt, withSpring(damping 20, stiffness 200).
+ * Reveal labeled t('transactions.action_categorize'); tap opens
+ * RecategorizeBottomSheet via useRecategorizeStore.openFor(tx.id).
+ * Row tap → router.push(`/transactions/${tx.id}`).
  *
  * Security: never console.log merchant or amount (CLAUDE.md + T-02-03-04).
  */
@@ -30,8 +35,9 @@ import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
 import { Misc } from '@design/icons/categories/Misc';
+import { resolveIcon } from '@design/icons/categories';
+import { useRowEnter } from '@design/useMotion';
 
-import { CategoryChip } from './CategoryChip';
 import { useRecategorizeStore } from './recategorizeStore';
 import type { Transaction } from './types';
 
@@ -43,19 +49,28 @@ type Props = {
 const REVEAL_WIDTH = 120;
 const OPEN_THRESHOLD = 60;
 const SPRING_CONFIG = { damping: 20, stiffness: 200 } as const;
+// Circular icon badge: category color at ~14% fill, icon stroked full color.
+const BADGE_BG_ALPHA = '24';
+// Content hairline between rows — codebase `${COLORS.textMuted}<alpha>` convention.
+const HAIRLINE_ALPHA = '26';
 
 export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const translateX = useSharedValue(0);
+  const rowEnter = useRowEnter();
   const openFor = useRecategorizeStore((s) => s.openFor);
 
   const expense = tx.amountCents < 0;
-  const amountColor = expense ? COLORS.expense : COLORS.income;
+  const amountColor = expense ? COLORS.accent : COLORS.income;
   const formattedAmount = formatMoney(
     { amountCents: Math.abs(tx.amountCents), currency: tx.currency },
     locale,
   );
   const signedAmount = `${expense ? '−' : '+'} ${formattedAmount}`;
+
+  const categoryName = tx.categoryName ?? 'Other';
+  const categoryColor = tx.categoryColor ?? COLORS.textMuted;
+  const CategoryIcon = resolveIcon(tx.categoryIconSlug);
 
   const goToDetail = React.useCallback(() => {
     router.push({ pathname: '/transactions/[id]', params: { id: String(tx.id) } });
@@ -66,9 +81,9 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
     translateX.value = withSpring(0, SPRING_CONFIG);
   }, [openFor, tx.id, translateX]);
 
-  // D-09 / QUAL-03: VoiceOver alternative for swipe-left recategorize gesture.
-  // accessibilityActions exposes the same action to screen-reader users without
-  // requiring the swipe gesture that VoiceOver intercepts.
+  // D-09 / QUAL-03: VoiceOver alternative for the swipe-left recategorize
+  // gesture. accessibilityActions exposes the same action without the swipe
+  // VoiceOver intercepts.
   const handleAccessibilityAction = React.useCallback(
     (event: { nativeEvent: { actionName: string } }) => {
       if (event.nativeEvent.actionName === 'recategorize') {
@@ -107,10 +122,6 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
     transform: [{ translateX: translateX.value }],
   }));
 
-  const categoryName = tx.categoryName ?? 'Other';
-  const categorySlug = tx.categoryIconSlug;
-  const categoryColor = tx.categoryColor;
-
   return (
     <View style={styles.container}>
       {/* Reveal action layer — sits behind the row */}
@@ -128,23 +139,31 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
         </Pressable>
       </View>
 
-      {/* Foreground row (gesture target) */}
+      {/* Foreground row (gesture target + one-shot list-enter) */}
       <GestureDetector gesture={composed}>
         <Animated.View
           style={[styles.row, animatedStyle]}
+          entering={rowEnter}
           accessibilityRole="button"
           accessibilityLabel={`${tx.merchantName}, ${signedAmount}, ${categoryName}`}
           accessibilityHint="Double-tap to view details. Swipe left to recategorize."
           accessibilityActions={[{ name: 'recategorize', label: t('transactions.action_categorize') }]}
           onAccessibilityAction={handleAccessibilityAction}
         >
+          <View
+            style={[styles.badge, { backgroundColor: `${categoryColor}${BADGE_BG_ALPHA}` }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <CategoryIcon color={categoryColor} size={20} />
+          </View>
           <View style={styles.left}>
             <Text style={styles.merchant} numberOfLines={1} allowFontScaling>
               {tx.merchantName}
             </Text>
-            <View style={styles.chipRow}>
-              <CategoryChip slug={categorySlug} name={categoryName} color={categoryColor} />
-            </View>
+            <Text style={styles.category} numberOfLines={1} allowFontScaling>
+              {categoryName}
+            </Text>
           </View>
           <View style={styles.right}>
             <Text
@@ -166,6 +185,8 @@ const styles = StyleSheet.create({
     height: 72,
     overflow: 'hidden',
     backgroundColor: COLORS.background,
+    borderBottomWidth: 1,
+    borderBottomColor: `${COLORS.textMuted}${HAIRLINE_ALPHA}`,
   },
   revealLayer: {
     ...StyleSheet.absoluteFillObject,
@@ -197,6 +218,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     columnGap: SPACING.md,
   },
+  badge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   left: {
     flex: 1,
     rowGap: SPACING.xs,
@@ -208,8 +236,9 @@ const styles = StyleSheet.create({
     ...TYPE.uiBody,
     color: COLORS.textPrimary,
   },
-  chipRow: {
-    flexDirection: 'row',
+  category: {
+    ...TYPE.uiMeta,
+    color: COLORS.textMuted,
   },
   amount: {
     ...TYPE.tabular,
