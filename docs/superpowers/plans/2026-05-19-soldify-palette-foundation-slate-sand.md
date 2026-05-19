@@ -253,10 +253,11 @@ Apply the **Legacy-hex residue replacement map** to every hardcoded literal in t
 - Modify: `apps/mobile/src/design/contrast.ts` — D-09 narrative comments → Slate & Sand narrative
 - Modify: `apps/mobile/src/design/contrast.test.ts` — math-test fixtures
 - Modify: `apps/mobile/src/features/chat/ChatLaunchFAB.tsx` — comment lines
-- Modify: `apps/mobile/src/components/BottomSheetPrimitive.tsx` — comment line
+- Modify: `apps/mobile/src/components/BottomSheet/BottomSheetPrimitive.tsx` — comment line (path corrected during execution: file is under `components/BottomSheet/`, not `components/`)
 - Modify: `apps/mobile/src/design/glass.test.ts` — fixtures (`#FAF5F0` → `#F7F5F0`)
 - Modify: `apps/mobile/src/features/dashboard/donutArcs.test.ts` — `#C97B5C` → `#9C5B41`, comment `#B8968A` → `#6E695F`
 - Modify: `apps/mobile/src/features/categories/categoryMutations.test.ts` — fixtures (`#C97B5C`→`#9C5B41`, `#A86147`→`#7C4632`, `#7A5C52`→`#6A645A`)
+- Modify: `apps/mobile/src/features/jars/JarRing.tsx` — comment line only (CR-04 `sageDark` note `#5C6B4A` → `#586A45`; residue twin of the `contrast.ts` CR-04 comment, found by the Step-5 gate during execution)
 
 - [ ] **Step 1: `contrast.test.ts` math fixtures**
 
@@ -285,9 +286,10 @@ Expected: all PASS, **same count as the Step-1 baseline** (Task 1), no new failu
 
 ```bash
 cd /home/iskan/projects/soldi/apps/mobile
-grep -rniE '#(C97B5C|BF6F4F|D9997A|A86147|2C1810|7A5C52|8A6558|B8968A|7E8B6C|7A876A|5C6B4A|B85C5C|B5C0A5|9DA88C|F7F1E8|FAF5F0|F0E6D8|F2D5C5|D9A994)' src --include='*.ts' --include='*.tsx' | grep -v 'src/design/tokens.ts' | grep -v 'src/data/.*schema'
+grep -rniE '#(C97B5C|BF6F4F|D9997A|A86147|2C1810|7A5C52|8A6558|B8968A|7E8B6C|7A876A|5C6B4A|B85C5C|B5C0A5|9DA88C|F7F1E8|FAF5F0|F0E6D8|F2D5C5|D9A994)' src --include='*.ts' --include='*.tsx' | grep -v 'src/design/tokens.ts' | grep -vE 'schema\.sql\.ts'
 ```
-Expected: **no output**. Any hit outside `tokens.ts` and the deferred `schema.sql.ts` (Appendix) is unfinished residue — fix before continuing. A legitimate exception needs an inline justifying comment + execution-log note.
+(Exclusion corrected during execution: the seed file is `src/lib/db/schema.sql.ts`, NOT `src/data/...` — the original `grep -v 'src/data/.*schema'` filter would not have matched it.)
+Expected: **no output**. Any hit outside `tokens.ts` and the deferred `src/lib/db/schema.sql.ts` (Appendix) is unfinished residue — fix before continuing. A legitimate exception needs an inline justifying comment + execution-log note.
 
 - [ ] **Step 6: Do NOT commit.** Continue to Task 5.
 
@@ -322,12 +324,13 @@ git add apps/mobile/src/design/tokens.ts \
         apps/mobile/src/design/glass.test.ts \
         apps/mobile/src/features/chat/ChatBubbleUser.tsx \
         apps/mobile/src/features/chat/ChatLaunchFAB.tsx \
-        apps/mobile/src/components/BottomSheetPrimitive.tsx \
+        apps/mobile/src/components/BottomSheet/BottomSheetPrimitive.tsx \
         apps/mobile/src/features/dashboard/donutArcs.test.ts \
-        apps/mobile/src/features/categories/categoryMutations.test.ts
+        apps/mobile/src/features/categories/categoryMutations.test.ts \
+        apps/mobile/src/features/jars/JarRing.tsx
 git status --short
 ```
-Expected: only the listed files staged; no `.planning/` or `docs/` path in this commit. (If a listed file had no residue and is unmodified, it simply won't stage — fine; do not force-add.)
+Expected: exactly these **10** files staged (paths corrected during execution: `BottomSheet/BottomSheetPrimitive.tsx` real path; `JarRing.tsx` added — it carried a `#5C6B4A` CR-04 residue twin fixed in Task 4). No `.planning/` or `docs/` path in this commit. (If a listed file had no residue and is unmodified, it simply won't stage — fine; do not force-add.)
 
 - [ ] **Step 4: Commit 1**
 
@@ -502,7 +505,7 @@ git log --oneline -3
 
 ## Appendix: Known scope gap — category seed colors (DECISION NEEDED, not in this plan)
 
-`apps/mobile/src/data/.../schema.sql.ts` seeds **18 category color rows** with legacy palette hex. Spec §6 scopes this work to **design tokens only**; DB seed data is **excluded** (changing seed rows has migration implications for existing users' customized colors). The Task 4 Step 5 residue grep deliberately excludes `schema.sql.ts`. **Surface at execution handoff** as a separate follow-up: "do seeded category colors need a data migration to Slate & Sand, and what happens to users who already customized them?" — its own spec/plan.
+`apps/mobile/src/lib/db/schema.sql.ts` seeds **18 category color rows** with legacy palette hex. Spec §6 scopes this work to **design tokens only**; DB seed data is **excluded** (changing seed rows has migration implications for existing users' customized colors). The Task 4 Step 5 residue grep deliberately excludes `schema.sql.ts`. **Surface at execution handoff** as a separate follow-up: "do seeded category colors need a data migration to Slate & Sand, and what happens to users who already customized them?" — its own spec/plan.
 
 ## Self-Review
 
