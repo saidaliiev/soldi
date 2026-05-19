@@ -15,13 +15,12 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotion } from '@design/useMotion';
 import type { ChatMessage } from './chatStore';
 
 // accent @ 12% — derived from COLORS.accent (#9C5B41); rgba avoids hardcoded hex
@@ -37,13 +36,14 @@ export function ChatBubbleUser({ message }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const [showTimestamp, setShowTimestamp] = React.useState(false);
 
+  const { withMotion } = useMotion();
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(12);
 
   React.useEffect(() => {
-    opacity.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.cubic) });
-    translateY.value = withTiming(0, { duration: 250, easing: Easing.out(Easing.cubic) });
-  }, [opacity, translateY]);
+    opacity.value = withMotion(1, 'chatBubbleEnter');
+    translateY.value = withMotion(0, 'chatBubbleEnter');
+  }, [opacity, translateY, withMotion]);
 
   const animStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -60,7 +60,7 @@ export function ChatBubbleUser({ message }: Props): React.JSX.Element {
   const toggleTimestamp = (): void => {
     const next = !showTimestamp;
     setShowTimestamp(next);
-    timestampOpacity.value = withTiming(next ? 1 : 0, { duration: 150 });
+    timestampOpacity.value = withMotion(next ? 1 : 0, 'fabReveal');
   };
 
   const timeStr = new Date(message.createdAt).toLocaleTimeString([], {

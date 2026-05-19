@@ -33,6 +33,15 @@ const DOT_GAP = 4;
 function AnimatedDot({ staggerMs }: { staggerMs: number }): React.JSX.Element {
   const opacity = useSharedValue(0.3);
 
+  // Wave 4 ACCEPTED governance drift (logged, not bulldozed): this is an
+  // INFINITE breath loop, a distinct motion archetype — not an enter. The
+  // MOTION vocabulary + useMotion boundary express one-shot value
+  // transitions, not loop-composable {duration,easing} for withRepeat/
+  // withSequence. Governing it cleanly needs a loop-aware boundary primitive,
+  // which is out of scope for an editorial wave (tracked alongside the
+  // deferred shared-primitive-motion debt). Reduce-motion already bypasses
+  // this entirely (static "…" via useReducedMotion) so the literals never
+  // run for reduce-motion users.
   React.useEffect(() => {
     opacity.value = withDelay(
       staggerMs,
