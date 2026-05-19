@@ -39,7 +39,7 @@ Out of scope (other phases):
 
 ### Skia Donut Chart
 - **D-04:** Tappable slices. On slice tap, the center label morphs from monthly total → category name + amount + percentage of total. Untap returns center to monthly total.
-- **D-05:** Donut animation on month change: slices interpolate from previous month's values to new month's values (reanimated `withTiming`, 300ms `Easing.out(Easing.cubic)`).
+- **D-05:** Donut animation on month change: slices interpolate from previous month's values to new month's values (reanimated `withTiming`, 300ms `Easing.out(Easing.cubic)`). **CLOSED 2026-05-17 (redesign Wave 2)** — realized as pure angle-space interpolation (`dashboardMotion.ts:interpolateSliceAngles`) driven by `MOTION.arcDraw`/`MOTION.arcInterpolate`; the `usePathInterpolation` topology blocker did not apply (angle space ≠ SVG-path-string space). See `02-01-SUMMARY.md` deferred list + `PROJECT.md` Key Decisions.
 - **D-06:** Category order in donut: descending by absolute amount. Top 5 explicit slices; remainder grouped into "Other" slice.
 
 ### "Yesterday in money" Digest Card
