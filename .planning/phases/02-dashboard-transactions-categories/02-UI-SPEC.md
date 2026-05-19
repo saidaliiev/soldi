@@ -112,38 +112,38 @@ Source: `COLORS` token in `apps/mobile/src/design/tokens.ts`.
 
 | Role | Token | Hex | Usage |
 |------|-------|-----|-------|
-| Dominant surface (60%) | `COLORS.background` | `#F7F1E8` | App shell, screen backgrounds, dashboard scroll area |
-| Secondary surface (30%) | `COLORS.surface` | `#FAF5F0` | Digest card, bottom sheet background, filter modal background, category editor sheet |
-| Primary text | `COLORS.textPrimary` | `#2C1810` | All body text, merchant names, section labels |
-| Secondary text | `COLORS.textSecondary` | `#7A5C52` | Date header labels, filter pill text, category chip text, donut center percentage |
-| Muted text | `COLORS.textMuted` | `#B8968A` | Placeholder text in search input, empty-state sub-copy, "yesterday in money" prefix label |
-| Accent (10%) | `COLORS.accent` | `#C97B5C` | Reserved for: expense amounts, sparkline line, active filter pill background, primary CTA button fill, donut slice for top category, selected state on color swatch |
-| Accent soft | `COLORS.accentSoft` | `#D9997A` | Gradient pair for CTA buttons, unselected donut slice hover state |
-| Accent deep | `COLORS.accentDeep` | `#A86147` | Pressed state on CTA buttons, pressed donut slice |
-| Sage | `COLORS.sage` | `#9DA88C` | Income amounts (positive), "money in" category chip |
-| Sage soft | `COLORS.sageSoft` | `#B5C0A5` | Income category donut slice fill |
-| Sage deep | `COLORS.sageDeep` | `#7A876A` | Pressed state on income elements |
-| Error / destructive | `COLORS.error` | `#B85C5C` | Merge confirm modal destructive CTA, delete swipe action reveal background |
-| Success | `COLORS.success` | `#7A876A` | Confirmation toast after category merge/create |
+| Dominant surface (60%) | `COLORS.background` | `#EDEAE3` | App shell, screen backgrounds, dashboard scroll area |
+| Secondary surface (30%) | `COLORS.surface` | `#F7F5F0` | Digest card, bottom sheet background, filter modal background, category editor sheet |
+| Primary text | `COLORS.textPrimary` | `#221F1B` | All body text, merchant names, section labels |
+| Secondary text | `COLORS.textSecondary` | `#6A645A` | Date header labels, filter pill text, category chip text, donut center percentage |
+| Muted text | `COLORS.textMuted` | `#6E695F` | Placeholder text in search input, empty-state sub-copy, "yesterday in money" prefix label |
+| Accent (10%) | `COLORS.accent` | `#9C5B41` | Reserved for: expense amounts, sparkline line, active filter pill background, primary CTA button fill, donut slice for top category, selected state on color swatch |
+| Accent soft | `COLORS.accentSoft` | `#B97A5A` | Gradient pair for CTA buttons, unselected donut slice hover state |
+| Accent deep | `COLORS.accentDeep` | `#7C4632` | Pressed state on CTA buttons, pressed donut slice |
+| Sage | `COLORS.sage` | `#687653` | Income amounts (positive), "money in" category chip |
+| Sage soft | `COLORS.sageSoft` | `#9AA585` | Income category donut slice fill |
+| Sage deep | `COLORS.sageDeep` | `#4F5C3C` | Pressed state on income elements |
+| Error / destructive | `COLORS.error` | `#97463A` | Merge confirm modal destructive CTA, delete swipe action reveal background |
+| Success | `COLORS.success` | `#586A45` | Confirmation toast after category merge/create |
 | Modal overlay | `COLORS.textPrimary` @ 0.9 opacity | — | Full-screen search/filter modal backdrop (Phase 1 pattern) |
 
 **Accent is reserved for (explicit list):**
 Expense amounts in transaction rows · sparkline line · active/applied filter pill background · primary CTA button gradient fill · selected color swatch ring · tapped donut slice highlight · "yesterday total" number in digest card.
 
-**Income color:** `COLORS.sage` (`#9DA88C`) — sage-derived, never the banned bright green.
+**Income color:** `COLORS.sage` (`#687653`) — sage-derived, never the banned bright green.
 
 **Category color swatches (D-22) — the 8 only options for user-created categories:**
 
 | Swatch | Token | Hex |
 |--------|-------|-----|
-| 1 (accent) | `COLORS.accent` | `#C97B5C` |
-| 2 (accentSoft) | `COLORS.accentSoft` | `#D9997A` |
-| 3 (accentDeep) | `COLORS.accentDeep` | `#A86147` |
-| 4 (sage) | `COLORS.sage` | `#9DA88C` |
-| 5 (sageSoft) | `COLORS.sageSoft` | `#B5C0A5` |
-| 6 (sageDeep) | `COLORS.sageDeep` | `#7A876A` |
-| 7 (error muted) | `COLORS.error` | `#B85C5C` |
-| 8 (textSecondary) | `COLORS.textSecondary` | `#7A5C52` |
+| 1 (accent) | `COLORS.accent` | `#9C5B41` |
+| 2 (accentSoft) | `COLORS.accentSoft` | `#B97A5A` |
+| 3 (accentDeep) | `COLORS.accentDeep` | `#7C4632` |
+| 4 (sage) | `COLORS.sage` | `#687653` |
+| 5 (sageSoft) | `COLORS.sageSoft` | `#9AA585` |
+| 6 (sageDeep) | `COLORS.sageDeep` | `#4F5C3C` |
+| 7 (error muted) | `COLORS.error` | `#97463A` |
+| 8 (textSecondary) | `COLORS.textSecondary` | `#6A645A` |
 
 **Banned (enforced, never appear in Phase 2 code):** `#667EEA`, `#8B7AB8`, `#E8E0FF`, `#10B981`, `#1A73E8`, `#2563EB`. No glassmorphism, no neon gradients.
 

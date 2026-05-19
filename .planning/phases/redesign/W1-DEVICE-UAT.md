@@ -13,11 +13,11 @@ build on a real device. Batched with Wave 2; AFTER TestFlight build #6.
 
 ## iOS 26 device (glass path)
 - [ ] Tab bar renders as a floating warm Liquid Glass pill (GlassContainer +
-      4 GlassView), not flat. Warm cream tint (#FAF5F0 chromeTint, tintAlpha
+      4 GlassView), not flat. Warm cream tint (#F7F5F0 chromeTint, tintAlpha
       0.62 baked into the native glass layer — not a flat semi-transparent
       fill), NOT grey.
 - [ ] Glass is interactive (specular/refraction reacts to scroll/touch).
-- [ ] Active tab: accent (#BF6F4F) icon + textPrimary (#2C1810) label.
+- [ ] Active tab: accent (#9C5B41) icon + textPrimary (#221F1B) label.
       Inactive: textMuted. Labels legible over glass at all scroll positions
       (R5 — if any position drops below AA, escalate: tighten tint alpha).
 - [ ] Tap targets ≥ 44pt; all 4 tabs switch correctly; `explore` absent.
@@ -27,7 +27,7 @@ build on a real device. Batched with Wave 2; AFTER TestFlight build #6.
       solid fallback (no broken/empty bar).
 
 ## iOS < 26 device (fallback path)
-- [ ] Tab bar is a solid warm pill (GLASS.fallbackChromeBg #FAF5F0) with the
+- [ ] Tab bar is a solid warm pill (GLASS.fallbackChromeBg #F7F5F0) with the
       ELEVATION.floating shadow — premium, NOT an empty/transparent bar.
 - [ ] Same color/contrast/tap-target/i18n behavior as glass path.
 
