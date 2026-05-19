@@ -10,7 +10,7 @@
  * SOLID editorial fill (never an empty/transparent bar).
  */
 
-import { GLASS, ELEVATION } from './tokens';
+import { GLASS, ELEVATION, SHADOWS } from './tokens';
 
 /**
  * Glass renders only when the native effect is actually available (iOS 26+).
@@ -120,5 +120,51 @@ export function resolveTabBarChrome(safeGlass: boolean): TabBarChrome {
     glass: false,
     backgroundColor: surface.backgroundColor,
     shadow: ELEVATION.floating,
+  };
+}
+
+export type SheetChrome =
+  | {
+      readonly glass: true;
+      /** GlassView.glassEffectStyle */
+      readonly glassEffectStyle: 'regular';
+      /** GlassView.tintColor — warm sheet wash, alpha baked in (#RRGGBBAA) */
+      readonly tintColor: string;
+      /** GlassView.isInteractive — the sheet receives drag/tap (parity with chrome) */
+      readonly isInteractive: true;
+    }
+  | {
+      readonly glass: false;
+      /** opaque solid editorial fill (mandatory non-glass fallback) */
+      readonly backgroundColor: string;
+      /** SHADOWS.modal — a bottom sheet is modal-class, not the floating pill */
+      readonly shadow: typeof SHADOWS.modal;
+    };
+
+/**
+ * Resolve the FINAL RN-ready bottom-sheet chrome (Wave 4: ChatBottomSheet).
+ * Mirrors resolveTabBarChrome, with sheet tokens and a modal-class shadow.
+ * `safeGlass` is isSafeToRenderGlass()'s result, injected from the RN
+ * boundary. Glass path: warm sheet tint (alpha baked in), interactive,
+ * regular style. Fallback path: opaque solid warm fill (GLASS.fallbackChromeBg
+ * — the generic warm editorial fill; there is no separate sheet-bg token) +
+ * SHADOWS.modal (a sheet is modal-class, NOT the detached tab-bar pill, so it
+ * does NOT use ELEVATION.floating). NEVER a transparent sheet — the library's
+ * internal degrade is transparent, so the component MUST use backgroundColor.
+ * Glass is sheet CHROME only — never the bubbles/content (CLAUDE.md).
+ */
+export function resolveSheetChrome(safeGlass: boolean): SheetChrome {
+  if (shouldRenderGlass(safeGlass)) {
+    return {
+      glass: true,
+      glassEffectStyle: 'regular',
+      tintColor: composeGlassTint(GLASS.sheetTint, GLASS.sheetTintAlpha),
+      isInteractive: true,
+    };
+  }
+  return {
+    glass: false,
+    backgroundColor: GLASS.fallbackChromeBg,
+    shadow: SHADOWS.modal,
   };
 }

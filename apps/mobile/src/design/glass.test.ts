@@ -4,8 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { shouldRenderGlass, resolveChromeSurface, isSafeToRenderGlass, composeGlassTint, resolveTabBarChrome } from './glass.js';
-import { GLASS, ELEVATION } from './tokens.js';
+import { shouldRenderGlass, resolveChromeSurface, isSafeToRenderGlass, composeGlassTint, resolveTabBarChrome, resolveSheetChrome } from './glass.js';
+import { GLASS, ELEVATION, SHADOWS } from './tokens.js';
 
 test('shouldRenderGlass: true only when available', () => {
   assert.strictEqual(shouldRenderGlass(true), true);
@@ -70,6 +70,30 @@ test('resolveTabBarChrome: discriminated union — no cross-branch field leak', 
   const g = resolveTabBarChrome(true);
   const f = resolveTabBarChrome(false);
   // Runtime shape guard: ensures literals leak no cross-branch fields (TS covers compile-time).
+  assert.strictEqual('backgroundColor' in g, false);
+  assert.strictEqual('tintColor' in f, false);
+});
+
+test('resolveSheetChrome: glass path → sheet tint hex8 + interactive, glass=true (Wave 4)', () => {
+  const c = resolveSheetChrome(true);
+  assert.strictEqual(c.glass, true);
+  assert.strictEqual(c.tintColor, composeGlassTint(GLASS.sheetTint, GLASS.sheetTintAlpha));
+  assert.strictEqual(c.isInteractive, true);
+  assert.strictEqual(c.glassEffectStyle, 'regular');
+});
+
+test('resolveSheetChrome: fallback → opaque solid + modal shadow, glass=false (Wave 4)', () => {
+  const c = resolveSheetChrome(false);
+  assert.strictEqual(c.glass, false);
+  assert.strictEqual(c.backgroundColor, GLASS.fallbackChromeBg);
+  // Sheet is modal-class — NOT the detached tab-bar pill (ELEVATION.floating).
+  assert.deepStrictEqual(c.shadow, SHADOWS.modal);
+  assert.notDeepStrictEqual(c.shadow, ELEVATION.floating);
+});
+
+test('resolveSheetChrome: discriminated union — no cross-branch field leak (Wave 4)', () => {
+  const g = resolveSheetChrome(true);
+  const f = resolveSheetChrome(false);
   assert.strictEqual('backgroundColor' in g, false);
   assert.strictEqual('tintColor' in f, false);
 });
