@@ -70,3 +70,7 @@ DerivedData/
 
 # Sentry
 .sentryclirc
+.superpowers/
+
+# Local agent runtime (locks, scheduled tasks) — not shared
+.claude/
