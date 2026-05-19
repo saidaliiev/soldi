@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-05-19 by `docs/superpowers/specs/2026-05-18-soldify-palette-redeclaration-design.md` (Slate & Sand).** Oat & Ink REJECTED. Historical only.
+
 # Soldify Palette Foundation (Oat & Ink) — Design Spec
 
 **Date:** 2026-05-18

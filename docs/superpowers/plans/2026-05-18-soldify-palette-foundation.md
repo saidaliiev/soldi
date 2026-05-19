@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-05-19 by `docs/superpowers/plans/2026-05-19-soldify-palette-foundation-slate-sand.md` (Slate & Sand).** Oat & Ink was rejected (reads "for women only"). Do not execute this plan.
+
 # Soldify Palette Foundation (Oat & Ink) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
