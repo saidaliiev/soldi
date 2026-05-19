@@ -36,11 +36,22 @@ export const MOTION = {
   sharedMonth: { durationMs: 340, easing: 'inOutCubic' }, // Task 10: -40ms snappier — gesture-driven carry should feel crisp/responsive, not laggy
   /** Subtle one-shot row settle on the initial transaction-list paint (Wave 3 TransactionRow; recycle-safe via useRowEnter). */
   listRowEnter: { durationMs: 260, easing: 'outCubic' },
+  /** Subtle chat bubble / element enter (Wave 4; replaces the scattered ad-hoc chat withTiming literals). */
+  chatBubbleEnter: { durationMs: 280, easing: 'outCubic' },
   /** Bottom-sheet open/close spring (chat / recategorize). */
   sheetSpring: { durationMs: 420, easing: 'spring' },
 } as const satisfies Record<string, MotionPreset>;
 
 export type MotionName = keyof typeof MOTION;
+
+/**
+ * Governed damping for the duration-based `'spring'` resolution (Wave 4).
+ * Slightly underdamped (<1) → a soft settle with minimal overshoot for the
+ * chat sheet. The reanimated boundary maps `'spring'` presets to
+ * withSpring({ duration, dampingRatio: SHEET_DAMPING_RATIO }) — no
+ * damping/stiffness literals in components. Pure constant, node-safe.
+ */
+export const SHEET_DAMPING_RATIO = 0.82;
 
 /**
  * Collapse a preset to an instant, linear, opacity-only form for users with

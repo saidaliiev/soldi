@@ -17,12 +17,13 @@ import { AccessibilityInfo } from 'react-native';
 import {
   Easing,
   Keyframe,
+  withSpring,
   withTiming,
   type EasingFunction,
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { selectMotionPreset } from './motion';
+import { selectMotionPreset, SHEET_DAMPING_RATIO } from './motion';
 import type { EasingToken, MotionName } from './motion';
 
 /**
@@ -39,8 +40,13 @@ function resolveEasing(token: EasingToken): EasingFunction {
     case 'linear':
       return Easing.linear;
     case 'spring':
+      // Wave 4: 'spring' is now supported, but it is driven by withSpring
+      // (duration + dampingRatio), NOT an Easing fn. withMotion / useMotionSnap
+      // route 'spring' presets to withSpring BEFORE calling resolveEasing, so
+      // reaching this branch is a programming error (a new caller bypassing
+      // the spring routing) — fail fast rather than silently mis-ease.
       throw new Error(
-        "useMotion: 'spring' is driven by withSpring, not Easing — MOTION.sheetSpring lands in Wave 4, not Wave 2",
+        "useMotion: resolveEasing must not be called for 'spring' — route via withSpring (withMotion/useMotionSnap handle this)",
       );
     default: {
       const _exhaustive: never = token;
@@ -90,6 +96,12 @@ export function useMotion(): { withMotion: WithMotion; reduceMotion: boolean } {
   const withMotion = useCallback<WithMotion>((toValue, name) => {
     const preset = selectMotionPreset(name, reduceMotion);
     if ('reduced' in preset && preset.reduced) return toValue;
+    if (preset.easing === 'spring') {
+      return withSpring(toValue, {
+        duration: preset.durationMs,
+        dampingRatio: SHEET_DAMPING_RATIO,
+      });
+    }
     return withTiming(toValue, {
       duration: preset.durationMs,
       easing: resolveEasing(preset.easing),
@@ -160,15 +172,21 @@ export function useMotionSnap(name: MotionName): SnapTo {
   const reduceMotion = useReduceMotion();
   const cfg = useMemo(() => {
     const p = selectMotionPreset(name, reduceMotion);
-    return 'reduced' in p && p.reduced
-      ? ({ instant: true } as const)
-      : ({ instant: false, durationMs: p.durationMs, easing: resolveEasing(p.easing) } as const);
+    if ('reduced' in p && p.reduced) return { kind: 'instant' } as const;
+    if (p.easing === 'spring') {
+      return { kind: 'spring', durationMs: p.durationMs, dampingRatio: SHEET_DAMPING_RATIO } as const;
+    }
+    return { kind: 'timing', durationMs: p.durationMs, easing: resolveEasing(p.easing) } as const;
   }, [name, reduceMotion]);
   return useCallback<SnapTo>(
     (sv, toValue) => {
       'worklet';
-      if (cfg.instant) {
+      if (cfg.kind === 'instant') {
         sv.value = toValue;
+        return;
+      }
+      if (cfg.kind === 'spring') {
+        sv.value = withSpring(toValue, { duration: cfg.durationMs, dampingRatio: cfg.dampingRatio });
         return;
       }
       sv.value = withTiming(toValue, { duration: cfg.durationMs, easing: cfg.easing });
