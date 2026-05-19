@@ -34,6 +34,8 @@ export const MOTION = {
   fabReveal: { durationMs: 220, easing: 'outCubic' },
   /** Shared-element carry on month-swipe (hero number + donut). */
   sharedMonth: { durationMs: 340, easing: 'inOutCubic' }, // Task 10: -40ms snappier — gesture-driven carry should feel crisp/responsive, not laggy
+  /** Subtle one-shot row settle on the initial transaction-list paint (Wave 3 TransactionRow; recycle-safe via useRowEnter). */
+  listRowEnter: { durationMs: 260, easing: 'outCubic' },
   /** Bottom-sheet open/close spring (chat / recategorize). */
   sheetSpring: { durationMs: 420, easing: 'spring' },
 } as const satisfies Record<string, MotionPreset>;

@@ -14,7 +14,7 @@ test('MOTION: every preset has positive duration and a named easing', () => {
 });
 
 test('MOTION: expected presets exist', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter'] as const) {
     assert.ok(MOTION[k], `MOTION.${k} missing`);
   }
 });
@@ -47,7 +47,7 @@ test('selectMotionPreset: reduce-motion collapses to instant linear reduced pres
 });
 
 test('selectMotionPreset: every MOTION name resolves in both modes', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter'] as const) {
     assert.ok(selectMotionPreset(k, false).durationMs > 0);
     assert.strictEqual(selectMotionPreset(k, true).durationMs, 0);
   }
@@ -57,4 +57,20 @@ test('selectMotionPreset: is pure (does not mutate MOTION)', () => {
   const before = { ...MOTION.arcInterpolate };
   selectMotionPreset('arcInterpolate', true);
   assert.deepStrictEqual({ ...MOTION.arcInterpolate }, before);
+});
+
+test('MOTION.listRowEnter is a subtle decelerate preset (Wave 3)', () => {
+  assert.ok(
+    MOTION.listRowEnter.durationMs > 0 && MOTION.listRowEnter.durationMs <= 320,
+    'listRowEnter must stay subtle (≤320ms)',
+  );
+  assert.strictEqual(MOTION.listRowEnter.easing, 'outCubic');
+});
+
+test('selectMotionPreset: listRowEnter resolves in both modes (Wave 3)', () => {
+  assert.deepStrictEqual(selectMotionPreset('listRowEnter', false), MOTION.listRowEnter);
+  const r = selectMotionPreset('listRowEnter', true);
+  assert.strictEqual(r.durationMs, 0);
+  assert.strictEqual(r.easing, 'linear');
+  assert.strictEqual((r as ReducedMotionPreset).reduced, true);
 });
