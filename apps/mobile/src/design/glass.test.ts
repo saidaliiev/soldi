@@ -34,21 +34,21 @@ test('isSafeToRenderGlass: true ONLY when both api+liquid available', () => {
 });
 
 test('composeGlassTint: #RRGGBB + alpha → #RRGGBBAA (uppercase, 2-digit)', () => {
-  assert.strictEqual(composeGlassTint('#FAF5F0', 0.62), '#FAF5F09E');
-  assert.strictEqual(composeGlassTint('#FAF5F0', 1), '#FAF5F0FF');
-  assert.strictEqual(composeGlassTint('#FAF5F0', 0), '#FAF5F000');
-  assert.strictEqual(composeGlassTint('#faf5f0', 1), '#FAF5F0FF');
+  assert.strictEqual(composeGlassTint('#F7F5F0', 0.62), '#F7F5F09E');
+  assert.strictEqual(composeGlassTint('#F7F5F0', 1), '#F7F5F0FF');
+  assert.strictEqual(composeGlassTint('#F7F5F0', 0), '#F7F5F000');
+  assert.strictEqual(composeGlassTint('#f7f5f0', 1), '#F7F5F0FF');
 });
 
 test('composeGlassTint: clamps alpha to [0,1]', () => {
-  assert.strictEqual(composeGlassTint('#FAF5F0', 1.5), '#FAF5F0FF');
-  assert.strictEqual(composeGlassTint('#FAF5F0', -0.2), '#FAF5F000');
+  assert.strictEqual(composeGlassTint('#F7F5F0', 1.5), '#F7F5F0FF');
+  assert.strictEqual(composeGlassTint('#F7F5F0', -0.2), '#F7F5F000');
 });
 
 test('composeGlassTint: rejects non-#RRGGBB input', () => {
   assert.throws(() => composeGlassTint('FAF5F0', 0.5), /#RRGGBB/);
   assert.throws(() => composeGlassTint('#FFF', 0.5), /#RRGGBB/);
-  assert.throws(() => composeGlassTint('#FAF5F0FF', 0.5), /#RRGGBB/);
+  assert.throws(() => composeGlassTint('#F7F5F0FF', 0.5), /#RRGGBB/);
 });
 
 test('resolveTabBarChrome: glass path → tintColor hex8 + interactive, glass=true', () => {

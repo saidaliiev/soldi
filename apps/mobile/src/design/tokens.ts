@@ -9,51 +9,56 @@
 
 export const COLORS = {
   // Surfaces
-  background: '#F7F1E8', // warm cream — app shell
-  surface: '#FAF5F0', // card surface
+  background: '#EDEAE3', // warm slate — app shell
+  surface: '#F7F5F0', // card surface
   white: '#FFFFFF',
 
   // Text
-  textPrimary: '#2C1810', // deep warm brown
-  textSecondary: '#7A5C52',
-  // D-09 / QUAL-02 remediation: #B8968A was 2.41:1 on cream BG (WCAG AA fail).
-  // Darkened to #8A6558 → 4.58:1 on background, 4.75:1 on surface. PASS.
-  textMuted: '#8A6558',
+  textPrimary: '#221F1B', // deep warm slate
+  textSecondary: '#6A645A',
+  // Slate & Sand + WCAG gate: raw --muted #8A8478 = 3.09:1 on
+  // background (#EDEAE3) — WCAG AA body 4.5:1 FAIL. Darkened
+  // (warm-grey hue preserved) to #6E695F → 4.54:1 background,
+  // 5.01:1 surface. PASS. Hard AA floor: no headroom by design —
+  // do NOT darken textMuted alone (collapses the step vs
+  // textSecondary 4.88). contrast.ts auditTokenPairs asserts ≥4.5.
+  textMuted: '#6E695F',
 
-  // Accents — terracotta family
-  // D-09 / QUAL-02 remediation: #C97B5C was 2.89:1 on cream BG (large-text 3:1 fail).
-  // Darkened to #BF6F4F → 3.34:1 on background, 3.46:1 on surface. PASS.
-  accent: '#BF6F4F', // primary CTA, selected states, expense
-  accentSoft: '#D9997A', // gradient pair, lighter (decorative — no text use)
-  accentDeep: '#A86147', // pressed state, shadow tint (4.19:1 on BG — PASS)
+  // Accents — sandstone family
+  // Slate & Sand + WCAG gate: accent #9C5B41 = 4.38:1 on background,
+  // 4.84:1 on surface. Below body 4.5:1 — graphic + large-text-only
+  // policy: ≥24px regular / ≥18.66px bold, never body text.
+  accent: '#9C5B41', // primary CTA, selected states, expense
+  accentSoft: '#B97A5A', // gradient pair, lighter (decorative — no text use)
+  accentDeep: '#7C4632', // pressed state, shadow tint (6.29:1 on BG — text-safe)
 
   // Sage — success, savings, "money in"
-  // D-09 / QUAL-02 remediation: #9DA88C was 2.22:1 on cream BG (graphic 3:1 fail).
-  // Darkened to #7E8B6C → 3.23:1 on background, 3.34:1 on surface. PASS for graphic.
-  // CR-04: sage fails WCAG AA §1.4.3 body-text 4.5:1 threshold (3.23:1 on background).
-  // sageDark (#5C6B4A) is the text-safe variant — ~5.1:1 on background (#F7F1E8).
-  // Use sageDark for all text rendered with TYPE.uiLabel/uiBody/uiMeta on background.
-  // Use sage only for graphic elements (ring arcs, decorative fills).
-  sage: '#7E8B6C',
-  sageDark: '#5C6B4A', // CR-04: text-safe sage — 5.1:1 on #F7F1E8 (WCAG AA body 4.5:1 ✓)
-  sageSoft: '#B5C0A5',
-  sageDeep: '#7A876A',
+  // Slate & Sand + WCAG gate: sage #687653 = 4.06:1 on background.
+  // Below body 4.5:1 — graphic-only (ring arcs, decorative fills).
+  // sageDark (#586A45) is the text-safe positive variant — 4.91:1 on
+  // background (#EDEAE3). Use sageDark for all text rendered with
+  // TYPE.uiLabel/uiBody/uiMeta on background. Use sage only for
+  // graphic elements (ring arcs, decorative fills).
+  sage: '#687653',
+  sageDark: '#586A45', // text-safe sage — 4.91:1 on #EDEAE3 (WCAG AA body 4.5:1 ✓)
+  sageSoft: '#9AA585',
+  sageDeep: '#4F5C3C',
 
   // States
-  error: '#B85C5C', // muted warm red, never bright
-  success: '#7A876A', // sage-derived
+  error: '#97463A', // muted warm red, never bright
+  success: '#586A45', // sage-derived
 
   // Semantic aliases (keep in sync with accent/success above)
-  income: '#7A876A',
-  expense: '#BF6F4F', // D-09: aligned with accent remediation (#C97B5C → #BF6F4F)
+  income: '#586A45',
+  expense: '#7C4632', // Slate & Sand: text-safe deep sandstone (accentDeep)
 } as const;
 
 export const GRADIENTS = {
-  primary: ['#D9997A', '#C97B5C'] as const, // CTA buttons, accents
-  warm: ['#F2D5C5', '#D9A994'] as const, // hero overlays
-  hero: ['#F7F1E8', '#F0E6D8'] as const, // app shell, welcome
-  sage: ['#B5C0A5', '#9DA88C'] as const, // success, savings
-  dark: ['#2E1F1F', '#4A2E2E', '#3D2626'] as const, // chat dark mode (v1.5)
+  primary: ['#B97A5A', '#9C5B41'] as const, // CTA, FAB, send button — white text 5.27:1
+  warm: ['#E6E1D4', '#D9D2C0'] as const, // header hero band (cohesive top region)
+  hero: ['#EDEAE3', '#E2DDD0'] as const, // subtle full-bleed hero background
+  sage: ['#9AA585', '#788566'] as const, // positive decorative sweep
+  dark: ['#2A2622', '#3A332C', '#322B25'] as const, // dark surfaces (dark-mode theme = future milestone; token value per spec §3)
 } as const;
 
 export const FONTS = {
@@ -129,11 +134,11 @@ export const ELEVATION = {
  * Values are warm cream/terracotta — never neutral grey glass (anti-AI-slop).
  */
 export const GLASS = {
-  chromeTint: '#FAF5F0', // == surface; tab bar / nav wash
-  sheetTint: '#F7F1E8', // == background; bottom-sheet wash
-  chromeTintAlpha: 0.62, // overlay alpha on native glass
-  sheetTintAlpha: 0.55,
-  fallbackChromeBg: '#FAF5F0', // solid fill when isLiquidGlassAvailable() === false
+  chromeTint: '#F7F5F0', // == surface; tab bar / nav wash
+  sheetTint: '#EDEAE3', // == background; bottom-sheet wash
+  chromeTintAlpha: 0.62, // unchanged (spec §3)
+  sheetTintAlpha: 0.55, // unchanged (spec §3)
+  fallbackChromeBg: '#F7F5F0', // solid fill when isLiquidGlassAvailable() === false
 } as const;
 
 /**

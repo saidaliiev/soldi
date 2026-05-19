@@ -101,7 +101,7 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
         accessibilityHint={t('ai:fab_hint')}
         style={styles.pressable}
       >
-        {/* Gradient fill: accentSoft (#D9997A) to accent (#C97B5C) via two-stop View */}
+        {/* Gradient fill: accentSoft (#B97A5A) to accent (#9C5B41) via two-stop View */}
         <View style={styles.gradientBg}>
           <SparkQuill size={24} color={COLORS.white} />
         </View>
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     width: FAB_SIZE,
     height: FAB_SIZE,
     borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.accentSoft, // midpoint of #D9997A→#C97B5C
+    backgroundColor: COLORS.accentSoft, // midpoint of #B97A5A→#9C5B41
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -24,10 +24,10 @@ import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import type { ChatMessage } from './chatStore';
 
-// accent @ 12% — derived from COLORS.accent (#C97B5C); rgba avoids hardcoded hex
-// The channel values (201, 123, 92) come from COLORS.accent hex decomposition.
+// accent @ 12% — derived from COLORS.accent (#9C5B41); rgba avoids hardcoded hex
+// The channel values (156, 91, 65) come from COLORS.accent hex decomposition.
 // See token reference in design/tokens.ts COLORS.accent.
-const ACCENT_12 = 'rgba(201, 123, 92, 0.12)'; // COLORS.accent @ 12% opacity
+const ACCENT_12 = 'rgba(156, 91, 65, 0.12)'; // COLORS.accent @ 12% opacity
 
 type Props = {
   readonly message: Extract<ChatMessage, { role: 'user' }>;

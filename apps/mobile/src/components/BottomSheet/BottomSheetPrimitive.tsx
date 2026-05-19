@@ -52,7 +52,7 @@ import { COLORS, RADIUS, SPACING } from '@design/tokens';
 // On orientation change or iPad Split View, the cached value goes stale causing
 // the sheet to animate to the wrong snap position. Moved inside component as
 // useWindowDimensions() which is reactive. See restingHeight derivation below.
-// Scrim alpha. Was '90' (0.56): textPrimary is warm brown (#2C1810), not
+// Scrim alpha. Was '90' (0.56): textPrimary is warm near-black (#221F1B), not
 // black, and the app bg is light cream — at 0.56 the background list stayed
 // visibly legible through the dim (looked like the sheet was transparent).
 // 'D9' = 0.85 gives a proper opaque scrim while keeping the warm-brown tint

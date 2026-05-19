@@ -30,22 +30,22 @@ test('contrastRatio: black on white = 21:1', () => {
 test('contrastRatio: same color = 1:1', () => {
   assert.strictEqual(contrastRatio('#FFFFFF', '#FFFFFF'), 1);
   assert.strictEqual(contrastRatio('#000000', '#000000'), 1);
-  assert.strictEqual(contrastRatio('#F7F1E8', '#F7F1E8'), 1);
+  assert.strictEqual(contrastRatio('#EDEAE3', '#EDEAE3'), 1);
 });
 
 test('contrastRatio: is symmetric', () => {
-  const a = '#2C1810';
-  const b = '#F7F1E8';
+  const a = '#221F1B';
+  const b = '#EDEAE3';
   const ab = contrastRatio(a, b);
   const ba = contrastRatio(b, a);
   assert.ok(Math.abs(ab - ba) < Number.EPSILON * 100,
     `contrastRatio not symmetric: ${ab} vs ${ba}`);
 });
 
-test('contrastRatio: known reference pair (cream background)', () => {
-  // textPrimary #2C1810 on background #F7F1E8 — known to be ~15:1
-  const ratio = contrastRatio('#2C1810', '#F7F1E8');
-  assert.ok(ratio > 14 && ratio < 16, `expected ~15, got ${ratio}`);
+test('contrastRatio: known reference pair (Slate & Sand background)', () => {
+  // textPrimary #221F1B on background #EDEAE3 — known ~13.7:1 (Slate & Sand)
+  const ratio = contrastRatio('#221F1B', '#EDEAE3');
+  assert.ok(ratio > 13 && ratio < 15, `expected ~13.7, got ${ratio}`);
 });
 
 test('contrastRatio: throws on malformed hex', () => {

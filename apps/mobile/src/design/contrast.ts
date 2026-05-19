@@ -9,7 +9,7 @@
  *
  * The audit table below enumerates every foreground/background token pair
  * that actually occurs in the app's rendered UI and asserts each clears AA
- * after the D-09 remediation in tokens.ts.
+ * with the Slate & Sand palette in tokens.ts (WCAG-gated values).
  *
  * Colocated test: contrast.test.ts (node:test + node:assert — no jest needed).
  */
@@ -78,7 +78,7 @@ export type ContrastAuditEntry = {
 
 /**
  * Enumerate every foreground/background token pair that the app renders.
- * After D-09 remediation every entry's `passes` must be true.
+ * With the Slate & Sand palette every entry's `passes` must be true.
  *
  * Threshold classification (WCAG 2.1 §1.4.3 + §1.4.11):
  *   body/label text     → 4.5:1  (fontSize < 18pt normal / < 14pt bold)
@@ -119,14 +119,16 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     entry('textSecondary', COLORS.textSecondary, 'surface', SURF, 4.5),
 
     // ---- textMuted (uiLabel/uiMeta body text on all surfaces) --------------
-    // Remediated D-09: #B8968A → #8A6558 (was 2.41:1, now ≥4.5:1)
+    // Slate & Sand WCAG gate: raw #8A8478 = 3.09:1 → #6E695F (4.54:1 bg,
+    // 5.01:1 surf). Hard AA floor — no headroom by design.
     entry('textMuted', COLORS.textMuted, 'background', BG, 4.5),
     entry('textMuted', COLORS.textMuted, 'surface', SURF, 4.5),
 
     // ---- accent (used for expense amounts in TYPE.tabular = 16pt semibold,
     //      CTA button labels in TYPE.uiButton = 16pt semibold — qualifies as
     //      large text per WCAG 2.1 "14pt bold" threshold) --------------------
-    // Remediated D-09: #C97B5C → #BF6F4F (was 2.89:1, now ≥3.0:1)
+    // Slate & Sand: accent #9C5B41 = 4.38:1 bg / 4.84:1 surf (graphic +
+    // large-text-only policy; never body text — use accentDeep #7C4632).
     entry('accent', COLORS.accent, 'background', BG, 3.0,
       'TYPE.tabular/uiButton = 16pt semibold (>=14pt bold = large text, §1.4.3)'),
     entry('accent', COLORS.accent, 'surface', SURF, 3.0,
@@ -134,15 +136,15 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
 
     // ---- sage (ring arc — graphic element only, §1.4.11 non-text contrast 3:1)
     // sage MUST NOT be used for body/label text — use sageDark for text.
-    // Remediated D-09: #9DA88C → #7E8B6C (was 2.22:1, now ≥3.0:1)
+    // Slate & Sand: sage #687653 = 4.06:1 bg / 4.48:1 surf (graphic only).
     entry('sage', COLORS.sage, 'background', BG, 3.0,
       'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
     entry('sage', COLORS.sage, 'surface', SURF, 3.0,
       'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
 
     // ---- sageDark (overFundedLabel in TYPE.uiLabel = 14pt medium = body text)
-    // CR-04: overFundedLabel was using sage (3.23:1) which fails §1.4.3 body 4.5:1.
-    // sageDark (#5C6B4A) is ~5.1:1 on background — PASS.
+    // CR-04: overFundedLabel was using sage (graphic) which fails §1.4.3 body 4.5:1.
+    // sageDark (#586A45) is 4.91:1 on background — PASS.
     entry('sageDark', COLORS.sageDark, 'background', BG, 4.5),
     entry('sageDark', COLORS.sageDark, 'surface', SURF, 4.5),
 
@@ -161,7 +163,7 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     // fill (GLASS.fallbackChromeBg === COLORS.surface). Tab labels:
     //   inactive = textMuted in TYPE.uiMeta (12pt medium) → body text 4.5:1
     //   active   = textPrimary in TYPE.uiMeta (12pt medium) → body text 4.5:1
-    //   (accent #BF6F4F on surface #FAF5F0 is ~3.46:1 < 4.5:1 body threshold;
+    //   (accent #9C5B41 on surface #F7F5F0 is 4.84:1 — large-text/graphic only,
     //    accent demoted to non-text indicator — dot/underline; graphic 3:1 per
     //    WCAG §1.4.11, to be audited under Wave 1 when indicator is built)
     entry('textMuted', COLORS.textMuted, 'glassFallbackChrome', COLORS.surface, 4.5),

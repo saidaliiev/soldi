@@ -16,8 +16,8 @@ import assert from 'node:assert/strict';
 import { arcsFromSliceAngles, buildDonutArcs, computeSliceAngles } from './donutArcs.js';
 import type { CategorySlice } from './types.js';
 
-const COLOR_TEST = '#C97B5C';
-const COLOR_OTHER_MUTED = '#B8968A'; // tokens.COLORS.textMuted — duplicated here as test fixture only
+const COLOR_TEST = '#9C5B41';
+const COLOR_OTHER_MUTED = '#6E695F'; // tokens.COLORS.textMuted — duplicated here as test fixture only
 
 function makeSlice(
   id: number,
