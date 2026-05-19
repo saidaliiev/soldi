@@ -58,3 +58,6 @@ Wave 6; this is the qualitative feel + correctness gate.
       change is i18n/dateGrouping scope, deferred; intentional.
 - [ ] Row hairline is full-width (container border), not inset to content
       like the static mockup — swipe-stable tradeoff; intentional, minor.
+
+---
+**Batched build = W1+W2+W3+W4** — run W1/W2/W3/W4-DEVICE-UAT.md in one device pass (single EAS build after TestFlight #6; user decision 2026-05-19).

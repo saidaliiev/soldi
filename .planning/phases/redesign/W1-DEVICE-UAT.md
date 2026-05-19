@@ -37,4 +37,4 @@ build on a real device. Batched with Wave 2; AFTER TestFlight build #6.
 - [ ] Screen content (transaction list, dashboard cards) is NOT clipped or hidden behind the floating bar at the bottom of scroll — content must be reachable/legible with the bar overlaid. If clipped: follow-up to feed a bottom safe-inset/height to screens (do NOT pre-wire via a private `@react-navigation/bottom-tabs/src/...` import — find the supported expo-router v6 mechanism).
 
 ---
-**Batched build also covers Wave 3** — run `W3-DEVICE-UAT.md` in the same device pass (one EAS build = W1+W2+W3; user decision 2026-05-19).
+**Batched build also covers Wave 3 + Wave 4** — run `W3-DEVICE-UAT.md` and `W4-DEVICE-UAT.md` in the same device pass (one EAS build = W1+W2+W3+W4; W4 is the first new native glass since W1; user decision 2026-05-19).
