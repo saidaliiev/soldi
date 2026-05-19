@@ -76,6 +76,7 @@ Primary plan reference: `/home/iskan/.claude/plans/cosmic-wibbling-cocke.md` (th
 | Ship free in v1 (no paywall) | App Store Review for finance + paywall combos faces more 5.2.1 rejections; portfolio focus, not revenue | — Pending |
 | Ukrainian-diaspora-in-Ireland as TestFlight cohort | Original ICP from research; reachable via Telegram channels; small enough for solo support | — Pending |
 | Apple Developer Program: Individual (not Company) | Solo founder, no business entity required, €99/yr cheaper than DUNS-required Company route | — Pending |
+| D-05 — Donut arc interpolation on month change | Phase-2 decision (02-CONTEXT.md) deferred at 02-01-SUMMARY due to an assumed SVG-path topology blocker | D-05 — Donut arc interpolation on month change — CLOSED 2026-05-17 (redesign Wave 2). Implemented as pure angle-space interpolation keyed by stable categoryId (src/features/dashboard/dashboardMotion.ts:interpolateSliceAngles) with enter/exit, driven by MOTION.arcDraw (mount) + MOTION.arcInterpolate (month change) through the motion vocabulary. The original usePathInterpolation topology blocker (02-01-SUMMARY) did not apply — it was specific to SVG-path-string interpolation, not angle space. node-tested; device-UAT deferred to batched W1+W2 build. |
 
 ## Evolution
 

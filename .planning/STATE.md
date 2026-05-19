@@ -31,6 +31,7 @@ Status: Phase 05 TestFlight launch COMPLETE — P0 #3/#4 cleared, ASC API key su
 Last activity: 2026-05-16 session 2 -- 05-04 launched; 7 forward-only commits (c139bda→cab1a28), 4 EAS builds (2 real blocker fixes: chat-empty Metro resolve, Sentry source-map upload)
 2026-05-17: Redesign Wave 0 (foundation) complete: motion.ts/glass.ts/tokens/deps/governance landed, UI-inert, gates green (tsc:0 lint:0 174/0 export:0). Next: Wave 1 (glass tab bar) — requires Xcode-26 EAS image decision (spec R1).
 2026-05-17: Redesign Wave 1 (glass tab bar) CODE complete: glass.ts safe-gate/tint/resolveTabBarChrome (node-tested), GlassTabBar.tsx (sole expo-glass-effect importer), _layout wired, eas image=latest (R1 gate). Gates green (tsc0/lint0/181-0/export0). Device-UAT DEFERRED to batched W1+W2 EAS build (after TestFlight #6) — .planning/phases/redesign/W1-DEVICE-UAT.md.
+2026-05-17: Redesign Wave 2 (dashboard hero kinetic) CODE complete: selectMotionPreset + dashboardMotion (interpolateSliceAngles/interpolateScalar) + arcsFromSliceAngles (node-tested), useMotion reanimated boundary, hero count-up / donut arcDraw+arcInterpolate (D-05 CLOSED) / FAB scroll-reveal / sharedMonth carry / editorial spacing wired. Gates green (tsc0/lint0/196-0/export0). Device-UAT DEFERRED to batched W1+W2 EAS build (after TestFlight #6) — .planning/phases/redesign/W2-DEVICE-UAT.md. Wave-3 carry-forward: MonthSwiper internal pan-snap still ad-hoc 250ms (out of W2 scope).
 
 Progress: [█████████░] 95% (4/4 plans done; D-04 device confirm + phase verification pending)
 
