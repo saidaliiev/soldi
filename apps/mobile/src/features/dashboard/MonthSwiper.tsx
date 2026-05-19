@@ -8,11 +8,13 @@
  *   - Pan-left → next month (clamped to latestPlusOne).
  *   - Pan-right → previous month (clamped to earliest).
  *   - Chevron buttons mirror the gesture and are hidden at bounds.
- *   - withTiming snap, 250ms Easing.out(Easing.quad) (UI-SPEC animation contract).
+ *   - Snap-back via governed MOTION.fabReveal (useMotionSnap boundary),
+ *     reduce-motion aware — no ad-hoc timing/easing literal (Wave 3 T6).
  *   - accessibilityRole='adjustable' + accessibilityActions for VoiceOver.
  *
  * Worklet: the pan tracks translateX as a shared value (UI-thread). On release,
- * the JS side picks the next month and the SV resets to 0 with withTiming.
+ * the JS side picks the next month and the SV snaps back to 0 via the governed
+ * useMotionSnap boundary (MOTION.fabReveal), inside the gesture worklet.
  *
  * Performance: gesture runs on the UI thread; month-state mutation goes through
  * runOnJS only once per release (D-26).
@@ -21,16 +23,15 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, {
-  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { useMotionSnap } from '@design/useMotion';
 import { ChevronLeft } from '@/src/design/icons/chevrons/ChevronLeft';
 import { ChevronRight } from '@/src/design/icons/chevrons/ChevronRight';
 import {
@@ -60,6 +61,7 @@ export function MonthSwiper({
   locale = 'en-IE',
 }: Props): React.JSX.Element {
   const translateX = useSharedValue(0);
+  const snapBack = useMotionSnap('fabReveal');
 
   const monthLabel = formatMonthLabel(selected, locale);
 
@@ -97,12 +99,9 @@ export function MonthSwiper({
           } else if (e.translationX >= SWIPE_THRESHOLD) {
             runOnJS(applyDelta)(-1);
           }
-          translateX.value = withTiming(0, {
-            duration: 250,
-            easing: Easing.out(Easing.quad),
-          });
+          snapBack(translateX, 0);
         }),
-    [applyDelta, translateX]
+    [applyDelta, translateX, snapBack]
   );
 
   const animatedStyle = useAnimatedStyle(() => ({

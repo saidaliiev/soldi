@@ -12,9 +12,15 @@
  * arcs, FAB/sharedMonth carry without movement.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
-import { Easing, Keyframe, withTiming, type EasingFunction } from 'react-native-reanimated';
+import {
+  Easing,
+  Keyframe,
+  withTiming,
+  type EasingFunction,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { selectMotionPreset } from './motion';
 import type { EasingToken, MotionName } from './motion';
@@ -136,4 +142,37 @@ export function useRowEnter(): InstanceType<typeof Keyframe> | undefined {
       easing: resolveEasing(preset.easing),
     },
   }).duration(preset.durationMs);
+}
+
+export type SnapTo = (sv: SharedValue<number>, toValue: number) => void;
+
+/**
+ * Worklet-safe vocabulary-bound snap (Wave 3). The JS `withMotion` above
+ * cannot be called from inside a reanimated gesture worklet (it is a JS
+ * useCallback). `useMotionSnap` returns a `'worklet'`-marked setter that
+ * resolves the named preset on the JS side (pure selectMotionPreset, memoised
+ * on name+reduce-motion) and closes the result into the worklet, so a gesture
+ * `onEnd` can do `snap(sv, 0)` with zero ad-hoc duration/easing literals.
+ * reduce-motion → instant set (no animation node). Sole sanctioned site for
+ * governed motion inside gesture worklets (CLAUDE.md §Design vocabulary rule).
+ */
+export function useMotionSnap(name: MotionName): SnapTo {
+  const reduceMotion = useReduceMotion();
+  const cfg = useMemo(() => {
+    const p = selectMotionPreset(name, reduceMotion);
+    return 'reduced' in p && p.reduced
+      ? ({ instant: true } as const)
+      : ({ instant: false, durationMs: p.durationMs, easing: resolveEasing(p.easing) } as const);
+  }, [name, reduceMotion]);
+  return useCallback<SnapTo>(
+    (sv, toValue) => {
+      'worklet';
+      if (cfg.instant) {
+        sv.value = toValue;
+        return;
+      }
+      sv.value = withTiming(toValue, { duration: cfg.durationMs, easing: cfg.easing });
+    },
+    [cfg],
+  );
 }
