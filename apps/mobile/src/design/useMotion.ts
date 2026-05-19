@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
-import { Easing, withTiming, type EasingFunction } from 'react-native-reanimated';
+import { Easing, Keyframe, withTiming, type EasingFunction } from 'react-native-reanimated';
 
 import { selectMotionPreset } from './motion';
 import type { EasingToken, MotionName } from './motion';
@@ -90,4 +90,50 @@ export function useMotion(): { withMotion: WithMotion; reduceMotion: boolean } {
     });
   }, [reduceMotion]);
   return { withMotion, reduceMotion };
+}
+
+/** The only enter geometry value: rows rise this many pt into place. */
+const ROW_ENTER_TRANSLATE_Y = 8;
+/**
+ * First-paint budget. The row-enter is a one-shot "list settles in" delight,
+ * NOT a per-scroll effect. FlashList v2 recycles row views, so a naive
+ * `entering` would re-fire on every recycle during scroll (jank + wrong
+ * motion). The gate opens on the FIRST useRowEnter() call (the list's first
+ * paint) and closes after this window, so rows realized later by scroll /
+ * recycle get no animation.
+ */
+const ROW_ENTER_WINDOW_MS = 600;
+// Deviation from Wave-3 plan Task 2 (documented): the plan said anchor the
+// window to module-load time. That is defective — if the Transactions screen
+// opens >600ms after app start (the normal case: boot lands on the dashboard),
+// the window is already closed and the enter never fires. Anchoring to the
+// first useRowEnter() invocation fires on the real list first-paint whenever
+// the screen opens, and is still recycle-safe (scroll happens after the
+// window). Net: correct feature instead of a silent no-op.
+let listFirstPaintAt: number | null = null;
+
+/**
+ * Recycle-safe list-row enter for the transaction list (Wave 3). Returns a
+ * reanimated `Keyframe` (fade + ROW_ENTER_TRANSLATE_Y rise, timing/easing from
+ * the governed MOTION.listRowEnter preset) ONLY for rows painted in the first
+ * ROW_ENTER_WINDOW_MS of the list's first appearance. Returns `undefined`
+ * (no entering) for reduce-motion and for any row realized after that window
+ * (scroll / FlashList recycle). Consume as: <Animated.View entering={rowEnter}>.
+ */
+export function useRowEnter(): InstanceType<typeof Keyframe> | undefined {
+  const reduceMotion = useReduceMotion();
+  const preset = selectMotionPreset('listRowEnter', reduceMotion);
+  if (listFirstPaintAt === null) listFirstPaintAt = Date.now();
+  const withinFirstPaint = Date.now() - listFirstPaintAt < ROW_ENTER_WINDOW_MS;
+  if (('reduced' in preset && preset.reduced) || preset.durationMs <= 0 || !withinFirstPaint) {
+    return undefined;
+  }
+  return new Keyframe({
+    0: { opacity: 0, transform: [{ translateY: ROW_ENTER_TRANSLATE_Y }] },
+    100: {
+      opacity: 1,
+      transform: [{ translateY: 0 }],
+      easing: resolveEasing(preset.easing),
+    },
+  }).duration(preset.durationMs);
 }
