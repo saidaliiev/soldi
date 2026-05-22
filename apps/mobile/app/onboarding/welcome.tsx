@@ -62,6 +62,18 @@ export default function WelcomeScreen(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.container, animatedStyle]}>
+        {/* W6 §1: decorative donut mark (concentric View rings, palette-correct).
+            Accepted drift from HTML §1 SVG dasharray rings — react-native-svg
+            is not in deps and adding it triggers a native rebuild; Skia would
+            be overkill for a static decoration. The two-ring + center-dot View
+            approximation preserves the palette story (terracotta + moss) and
+            the same 116pt diameter envelope. */}
+        <View style={styles.donutWrap} pointerEvents="none">
+          <View style={styles.donutOuterRing} />
+          <View style={styles.donutInnerRing} />
+          <View style={styles.donutCenterDot} />
+        </View>
+
         {/* Hero text */}
         <View style={styles.heroSection}>
           <Text style={styles.title}>
@@ -107,6 +119,13 @@ export default function WelcomeScreen(): React.JSX.Element {
             </Text>
           </Pressable>
         </View>
+
+        {/* W6 §1: page-dot indicator (3 dots, first wide-accent). */}
+        <View style={styles.dots} pointerEvents="none">
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </View>
       </Animated.View>
     </SafeAreaView>
   );
@@ -127,16 +146,51 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xxl,
     paddingBottom: SPACING.lg,
   },
+  donutWrap: {
+    width: 116,
+    height: 116,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+  },
+  donutOuterRing: {
+    position: 'absolute',
+    width: 102,
+    height: 102,
+    borderRadius: 51,
+    borderWidth: 7,
+    borderColor: COLORS.accent,
+  },
+  donutInnerRing: {
+    position: 'absolute',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 7,
+    borderColor: COLORS.sage,
+  },
+  donutCenterDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.textPrimary,
+  },
   heroSection: {
     marginBottom: SPACING.xl,
   },
   title: {
     ...TYPE.displayL,
+    fontSize: 46,
+    lineHeight: 48,
+    letterSpacing: -0.5,
     color: COLORS.textPrimary,
     marginBottom: SPACING.sm,
   },
   subtitle: {
     ...TYPE.editorialLead,
+    fontSize: 19,
+    lineHeight: 28,
     color: COLORS.textSecondary,
   },
   pickLabel: {
@@ -163,5 +217,21 @@ const styles = StyleSheet.create({
   tileText: {
     ...TYPE.uiBody,
     color: COLORS.textPrimary,
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    columnGap: 7,
+    marginTop: SPACING.lg,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: `${COLORS.textPrimary}2E`, // 18% alpha
+  },
+  dotActive: {
+    width: 22,
+    backgroundColor: COLORS.accent,
   },
 });
