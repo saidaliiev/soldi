@@ -1,0 +1,17 @@
+{
+  "name": "soldify-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Soldify monorepo root. Mobile app lives in apps/mobile.",
+  "scripts": {
+    "start": "cd apps/mobile && npx expo start --port 8082",
+    "dev": "cd apps/mobile && npx expo start --dev-client --port 8082",
+    "ios": "cd apps/mobile && npx expo start --ios --port 8082",
+    "android": "cd apps/mobile && npx expo start --android --port 8082",
+    "web": "cd apps/mobile && npx expo start --web --port 8082",
+    "tsc": "cd apps/mobile && npx tsc --noEmit",
+    "lint": "cd apps/mobile && npx expo lint",
+    "test": "cd apps/mobile && npm test",
+    "eas": "cd apps/mobile && npx eas"
+  }
+}
