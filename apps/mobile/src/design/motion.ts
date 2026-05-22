@@ -40,8 +40,14 @@ export const MOTION = {
   chatBubbleEnter: { durationMs: 280, easing: 'outCubic' },
   /** Snappy press-scale feedback (Wave 4; replaces ad-hoc ~50ms press literals — fabReveal is too slow for a tap). */
   pressFeedback: { durationMs: 90, easing: 'outCubic' },
-  /** Bottom-sheet open/close spring (chat / recategorize). */
-  sheetSpring: { durationMs: 420, easing: 'spring' },
+  /** Bottom-sheet open (spring; Wave 5 governance — consumed by BottomSheetPrimitive). */
+  sheetOpen: { durationMs: 420, easing: 'spring' },
+  /** Bottom-sheet programmatic close (timing; matches W4 chat-sheet close feel). */
+  sheetClose: { durationMs: 220, easing: 'outCubic' },
+  /** Bottom-sheet pan-down dismiss close (timing; slightly snappier than programmatic close). */
+  sheetGestureClose: { durationMs: 200, easing: 'outCubic' },
+  /** Bottom-sheet snap-back after partial pan-down (spring; same governed damping as sheetOpen). */
+  sheetSnapBack: { durationMs: 380, easing: 'spring' },
 } as const satisfies Record<string, MotionPreset>;
 
 export type MotionName = keyof typeof MOTION;

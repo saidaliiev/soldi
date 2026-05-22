@@ -14,7 +14,7 @@ test('MOTION: every preset has positive duration and a named easing', () => {
 });
 
 test('MOTION: expected presets exist', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetOpen', 'sheetClose', 'sheetGestureClose', 'sheetSnapBack', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
     assert.ok(MOTION[k], `MOTION.${k} missing`);
   }
 });
@@ -47,7 +47,7 @@ test('selectMotionPreset: reduce-motion collapses to instant linear reduced pres
 });
 
 test('selectMotionPreset: every MOTION name resolves in both modes', () => {
-  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetSpring', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
+  for (const k of ['heroCountUp', 'arcDraw', 'arcInterpolate', 'fabReveal', 'sharedMonth', 'sheetOpen', 'sheetClose', 'sheetGestureClose', 'sheetSnapBack', 'listRowEnter', 'chatBubbleEnter', 'pressFeedback'] as const) {
     assert.ok(selectMotionPreset(k, false).durationMs > 0);
     assert.strictEqual(selectMotionPreset(k, true).durationMs, 0);
   }
@@ -91,11 +91,18 @@ test('MOTION.pressFeedback is a fast tap preset (Wave 4)', () => {
   assert.strictEqual(MOTION.pressFeedback.easing, 'outCubic');
 });
 
-test('selectMotionPreset: sheetSpring resolves PURE (no throw — throw was boundary-only) (Wave 4)', () => {
+test('selectMotionPreset: sheet* presets resolve PURE (no throw — throw was boundary-only) (Wave 5)', () => {
   // The 'spring' fail-fast lived in the reanimated boundary, never the pure
-  // layer. Lock that: the pure resolver returns the preset untouched, and
-  // reduce-motion still collapses it like any other preset.
-  assert.deepStrictEqual(selectMotionPreset('sheetSpring', false), MOTION.sheetSpring);
-  assert.strictEqual(MOTION.sheetSpring.easing, 'spring');
-  assert.strictEqual(selectMotionPreset('sheetSpring', true).durationMs, 0);
+  // layer. Lock that: pure resolver returns presets untouched, and reduce-motion
+  // collapses every variant like any other preset.
+  assert.deepStrictEqual(selectMotionPreset('sheetOpen', false), MOTION.sheetOpen);
+  assert.deepStrictEqual(selectMotionPreset('sheetSnapBack', false), MOTION.sheetSnapBack);
+  assert.strictEqual(MOTION.sheetOpen.easing, 'spring');
+  assert.strictEqual(MOTION.sheetSnapBack.easing, 'spring');
+  assert.strictEqual(MOTION.sheetClose.easing, 'outCubic');
+  assert.strictEqual(MOTION.sheetGestureClose.easing, 'outCubic');
+  assert.strictEqual(selectMotionPreset('sheetOpen', true).durationMs, 0);
+  assert.strictEqual(selectMotionPreset('sheetClose', true).durationMs, 0);
+  assert.strictEqual(selectMotionPreset('sheetGestureClose', true).durationMs, 0);
+  assert.strictEqual(selectMotionPreset('sheetSnapBack', true).durationMs, 0);
 });

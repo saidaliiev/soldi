@@ -29,7 +29,7 @@ import type { EasingToken, MotionName } from './motion';
 /**
  * Resolve a pure EasingToken to a reanimated Easing fn. Wave 2 uses only
  * timing tokens. `'spring'` is driven by withSpring (not Easing) and only
- * lands with MOTION.sheetSpring in Wave 4 — fail fast so a misuse is loud.
+ * lands with MOTION.sheet{Open,SnapBack} in Wave 5 (and chatBubble spring sites) — fail fast so a misuse is loud.
  */
 function resolveEasing(token: EasingToken): EasingFunction {
   switch (token) {
