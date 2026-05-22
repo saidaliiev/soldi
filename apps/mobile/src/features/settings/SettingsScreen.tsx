@@ -1,13 +1,17 @@
 /**
- * SOLDI Settings screen.
+ * SOLDI Settings screen (Wave 6: HTML §8 layout).
  *
- * D-06: stack route reached via gear in dashboard header (not a 5th tab).
- * Phase 5: Language + Security (biometric toggle) + Notifications (digest
- * toggle) + Data (CSV export) sections.
+ * Reached via gear control in dashboard header. Stack header hidden;
+ * in-body Oswald 30pt title carries the heading instead.
+ *
+ * D-06 / Phase 5 / W6: Security (biometric) + Preferences (language) +
+ * Notifications (digest) + Data (CSV export). Each section gets an
+ * uppercase moss-text (sageDark) label above a grouped card on
+ * COLORS.surface with SHADOWS.card. No "Sign out" row — Soldify is
+ * offline-first with no remote auth.
  *
  * Design: RN primitives, StyleSheet.create, tokens, TYPE.* presets.
- * Accessibility: every interactive element has accessibilityLabel + accessibilityRole.
- * Section order: Language → Security → Notifications → Data.
+ * Accessibility: every interactive element has accessibilityLabel + role.
  */
 
 import React from 'react';
@@ -15,12 +19,14 @@ import {
   ScrollView,
   View,
   Text,
+  Pressable,
   StyleSheet,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
-import { COLORS, SPACING, RADIUS } from '@design/tokens';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { LanguageToggle } from './LanguageToggle';
 import { BiometricToggle } from './BiometricToggle';
@@ -29,57 +35,62 @@ import { ExportButton } from './ExportButton';
 
 export function SettingsScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  // Bottom inset only: the native Stack header (app/_layout.tsx
-  // name="settings", headerShown default true) already insets the top status
-  // bar — adding a top inset here would double-pad. insets.bottom clears the
-  // home-indicator so the last card / scroll end isn't occluded.
   const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[styles.content, { paddingBottom: SPACING.xxl + insets.bottom }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: SPACING.md + insets.top, paddingBottom: SPACING.xxl + insets.bottom },
+      ]}
       showsVerticalScrollIndicator={false}
       accessibilityLabel={t('settings.title')}
     >
-      {/* Language section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel} allowFontScaling>
-          {t('settings.language_section')}
-        </Text>
-        <View style={styles.card}>
-          <LanguageToggle />
-        </View>
-      </View>
+      {/* W6: in-body back affordance — native bar hidden in app/_layout.tsx. */}
+      <Pressable
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel={t('settings.back', { defaultValue: 'Back' })}
+        style={({ pressed }) => [styles.backRow, pressed && styles.pressed]}
+      >
+        <Text style={styles.backLabel} allowFontScaling>‹ {t('settings.back', { defaultValue: 'Back' })}</Text>
+      </Pressable>
+
+      <Text style={styles.screenTitle} accessibilityRole="header" allowFontScaling>
+        {t('settings.title')}
+      </Text>
 
       {/* Security section — biometric app-open gate (SET-01 / SET-04) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel} allowFontScaling>
-          {t('settings.security_section')}
-        </Text>
-        <View style={styles.card}>
-          <BiometricToggle />
-        </View>
+      <Text style={styles.sectionLabel} allowFontScaling>
+        {t('settings.security_section')}
+      </Text>
+      <View style={styles.card}>
+        <BiometricToggle />
+      </View>
+
+      {/* Preferences section — language */}
+      <Text style={styles.sectionLabel} allowFontScaling>
+        {t('settings.language_section')}
+      </Text>
+      <View style={styles.card}>
+        <LanguageToggle />
       </View>
 
       {/* Notifications section — 09:00 daily digest opt-in (NOTIF-01 / D-03) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel} allowFontScaling>
-          {t('settings.notifications_section')}
-        </Text>
-        <View style={styles.card}>
-          <DigestToggle />
-        </View>
+      <Text style={styles.sectionLabel} allowFontScaling>
+        {t('settings.notifications_section')}
+      </Text>
+      <View style={styles.card}>
+        <DigestToggle />
       </View>
 
       {/* Data section — CSV export (SET-03 / D-02) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel} allowFontScaling>
-          {t('settings.data_section')}
-        </Text>
-        <View style={styles.card}>
-          <ExportButton />
-        </View>
+      <Text style={styles.sectionLabel} allowFontScaling>
+        {t('settings.data_section')}
+      </Text>
+      <View style={styles.card}>
+        <ExportButton />
       </View>
     </ScrollView>
   );
@@ -92,22 +103,39 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xxl,
-    gap: SPACING.lg,
   },
-  section: {
-    gap: SPACING.sm,
+  backRow: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: SPACING.sm,
+  },
+  backLabel: {
+    ...TYPE.uiBody,
+    color: COLORS.accent,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  screenTitle: {
+    ...TYPE.displayM,
+    fontSize: 30,
+    lineHeight: 36,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
   },
   sectionLabel: {
-    ...TYPE.uiMeta,
-    color: COLORS.textMuted,
+    ...TYPE.uiLabel,
+    color: COLORS.sageDark,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 1.2,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    ...SHADOWS.card,
   },
 });
