@@ -71,8 +71,8 @@ export function DigestToggle(): React.JSX.Element {
         onValueChange={(v) => {
           void handleValueChange(v);
         }}
-        trackColor={{ false: COLORS.textMuted, true: COLORS.accent }}
-        thumbColor={COLORS.surface}
+        trackColor={{ false: `${COLORS.textMuted}38`, true: COLORS.accent }}
+        thumbColor={COLORS.white}
         accessibilityLabel={t('settings.digest_toggle_label')}
       />
     </View>
@@ -84,7 +84,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 44, // CLAUDE.md: 44pt minimum tap target
+    minHeight: 56, // CLAUDE.md: 44pt min tap target; HTML §8 row rhythm
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
     gap: SPACING.md,
   },
   labelGroup: {

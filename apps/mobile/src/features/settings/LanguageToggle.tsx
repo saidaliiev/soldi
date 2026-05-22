@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: `${COLORS.textMuted}33`,
+    margin: SPACING.md,
   },
   option: {
     flex: 1,

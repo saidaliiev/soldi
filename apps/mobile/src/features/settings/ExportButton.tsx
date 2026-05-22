@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 44, // CLAUDE.md: 44pt minimum tap target
+    margin: SPACING.md,
   },
   buttonPressed: {
     opacity: 0.75,
