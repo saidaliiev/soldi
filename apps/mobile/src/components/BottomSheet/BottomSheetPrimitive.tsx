@@ -64,6 +64,8 @@ import {
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { isSafeToRenderGlass, resolveSheetChrome } from '@design/glass';
+import { MOTION, SHEET_DAMPING_RATIO } from '@design/motion';
+import { useReduceMotion } from '@design/useMotion';
 
 // WR-03: SCREEN_HEIGHT was computed once at module load via Dimensions.get().
 // On orientation change or iPad Split View, the cached value goes stale causing
@@ -148,6 +150,22 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
     // wrong snap position after orientation change or iPad Split View.
     const { height: screenHeight } = useWindowDimensions();
     const restingHeight = screenHeight * parsePercent(snapPoints[0]);
+
+    // W5 T2: governed sheet motion. Configs resolve JS-side from MOTION
+    // presets; the inline withSpring/withTiming calls below (worklet + JS)
+    // read these plain serializable fields instead of literal numbers. Single
+    // governed SHEET_DAMPING_RATIO for both spring sites — spec §Anti
+    // "no visual diff at T2" honored (open/snap-back both soft-settle).
+    const reduceMotion = useReduceMotion();
+    const sheetMotion = React.useMemo(
+      () => ({
+        open:         { duration: MOTION.sheetOpen.durationMs,         dampingRatio: SHEET_DAMPING_RATIO },
+        close:        { duration: MOTION.sheetClose.durationMs },
+        gestureClose: { duration: MOTION.sheetGestureClose.durationMs },
+        snapBack:     { duration: MOTION.sheetSnapBack.durationMs,     dampingRatio: SHEET_DAMPING_RATIO },
+      }),
+      [],
+    );
     // translateY: 0 = fully visible, restingHeight = fully hidden
     const translateY = useSharedValue(restingHeight);
 
@@ -191,25 +209,40 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
     const openSheet = React.useCallback(() => {
       setVisible(true);
       translateY.value = restingHeight;
-      translateY.value = withSpring(0, { damping: 18, stiffness: 180 }, (finished) => {
-        if (finished === true) {
-          runOnJS(notifyChange)(1);
-          runOnJS(moveFocusToSheet)();
-        }
-      });
-    }, [translateY, restingHeight, notifyChange, moveFocusToSheet]);
+      if (reduceMotion) {
+        translateY.value = 0;
+        notifyChange(1);
+        moveFocusToSheet();
+        return;
+      }
+      translateY.value = withSpring(
+        0,
+        { duration: sheetMotion.open.duration, dampingRatio: sheetMotion.open.dampingRatio },
+        (finished) => {
+          if (finished === true) {
+            runOnJS(notifyChange)(1);
+            runOnJS(moveFocusToSheet)();
+          }
+        },
+      );
+    }, [translateY, restingHeight, notifyChange, moveFocusToSheet, reduceMotion, sheetMotion]);
 
     const closeSheet = React.useCallback(() => {
+      if (reduceMotion) {
+        translateY.value = restingHeight;
+        finishClose();
+        return;
+      }
       translateY.value = withTiming(
         restingHeight,
-        { duration: 220, easing: Easing.out(Easing.cubic) },
+        { duration: sheetMotion.close.duration, easing: Easing.out(Easing.cubic) },
         (finished) => {
           if (finished === true) {
             runOnJS(finishClose)();
           }
         },
       );
-    }, [translateY, restingHeight, finishClose]);
+    }, [translateY, restingHeight, finishClose, reduceMotion, sheetMotion]);
 
     React.useImperativeHandle(ref, () => ({ open: openSheet, close: closeSheet }), [
       openSheet,
@@ -225,9 +258,14 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
       })
       .onEnd((e) => {
         if (e.translationY > 80) {
+          if (reduceMotion) {
+            translateY.value = restingHeight;
+            runOnJS(finishClose)();
+            return;
+          }
           translateY.value = withTiming(
             restingHeight,
-            { duration: 200, easing: Easing.out(Easing.cubic) },
+            { duration: sheetMotion.gestureClose.duration, easing: Easing.out(Easing.cubic) },
             (finished) => {
               if (finished === true) {
                 runOnJS(finishClose)();
@@ -235,7 +273,14 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
             },
           );
         } else {
-          translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+          if (reduceMotion) {
+            translateY.value = 0;
+            return;
+          }
+          translateY.value = withSpring(0, {
+            duration: sheetMotion.snapBack.duration,
+            dampingRatio: sheetMotion.snapBack.dampingRatio,
+          });
         }
       });
 
