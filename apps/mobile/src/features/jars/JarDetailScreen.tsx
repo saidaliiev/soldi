@@ -122,19 +122,27 @@ export function JarDetailScreen(): React.JSX.Element {
           </Text>
         </Pressable>
 
-        {/* Jar header */}
+        {/* Wave 5: featured-size ring (184pt, sw=14) with Oswald hero amount
+            in-center via showCenterLabel; Garamond name + icon sit below
+            (HTML §6 lines 360-372). */}
+        <View style={styles.ringWrap}>
+          <JarRing
+            balanceCents={balance}
+            targetCents={jar.targetCents}
+            size={184}
+            strokeWidth={14}
+            palette="sage"
+            showCenterLabel
+          />
+        </View>
+
         <View style={styles.jarHeader}>
           <View style={styles.iconWrap}>
-            <JarIcon slug={iconSlug} color={COLORS.sage} size={36} />
+            <JarIcon slug={iconSlug} color={COLORS.sage} size={28} />
           </View>
           <Text style={styles.jarName} accessibilityRole="header" allowFontScaling>
             {jar.name}
           </Text>
-        </View>
-
-        {/* Animated Skia ring — replaces testID="jar-ring-slot" placeholder */}
-        <View style={styles.ringWrap}>
-          <JarRing balanceCents={balance} targetCents={jar.targetCents} size={160} />
         </View>
 
         {/* Target */}
@@ -203,21 +211,25 @@ const styles = StyleSheet.create({
   jarHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: SPACING.md,
+    justifyContent: 'center',
+    columnGap: SPACING.sm,
     marginBottom: SPACING.lg,
   },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: RADIUS.lg,
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.md,
     backgroundColor: `${COLORS.sage}1A`,
     alignItems: 'center',
     justifyContent: 'center',
   },
   jarName: {
-    ...TYPE.displayM,
+    // Wave 5: Garamond editorial name per HTML §6 (21pt). Not displayM (Oswald)
+    // — Oswald is reserved for the hero amount that lives inside the ring.
+    ...TYPE.editorialLead,
+    fontSize: 21,
+    lineHeight: 26,
     color: COLORS.textPrimary,
-    flex: 1,
   },
   ringWrap: {
     alignItems: 'center',

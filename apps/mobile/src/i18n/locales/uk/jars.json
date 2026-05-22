@@ -21,5 +21,6 @@
   "error_save": "Не вдалося зберегти банку. Спробуйте ще раз.",
   "validation_name_empty": "Назва обов'язкова.",
   "validation_target_invalid": "Введіть коректну цільову суму.",
-  "back": "Назад"
+  "back": "Назад",
+  "to_go_label": "до цілі"
 }

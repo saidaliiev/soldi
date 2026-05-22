@@ -21,5 +21,6 @@
   "error_save": "Couldn't save jar. Please try again.",
   "validation_name_empty": "Name is required.",
   "validation_target_invalid": "Enter a valid target amount.",
-  "back": "Back"
+  "back": "Back",
+  "to_go_label": "to go"
 }

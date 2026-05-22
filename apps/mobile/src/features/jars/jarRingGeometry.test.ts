@@ -79,6 +79,27 @@ test('jarRingArcPath: different radius produces different coordinate values', ()
 });
 
 // ---------------------------------------------------------------------------
+// Wave 5: featured + mini variants produce distinct, well-formed paths
+// (featured: r=74 sw=14 ; mini: r=18 sw=5)
+// ---------------------------------------------------------------------------
+
+test('jarRingArcPath: featured (r=74 sw=14) vs mini (r=18 sw=5) variants — both well-formed and distinct (Wave 5)', () => {
+  const featured = jarRingArcPath(0.7, 74, 14);
+  const miniHigh = jarRingArcPath(0.7, 18, 5);
+  const miniLow  = jarRingArcPath(0.3, 18, 5);
+  assert.ok(featured.startsWith('M'), 'featured path starts with M');
+  assert.ok(miniHigh.startsWith('M'), 'mini-high path starts with M');
+  assert.ok(miniLow.startsWith('M'),  'mini-low path starts with M');
+  assert.ok(!featured.includes('NaN'), 'featured: no NaN');
+  assert.ok(!miniHigh.includes('NaN'), 'mini-high: no NaN');
+  assert.ok(!miniLow.includes('NaN'),  'mini-low: no NaN');
+  // Same fraction, different radii → different paths
+  assert.notStrictEqual(featured, miniHigh, 'featured ≠ mini at same fraction');
+  // Same radius, different fraction → different paths
+  assert.notStrictEqual(miniHigh, miniLow, 'mini-high ≠ mini-low at different fractions');
+});
+
+// ---------------------------------------------------------------------------
 // 12 o'clock start (π/2 convention) — start point y < center for top start
 // The center is at (radius + strokeWidth/2, radius + strokeWidth/2) matching donutArcs idiom.
 // For fraction=0.25 starting at top, x1 should equal cx (within float tolerance).

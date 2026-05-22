@@ -1,5 +1,12 @@
 /**
- * JarListScreen — shows all jars + empty state + create entry.
+ * JarListScreen — Wave 5: featured-hero card + hairline-separated list.
+ *
+ * Layout (HTML §6 lines 357-385): Oswald title + create pill. Below: a
+ * featured-jar card carrying the 184pt JarRing with Oswald hero amount,
+ * Garamond 21pt jar name, Manrope sub-meta ("€X to go"). Below that:
+ * a hairline-separated list of JarRows for the remaining jars. The
+ * featured jar = first jar by `listJars()` insertion order (createdAt
+ * ASC) — no model change, no reorder UI, per spec §6 risk mitigation.
  *
  * Data: listJars() + jarBalanceCents() per row, re-queried on focus
  * and after a jar is created (via jarStore.openCreate(onRefresh) callback).
@@ -20,11 +27,13 @@ import {
 import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { COLORS, SPACING, RADIUS } from '@design/tokens';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { formatMoney } from '@/src/lib/money';
 import { listJars, jarBalanceCents } from './jarsRepo';
 import { useJarCreateStore } from './jarStore';
 import { JarRow } from './JarRow';
+import { JarRing } from './JarRing';
 import type { Jar } from './types';
 
 type JarWithBalance = {
@@ -58,6 +67,13 @@ export function JarListScreen(): React.JSX.Element {
   };
 
   const isEmpty = jarsWithBalance.length === 0;
+  const featured = jarsWithBalance[0];
+  const rest = jarsWithBalance.slice(1);
+
+  const remainingCents = featured != null
+    ? Math.max(0, featured.jar.targetCents - featured.balance)
+    : 0;
+  const remainingStr = formatMoney({ amountCents: remainingCents, currency: 'EUR' });
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -102,9 +118,29 @@ export function JarListScreen(): React.JSX.Element {
             </Pressable>
           </View>
         ) : (
-          jarsWithBalance.map(({ jar, balance }) => (
-            <JarRow key={jar.id} jar={jar} balanceCents={balance} />
-          ))
+          <>
+            {featured != null && (
+              <View style={styles.featuredCard}>
+                <JarRing
+                  balanceCents={featured.balance}
+                  targetCents={featured.jar.targetCents}
+                  size={184}
+                  strokeWidth={14}
+                  palette="sage"
+                  showCenterLabel
+                />
+                <Text style={styles.featuredName} numberOfLines={1} allowFontScaling>
+                  {featured.jar.name}
+                </Text>
+                <Text style={styles.featuredSub} numberOfLines={1} allowFontScaling>
+                  {remainingStr} {t('jars.to_go_label')}
+                </Text>
+              </View>
+            )}
+            {rest.map(({ jar, balance }) => (
+              <JarRow key={jar.id} jar={jar} balanceCents={balance} />
+            ))}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -129,9 +165,9 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   createBtn: {
-    height: 44,
+    height: 42,
     paddingHorizontal: SPACING.md,
-    borderRadius: RADIUS.lg,
+    borderRadius: RADIUS.pill,
     backgroundColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',
@@ -179,6 +215,27 @@ const styles = StyleSheet.create({
   emptyCtaLabel: {
     ...TYPE.uiButton,
     color: COLORS.white,
+  },
+  featuredCard: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface,
+    ...SHADOWS.card,
+    marginVertical: SPACING.md,
+  },
+  featuredName: {
+    ...TYPE.editorialLead,
+    fontSize: 21,
+    lineHeight: 26,
+    color: COLORS.textPrimary,
+    marginTop: SPACING.md,
+  },
+  featuredSub: {
+    ...TYPE.uiBody,
+    color: COLORS.textMuted,
+    marginTop: 4,
   },
   pressed: {
     opacity: 0.7,

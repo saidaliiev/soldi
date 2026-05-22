@@ -230,6 +230,8 @@ const styles = StyleSheet.create({
   fieldLabel: {
     ...TYPE.uiLabel,
     color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
     marginTop: SPACING.sm,
   },
   input: {
@@ -271,8 +273,8 @@ const styles = StyleSheet.create({
     backgroundColor: `${COLORS.accent}1A`,
   },
   cta: {
-    height: 52,
-    borderRadius: RADIUS.lg,
+    height: 42,
+    borderRadius: RADIUS.pill,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: SPACING.md,

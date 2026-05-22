@@ -51,35 +51,55 @@ type Props = {
   readonly balanceCents: number;
   readonly targetCents: number;
   readonly size?: number;
+  /** Wave 5: override stroke width for mini (5) vs featured (14) variants. */
+  readonly strokeWidth?: number;
+  /** Wave 5: sage (≥50% / featured) vs sageSoft (<50% mini). */
+  readonly palette?: 'sage' | 'sageSoft';
+  /** Wave 5: hide center hero amount overlay (mini rings in JarRow). */
+  readonly showCenterLabel?: boolean;
 };
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Props): React.JSX.Element {
+export function JarRing({
+  balanceCents,
+  targetCents,
+  size = DEFAULT_SIZE,
+  strokeWidth,
+  palette = 'sage',
+  showCenterLabel = true,
+}: Props): React.JSX.Element {
   const { t } = useTranslation();
 
-  const radius = (size - STROKE_WIDTH) / 2;
+  // Wave 5: variant-aware geometry; mini (size=46) uses sw=5, featured uses 14.
+  const sw = strokeWidth ?? STROKE_WIDTH;
+  const radius = (size - sw) / 2;
 
   const fraction = targetCents > 0 ? balanceCents / targetCents : 0;
   const isOverFunded = balanceCents > targetCents && targetCents > 0;
+
+  // Wave 5: ring + track color resolved from palette prop (HTML §6 mini-ring
+  // alternates sage / sageSoft by progress). Track = 20% alpha of ring color.
+  const ringColor = palette === 'sageSoft' ? COLORS.sageSoft : COLORS.sage;
+  const trackColor = `${ringColor}33`;
 
   // ---- Geometry -------------------------------------------------------
 
   // Background track: full ring (use a circle-arc at 359.9°)
   const trackPath = useMemo(() => {
-    const p = jarRingArcPath(1, radius, STROKE_WIDTH);
+    const p = jarRingArcPath(1, radius, sw);
     return Skia.Path.MakeFromSVGString(p);
-  }, [radius]);
+  }, [radius, sw]);
 
   // Progress arc path at settled fraction
   const progressPath = useMemo(() => {
     const clampedFraction = Math.min(1, Math.max(0, fraction));
     if (clampedFraction === 0) return null;
-    const p = jarRingArcPath(clampedFraction, radius, STROKE_WIDTH);
+    const p = jarRingArcPath(clampedFraction, radius, sw);
     return Skia.Path.MakeFromSVGString(p);
-  }, [fraction, radius]);
+  }, [fraction, radius, sw]);
 
   // ---- D-05: crossfade on fraction change -----------------------------
 
@@ -128,9 +148,9 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
           {trackPath != null && (
             <Path
               path={trackPath}
-              color={`${COLORS.sage}33`}
+              color={trackColor}
               style="stroke"
-              strokeWidth={STROKE_WIDTH}
+              strokeWidth={sw}
               strokeCap="round"
             />
           )}
@@ -138,40 +158,43 @@ export function JarRing({ balanceCents, targetCents, size = DEFAULT_SIZE }: Prop
           {progressPath != null && (
             <Path
               path={progressPath}
-              color={COLORS.sage}
+              color={ringColor}
               style="stroke"
-              strokeWidth={STROKE_WIDTH}
+              strokeWidth={sw}
               strokeCap="round"
             />
           )}
         </Canvas>
       </Animated.View>
 
-      {/* Center overlay — hero balance; hidden from a11y (ring label above suffices) */}
-      <View
-        style={[styles.centerOverlay, { width: size, height: size }]}
-        pointerEvents="none"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Text
-          style={[styles.heroAmount, { maxWidth: size - STROKE_WIDTH * 4 }]}
-          numberOfLines={1}
-          allowFontScaling
-          // QUAL-04: Oswald displayL (40pt) center label inside a fixed-size ring.
-          // Cap at 1.2× (≈48pt) and use adjustsFontSizeToFit so the amount string
-          // shrinks to fit the ring diameter rather than overflowing the canvas.
-          maxFontSizeMultiplier={1.2}
-          adjustsFontSizeToFit
+      {/* Center overlay — hero balance; hidden from a11y (ring label above suffices).
+          Wave 5: gated by showCenterLabel — mini rings in JarRow render a clean ring. */}
+      {showCenterLabel && (
+        <View
+          style={[styles.centerOverlay, { width: size, height: size }]}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
-          {balanceStr}
-        </Text>
-        {isOverFunded && (
-          <Text style={styles.overFundedLabel} numberOfLines={1} allowFontScaling>
-            {t('jars.over_funded')}
+          <Text
+            style={[styles.heroAmount, { maxWidth: size - sw * 4 }]}
+            numberOfLines={1}
+            allowFontScaling
+            // QUAL-04: Oswald displayL (40pt) center label inside a fixed-size ring.
+            // Cap at 1.2× (≈48pt) and use adjustsFontSizeToFit so the amount string
+            // shrinks to fit the ring diameter rather than overflowing the canvas.
+            maxFontSizeMultiplier={1.2}
+            adjustsFontSizeToFit
+          >
+            {balanceStr}
           </Text>
-        )}
-      </View>
+          {isOverFunded && (
+            <Text style={styles.overFundedLabel} numberOfLines={1} allowFontScaling>
+              {t('jars.over_funded')}
+            </Text>
+          )}
+        </View>
+      )}
     </View>
   );
 }
