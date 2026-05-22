@@ -95,9 +95,12 @@ export function CategoryListRow({ category, onPress }: Props): React.JSX.Element
           pressed && styles.pressed,
         ]}
       >
-        <View style={[styles.colorDot, { backgroundColor: category.color }]} />
-        <View style={styles.iconWrap}>
-          <Icon color={category.color} size={24} />
+        {/* W5 §5: icon-badge (40pt palette swatch behind icon) replaces
+            the prior dot + separate icon-well. Background = category color
+            at 12% alpha (matches HTML §5 .ico card tint), icon stroke =
+            category color at full alpha. */}
+        <View style={[styles.iconBadge, { backgroundColor: `${category.color}1F` }]}>
+          <Icon color={category.color} size={22} />
         </View>
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
           {displayName}
@@ -110,23 +113,21 @@ export function CategoryListRow({ category, onPress }: Props): React.JSX.Element
 
 const styles = StyleSheet.create({
   row: {
-    minHeight: 52,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    columnGap: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    columnGap: SPACING.md,
     backgroundColor: 'transparent',
     borderRadius: RADIUS.md,
   },
-  colorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: RADIUS.pill,
-  },
-  iconWrap: {
-    width: 24,
-    height: 24,
+  iconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   name: {
     ...TYPE.uiBody,

@@ -251,6 +251,8 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...TYPE.uiLabel,
     color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   cta: {
     height: 52,

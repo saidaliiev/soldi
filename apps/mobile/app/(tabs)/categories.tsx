@@ -172,6 +172,8 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...TYPE.uiLabel,
     color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.md,
   },
