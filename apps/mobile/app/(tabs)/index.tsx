@@ -19,7 +19,8 @@
  */
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { SafeAreaView, View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
@@ -49,6 +50,7 @@ function currentMonthKey(today: Date = new Date()): MonthKey {
 
 export default function DashboardScreen(): React.JSX.Element {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const [today] = useState<Date>(() => new Date());
   const [selected, setSelected] = useState<MonthKey>(() => currentMonthKey(today));
@@ -121,14 +123,14 @@ export default function DashboardScreen(): React.JSX.Element {
   // ---------------------------------------------------------------------------
 
   return (
-    <SafeAreaView style={styles.safe} accessibilityLabel="Dashboard screen">
-      {/* Gear icon — opens Settings stack route (D-06). Positioned top-right. */}
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']} accessibilityLabel="Dashboard screen">
+      {/* Gear icon — opens Settings stack route (D-06). Positioned top-right of safe area. */}
       <Pressable
         onPress={() => router.push('/settings')}
         accessibilityRole="button"
         accessibilityLabel={t('settings.open_a11y')}
-        style={styles.gearButton}
-        hitSlop={8}
+        style={[styles.gearButton, { top: insets.top + SPACING.sm }]}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <GearIcon color={COLORS.textSecondary} size={24} />
       </Pressable>
@@ -207,7 +209,6 @@ const styles = StyleSheet.create({
   },
   gearButton: {
     position: 'absolute',
-    top: SPACING.sm,
     right: SPACING.md,
     zIndex: 10,
     width: 44,
