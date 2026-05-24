@@ -27,6 +27,7 @@ import Animated, {
 
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { SOURCE_ICONS } from '@design/icons/onboarding';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -57,12 +58,13 @@ export type SourceTileProps = {
 export function SourceTile({
   title,
   body,
-  iconName: _iconName,
+  iconName,
   onPress,
   accessibilityLabel,
   testID,
   delayMs = 0,
 }: SourceTileProps): React.JSX.Element {
+  const Icon = SOURCE_ICONS[iconName];
   // Entrance animation — opacity + translateY
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(16);
@@ -89,12 +91,14 @@ export function SourceTile({
           pressed && styles.pressed,
         ]}
       >
-        {/* Icon placeholder — Phase 2 replaces with SVG */}
+        {/* Icon badge — 42x42 surface, Skia glyph centred at 21x21 */}
         <View
-          style={styles.iconPlaceholder}
-          testID="source-tile-icon-placeholder"
+          style={styles.iconBadge}
+          testID="source-tile-icon-badge"
           accessible={false}
-        />
+        >
+          {Icon ? <Icon size={21} color={COLORS.accent} /> : null}
+        </View>
 
         {/* Text column */}
         <View style={styles.textColumn}>
@@ -129,11 +133,13 @@ const styles = StyleSheet.create({
     opacity: 0.92,
     transform: [{ scale: 0.98 }],
   },
-  iconPlaceholder: {
-    width: 32,
-    height: 32,
+  iconBadge: {
+    width: 42,
+    height: 42,
     borderRadius: RADIUS.md,
-    backgroundColor: COLORS.accentSoft,
+    backgroundColor: 'rgba(156, 91, 65, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
     flexShrink: 0,
   },
   textColumn: {
