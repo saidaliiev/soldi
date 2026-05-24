@@ -92,6 +92,32 @@ export function SettingsScreen(): React.JSX.Element {
       <View style={styles.card}>
         <ExportButton />
       </View>
+
+      {/* Categories section — manage Default + Custom categories (moved
+          out of tab bar to match HTML §2 design: Overview/Activity/Jars/Chat). */}
+      <Text style={styles.sectionLabel} allowFontScaling>
+        {t('settings.categories_section')}
+      </Text>
+      <View style={styles.card}>
+        <Pressable
+          onPress={() => router.push('/categories')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.manage_categories_label')}
+          style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+        >
+          <View style={styles.rowText}>
+            <Text style={styles.rowLabel} allowFontScaling>
+              {t('settings.manage_categories_label')}
+            </Text>
+            <Text style={styles.rowDescription} allowFontScaling>
+              {t('settings.manage_categories_description')}
+            </Text>
+          </View>
+          <Text style={styles.chevron} allowFontScaling accessibilityElementsHidden>
+            ›
+          </Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -137,5 +163,31 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
     ...SHADOWS.card,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 64,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  rowText: {
+    flex: 1,
+    gap: 2,
+  },
+  rowLabel: {
+    ...TYPE.uiBody,
+    color: COLORS.textPrimary,
+    fontWeight: '600',
+  },
+  rowDescription: {
+    ...TYPE.uiMeta,
+    color: COLORS.textMuted,
+  },
+  chevron: {
+    ...TYPE.displayM,
+    fontSize: 22,
+    color: COLORS.textMuted,
   },
 });

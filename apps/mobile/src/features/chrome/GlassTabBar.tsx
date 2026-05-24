@@ -38,7 +38,6 @@ import { getGlassEffect } from '@lib/glassEffect';
 import {
   DashboardIcon,
   TransactionsIcon,
-  CategoriesIcon,
   JarsIcon,
 } from '@/src/design/icons/tabs';
 
@@ -48,12 +47,12 @@ const BAR_MARGIN = SPACING.md; // floating inset from screen edges
 
 type IconCmp = (props: { color: string; size?: number }) => React.ReactNode;
 
-// route name (expo-router) → tab icon. `explore` is hidden (href:null) and
-// never reaches the tabBar (filtered below by descriptors).
+// route name (expo-router) → tab icon. Only registered routes render —
+// allow-list filter in the component below uses this map as the source
+// of truth. To add a new tab: register here AND in app/(tabs)/_layout.tsx.
 const ICONS: Record<string, IconCmp> = {
   index: DashboardIcon,
   transactions: TransactionsIcon,
-  categories: CategoriesIcon,
   jars: JarsIcon,
 };
 

@@ -263,6 +263,10 @@ export default Sentry.wrap(function RootLayout() {
               name="settings"
               options={{ title: 'Settings', presentation: 'card', headerShown: false }}
             />
+            <Stack.Screen
+              name="categories"
+              options={{ title: 'Categories', presentation: 'card', headerShown: false }}
+            />
           </Stack>
           <RecategorizeBottomSheet />
           <PropagationToast />

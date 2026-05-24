@@ -1,5 +1,6 @@
 {
   "title": "Settings",
+  "back": "Back",
   "language_section": "Language",
   "language_en": "English",
   "language_uk": "Ukrainian",
@@ -11,5 +12,8 @@
   "digest_toggle_label": "Daily spending digest",
   "digest_toggle_description": "09:00 morning summary",
   "data_section": "Data",
-  "export_label": "Export CSV"
+  "export_label": "Export CSV",
+  "categories_section": "Categories",
+  "manage_categories_label": "Manage categories",
+  "manage_categories_description": "Default and custom categories"
 }

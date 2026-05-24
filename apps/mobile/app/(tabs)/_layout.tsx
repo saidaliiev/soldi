@@ -44,13 +44,6 @@ export default function TabLayout(): React.JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="categories"
-        options={{
-          title: t('dashboard.tab_categories'),
-          tabBarAccessibilityLabel: t('dashboard.tab_categories'),
-        }}
-      />
-      <Tabs.Screen
         name="jars"
         options={{
           title: t('dashboard.tab_jars'),

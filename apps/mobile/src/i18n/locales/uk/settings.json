@@ -1,5 +1,6 @@
 {
   "title": "Налаштування",
+  "back": "Назад",
   "language_section": "Мова",
   "language_en": "English",
   "language_uk": "Українська",
@@ -11,5 +12,8 @@
   "digest_toggle_label": "Щоденний дайджест витрат",
   "digest_toggle_description": "Зведення о 09:00",
   "data_section": "Дані",
-  "export_label": "Експорт CSV"
+  "export_label": "Експорт CSV",
+  "categories_section": "Категорії",
+  "manage_categories_label": "Керування категоріями",
+  "manage_categories_description": "Стандартні та власні категорії"
 }
