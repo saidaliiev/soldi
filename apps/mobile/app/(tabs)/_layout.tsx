@@ -1,8 +1,7 @@
 /**
  * SOLDI tab bar wiring — four tabs (Overview / Transactions / Categories /
- * Jars) plus one hidden route (explore). The actual bar is the warm Liquid
- * Glass `GlassTabBar` (redesign Wave 1) with a mandatory solid editorial
- * fallback for iOS<26.
+ * Jars). The actual bar is the warm Liquid Glass `GlassTabBar` (redesign
+ * Wave 1) with a mandatory solid editorial fallback for iOS<26.
  *
  * This file only wires expo-router → GlassTabBar. Color/contrast contract
  * (I-01, audited in src/design/contrast.ts) and the glass/fallback decision
@@ -11,6 +10,10 @@
  *
  * Accessibility: each tab declares role="tab" + label + selected state
  * inside GlassTabBar; titles/labels are i18n (update on language switch).
+ *
+ * GlassTabBar filters via an allow-list (route.name in ICONS), so any new
+ * Tabs.Screen added here MUST also be registered in
+ * src/features/chrome/GlassTabBar.tsx ICONS to render.
  */
 
 import { Tabs } from 'expo-router';
@@ -54,9 +57,6 @@ export default function TabLayout(): React.JSX.Element {
           tabBarAccessibilityLabel: t('dashboard.tab_jars'),
         }}
       />
-      {/* Phase 1 placeholder — kept out of the tab bar (href:null). The
-          GlassTabBar filters href:null routes so this never renders a tab. */}
-      <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );
 }

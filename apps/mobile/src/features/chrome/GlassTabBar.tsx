@@ -20,7 +20,7 @@
  * AccessibilityInfo.isReduceTransparencyEnabled() → force the solid path.
  */
 
-import type { BottomTabBarProps, BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -96,10 +96,13 @@ export function GlassTabBar({
 
   const tabs = state.routes
     .filter((route) => {
-      const descriptor = descriptors[route.key];
-      if (!descriptor) return false;
-      const opts = descriptor.options as BottomTabNavigationOptions & { href?: unknown };
-      return opts.href !== null;
+      // Allow-list by registered icon. expo-router v6 does NOT propagate
+      // Tabs.Screen `href: null` into descriptor.options, so the previous
+      // deny-list (`opts.href !== null`) silently let any unregistered
+      // route through as a leaked 5th tab. Routes shipped to the bar must
+      // appear in ICONS; anything else is junk and is dropped at render.
+      if (!descriptors[route.key]) return false;
+      return route.name in ICONS;
     })
     .map((route) => {
       // Non-null: routes reaching here are guaranteed present in descriptors
