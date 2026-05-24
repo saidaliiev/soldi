@@ -15,7 +15,8 @@
   "digest_on_track": "Все за планом на цей місяць.",
   "digest_first_month": "Перший відстежений місяць.",
   "tab_overview": "Огляд",
-  "tab_transactions": "Транзакції",
+  "tab_transactions": "Активність",
   "tab_categories": "Категорії",
-  "tab_jars": "Скарбнички"
+  "tab_jars": "Скарбнички",
+  "tab_chat": "Чат"
 }

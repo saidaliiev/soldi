@@ -15,7 +15,8 @@
   "digest_on_track": "Right on track for the month.",
   "digest_first_month": "First month tracked.",
   "tab_overview": "Overview",
-  "tab_transactions": "Transactions",
+  "tab_transactions": "Activity",
   "tab_categories": "Categories",
-  "tab_jars": "Jars"
+  "tab_jars": "Jars",
+  "tab_chat": "Chat"
 }
