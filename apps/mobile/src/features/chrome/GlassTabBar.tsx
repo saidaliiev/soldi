@@ -21,12 +21,6 @@
  */
 
 import type { BottomTabBarProps, BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
-import {
-  GlassContainer,
-  GlassView,
-  isGlassEffectAPIAvailable,
-  isLiquidGlassAvailable,
-} from 'expo-glass-effect';
 import React, { useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -40,6 +34,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { isSafeToRenderGlass, resolveTabBarChrome } from '@/src/design/glass';
+import { getGlassEffect } from '@lib/glassEffect';
 import {
   DashboardIcon,
   TransactionsIcon,
@@ -86,10 +81,15 @@ export function GlassTabBar({
     };
   }, []);
 
-  // Native boundary: read both availability fns, collapse to a pure boolean.
+  // Native boundary: load expo-glass-effect ONLY on iOS 26+; pre-26 + Android
+  // never touch the native binding (it weak-links iOS-26 symbols that produce
+  // EXC_BAD_ACCESS in Hermes microtask checkpoint on older OS — TF crash
+  // 2026-05-23, expo/expo#40911). When the gate returns null, force fallback.
+  const glassMod = getGlassEffect();
   const safeGlass =
+    glassMod !== null &&
     !reduceTransparency &&
-    isSafeToRenderGlass(isGlassEffectAPIAvailable(), isLiquidGlassAvailable());
+    isSafeToRenderGlass(glassMod.isGlassEffectAPIAvailable(), glassMod.isLiquidGlassAvailable());
   const chrome = resolveTabBarChrome(safeGlass);
 
   const bottom = Math.max(insets.bottom, BAR_MARGIN);
@@ -149,7 +149,10 @@ export function GlassTabBar({
         </Pressable>
       );
 
+      // safeGlass = (glassMod !== null && ...) by construction, so chrome.glass
+      // implies glassMod !== null. The non-null assertion is the invariant.
       if (chrome.glass) {
+        const GlassView = glassMod!.GlassView;
         return (
           <GlassView
             key={route.key}
@@ -166,6 +169,7 @@ export function GlassTabBar({
     });
 
   if (chrome.glass) {
+    const GlassContainer = glassMod!.GlassContainer;
     return (
       <View
         pointerEvents="box-none"

@@ -56,16 +56,11 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import {
-  GlassView,
-  isGlassEffectAPIAvailable,
-  isLiquidGlassAvailable,
-} from 'expo-glass-effect';
-
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { isSafeToRenderGlass, resolveSheetChrome } from '@design/glass';
 import { MOTION, SHEET_DAMPING_RATIO } from '@design/motion';
 import { useReduceMotion } from '@design/useMotion';
+import { getGlassEffect } from '@lib/glassEffect';
 
 // WR-03: SCREEN_HEIGHT was computed once at module load via Dimensions.get().
 // On orientation change or iPad Split View, the cached value goes stale causing
@@ -139,13 +134,19 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
       };
     }, []);
 
+    // iOS-26 gate: expo-glass-effect's native binding weak-links iOS-26-only
+    // symbols. Pre-iOS-26 + Android NEVER touch it (Hermes EXC_BAD_ACCESS at
+    // microtask checkpoint — TF build #8 crash 2026-05-23, expo/expo#40911).
+    const glassMod = getGlassEffect();
     const wantGlass = glassSurface === true;
     const safeGlass =
       wantGlass &&
+      glassMod !== null &&
       !reduceTransparency &&
-      isSafeToRenderGlass(isGlassEffectAPIAvailable(), isLiquidGlassAvailable());
+      isSafeToRenderGlass(glassMod.isGlassEffectAPIAvailable(), glassMod.isLiquidGlassAvailable());
     const sheetChrome = wantGlass ? resolveSheetChrome(safeGlass) : null;
-    const renderGlass = sheetChrome?.glass === true;
+    const renderGlass = sheetChrome?.glass === true && glassMod !== null;
+    const GlassView = glassMod?.GlassView ?? null;
     // WR-03: use reactive screen height — stale module-load value caused
     // wrong snap position after orientation change or iPad Split View.
     const { height: screenHeight } = useWindowDimensions();
@@ -324,7 +325,7 @@ export const BottomSheetPrimitive = React.forwardRef<BottomSheetPrimitiveRef, Pr
             >
               {/* Wave 4: warm-glass material behind content (opt-in, gated).
                   pointerEvents none → pan/scroll reach the children. */}
-              {renderGlass && sheetChrome != null && sheetChrome.glass && (
+              {renderGlass && GlassView != null && sheetChrome != null && sheetChrome.glass && (
                 <GlassView
                   pointerEvents="none"
                   style={StyleSheet.absoluteFill}
