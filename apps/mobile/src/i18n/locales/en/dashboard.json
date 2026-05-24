@@ -1,6 +1,11 @@
 {
   "this_month": "This month",
   "total_spent_in": "Total spent in {{month}}",
+  "hero_spent_in_label": "Spent in {{month}}",
+  "hero_less_than": "{{delta}} less than {{prevMonth}}",
+  "hero_more_than": "{{delta}} more than {{prevMonth}}",
+  "hero_same_as": "Same as {{prevMonth}}",
+  "hero_first_month": "First month tracked",
   "transactions_count": "{{n}} transactions",
   "empty": "No transactions yet",
   "empty_month": "This month is a blank page.",

@@ -1,22 +1,26 @@
 /**
- * MonthlyTotalHero — Oswald displayXL hero number + sub-label.
+ * MonthlyTotalHero — hero band centerpiece (label · split number · subline).
  *
- * Per UI-SPEC §MonthlyTotalHero (display singleton; one element, one screen):
- *   number    = TYPE.displayXL (64pt Oswald Medium) + tabular-nums
- *   sub-label = TYPE.uiLabel COLORS.textMuted, 4pt below
+ * Per HTML canon §2 (Dashboard money-shot):
+ *   heroLabel (uppercase tracked, accentDeep)  →  "Spent in May"
+ *   number    (Oswald displayXL, accentDeep)   →  "€2,418" + ".60" (accent, smaller)
+ *   subline   (heroSubline, textMuted)         →  "€312 less than April"  (D4)
  *
- * Money sign convention: dashboard always renders expense as a positive
- * "amount spent" — we pass amountCents=-totalCents into formatMoney so the
- * Intl.NumberFormat output is a clean "€123.45" without an explicit minus.
+ * The mantissa renders in `accentDeep`; the cents fraction renders in `accent`
+ * at ~half the size, matching the canon's two-tone treatment. We split via
+ * Intl.NumberFormat#formatToParts so locale-correct decimal separators (.,)
+ * and currency placement are preserved.
  *
- * Redesign Wave 2 (spec §2.1 MOTION.heroCountUp): the amount counts from the
- * previous total → the current total on mount and on month change (600ms
- * outCubic) via the motion vocabulary. reduce-motion → final number instantly.
- * Motion-only; the static screenshot (no motion) shows the settled total.
+ * Motion: Wave 2 heroCountUp on the integer cents value (600ms outCubic),
+ * sharedMonth carry on month change. reduce-motion respected via withMotion.
+ *
+ * a11y: the full final amount is the accessibilityLabel (not the mid-count
+ * value); cents Text is accessible={false} so screen readers read the joined
+ * label once.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Text, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
@@ -37,14 +41,46 @@ type Props = {
   readonly totalCents: number;
   readonly monthKey: MonthKey;
   readonly monthDirection?: number;
+  readonly subline?: string | null;
   readonly locale?: string;
   readonly currency?: string;
 };
+
+type SplitParts = {
+  readonly mantissa: string; // currency symbol + integer + group seps (no fraction)
+  readonly fraction: string; // decimal separator + fraction digits, "" if none
+};
+
+function splitCurrency(amountMajor: number, currency: string, locale: string): SplitParts {
+  const parts = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).formatToParts(amountMajor);
+  let mantissa = '';
+  let fraction = '';
+  let sawDecimal = false;
+  for (const p of parts) {
+    if (p.type === 'decimal') {
+      sawDecimal = true;
+      fraction += p.value;
+      continue;
+    }
+    if (p.type === 'fraction') {
+      fraction += p.value;
+      continue;
+    }
+    if (!sawDecimal) mantissa += p.value;
+  }
+  return { mantissa, fraction };
+}
 
 export function MonthlyTotalHero({
   totalCents,
   monthKey,
   monthDirection = 0,
+  subline,
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
@@ -52,32 +88,27 @@ export function MonthlyTotalHero({
   const { withMotion, reduceMotion } = useMotion();
 
   const monthLabel = formatMonthLabel(monthKey, locale);
-  const spentLabel = t('dashboard.total_spent_in', { month: monthLabel });
+  const labelText = t('dashboard.hero_spent_in_label', { month: monthLabel });
+  const spokenTotal = t('dashboard.total_spent_in', { month: monthLabel });
 
-  // Animated cents → formatted string. Start from 0 on first mount; from the
-  // previous settled total on subsequent month changes.
+  // ---------- count-up animation (preserve Wave 2 motion) ----------
   const animatedCents = useSharedValue(0);
   const prevCentsRef = useRef(0);
   const [displayCents, setDisplayCents] = useState(0);
 
   useEffect(() => {
     if (reduceMotion) {
-      // reduce-motion: settle on the final total immediately, no count-up.
       animatedCents.value = totalCents;
       prevCentsRef.current = totalCents;
       setDisplayCents(totalCents);
       return;
     }
-    // JSI synchronous — the withTiming below reads this as its start value.
     animatedCents.value = prevCentsRef.current;
     animatedCents.value = withMotion(totalCents, 'heroCountUp');
     prevCentsRef.current = totalCents;
   }, [totalCents, animatedCents, withMotion, reduceMotion]);
 
-  // Redesign Wave 2 — MOTION.sharedMonth: on month swipe the hero carries with
-  // the donut (synced direction-aware translateX + opacity entrance) so they
-  // read as one element moving. ±16pt per Checkpoint B. reduce-motion handled
-  // by withMotion's instant path (matches the count-up above).
+  // ---------- sharedMonth carry on month change ----------
   const carryX = useSharedValue(0);
   const carryOpacity = useSharedValue(1);
   useEffect(() => {
@@ -93,11 +124,6 @@ export function MonthlyTotalHero({
     opacity: carryOpacity.value,
   }));
 
-  // Mirror the SharedValue onto JS state for Intl formatting (Intl can't run
-  // in a worklet). The worklet reads the raw value (quantize stays on JS —
-  // quantizeCents needs totalCents which is JS-side); JS quantizes with an
-  // exact-target snap so the final frame lands EXACTLY on totalCents (Task 10
-  // Step 3 — no off-by-one when withTiming settles at e.g. 12344.9997).
   const applyCents = useCallback(
     (raw: number) => {
       setDisplayCents((prev) => {
@@ -112,35 +138,62 @@ export function MonthlyTotalHero({
     (raw, prev) => {
       if (raw !== prev) runOnJS(applyCents)(raw);
     },
-    // dep: rebuild on month change so the snap uses the current totalCents, not a stale mount closure
     [applyCents],
   );
 
-  const formatted = formatMoney({ amountCents: displayCents, currency }, locale);
+  const split = useMemo(
+    () => splitCurrency(Math.abs(displayCents) / 100, currency, locale),
+    [displayCents, currency, locale],
+  );
   const finalFormatted = formatMoney({ amountCents: totalCents, currency }, locale);
 
   return (
     <Animated.View style={[styles.container, carryStyle]}>
-      <Animated.Text
-        style={styles.number}
+      <Text
+        style={styles.label}
         accessibilityRole="text"
-        // a11y label always reports the FINAL total (not the mid-count value).
-        accessibilityLabel={`${spentLabel}: ${finalFormatted}`}
         allowFontScaling
-        maxFontSizeMultiplier={1.3}
-        adjustsFontSizeToFit
+        maxFontSizeMultiplier={1.4}
         numberOfLines={1}
       >
-        {formatted}
-      </Animated.Text>
-      <Text
-        style={styles.sub}
-        allowFontScaling
-        maxFontSizeMultiplier={1.6}
-        numberOfLines={2}
-      >
-        {spentLabel}
+        {labelText}
       </Text>
+      <View
+        style={styles.amountRow}
+        accessibilityRole="text"
+        accessibilityLabel={`${spokenTotal}: ${finalFormatted}`}
+      >
+        <Animated.Text
+          style={styles.mantissa}
+          allowFontScaling
+          maxFontSizeMultiplier={1.3}
+          adjustsFontSizeToFit
+          numberOfLines={1}
+        >
+          {split.mantissa}
+        </Animated.Text>
+        {split.fraction.length > 0 && (
+          <Animated.Text
+            style={styles.fraction}
+            allowFontScaling
+            maxFontSizeMultiplier={1.3}
+            numberOfLines={1}
+            accessible={false}
+          >
+            {split.fraction}
+          </Animated.Text>
+        )}
+      </View>
+      {subline != null && subline.length > 0 && (
+        <Text
+          style={styles.subline}
+          allowFontScaling
+          maxFontSizeMultiplier={1.4}
+          numberOfLines={2}
+        >
+          {subline}
+        </Text>
+      )}
     </Animated.View>
   );
 }
@@ -149,14 +202,33 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: SPACING.sm,
   },
-  number: {
+  label: {
+    ...TYPE.heroLabel,
+    color: COLORS.accentDeep,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.xs + 2,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  mantissa: {
     ...TYPE.displayXL,
-    color: COLORS.textPrimary,
+    color: COLORS.accentDeep,
     fontVariant: ['tabular-nums'],
   },
-  sub: {
-    ...TYPE.uiLabel,
+  fraction: {
+    ...TYPE.displayXL,
+    fontSize: 30,
+    lineHeight: 38,
+    color: COLORS.accent,
+    fontVariant: ['tabular-nums'],
+    marginLeft: 2,
+    marginBottom: 6,
+  },
+  subline: {
+    ...TYPE.heroSubline,
     color: COLORS.textMuted,
-    marginTop: SPACING.xs,
+    marginTop: SPACING.sm,
   },
 });

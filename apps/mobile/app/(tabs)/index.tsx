@@ -18,18 +18,19 @@
  * call in this path.
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { ChatLaunchFAB } from '@/src/features/chat/ChatLaunchFAB';
 import { GearIcon } from '@/src/design/icons/system/GearIcon';
 
-import { COLORS, SPACING } from '@design/tokens';
+import { COLORS, GRADIENTS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
-import { getMonthsWithTransactions } from '@data/dashboardRepo';
+import { getMonthlyExpenseTotal, getMonthsWithTransactions } from '@data/dashboardRepo';
 import { MonthSwiper } from '@/src/features/dashboard/MonthSwiper';
 import { MonthlyTotalHero } from '@/src/features/dashboard/MonthlyTotalHero';
 import { DonutChart } from '@/src/features/dashboard/DonutChart';
@@ -38,8 +39,9 @@ import { EmptyState } from '@/src/features/dashboard/EmptyState';
 import { DigestCard } from '@/src/features/dashboard/DigestCard';
 import { useMonthData } from '@/src/features/dashboard/useMonthData';
 import { useDigestData } from '@/src/features/dashboard/useDigestData';
-import { addMonths, isFutureMonth, isSameMonth, compareMonth } from '@/src/features/dashboard/monthMath';
+import { addMonths, formatMonthLabel, isFutureMonth, isSameMonth, compareMonth } from '@/src/features/dashboard/monthMath';
 import type { MonthKey } from '@/src/features/dashboard/types';
+import { formatMoney } from '@lib/money';
 
 function currentMonthKey(today: Date = new Date()): MonthKey {
   return {
@@ -104,6 +106,38 @@ export default function DashboardScreen(): React.JSX.Element {
   const isFuture = useMemo(() => isFutureMonth(selected, today), [selected, today]);
   const showDigest = useMemo(() => isSameMonth(selected, today), [selected, today]);
 
+  // ---------------------------------------------------------------------------
+  // Hero subline (D4) — "€X less / more than [prev month]" or first-month fallback
+  // ---------------------------------------------------------------------------
+
+  const [prevTotalCents, setPrevTotalCents] = useState<number>(0);
+  useEffect(() => {
+    try {
+      const prev = addMonths(selected, -1);
+      setPrevTotalCents(getMonthlyExpenseTotal(prev.year, prev.month));
+    } catch {
+      setPrevTotalCents(0);
+    }
+  }, [selected, data.totalCents]);
+
+  const heroSubline = useMemo<string | null>(() => {
+    if (isFuture) return null;
+    if (data.totalCents === 0) return null;
+    const prev = addMonths(selected, -1);
+    if (prevTotalCents === 0) {
+      const earliestSelected = compareMonth(selected, bounds.earliest) === 0;
+      return earliestSelected ? t('dashboard.hero_first_month') : null;
+    }
+    const prevLabel = formatMonthLabel(prev, 'en-IE');
+    const delta = data.totalCents - prevTotalCents;
+    const absDelta = Math.abs(delta);
+    const fmtDelta = formatMoney({ amountCents: absDelta, currency: 'EUR' }, 'en-IE');
+    if (absDelta < 100) return t('dashboard.hero_same_as', { prevMonth: prevLabel });
+    return delta < 0
+      ? t('dashboard.hero_less_than', { delta: fmtDelta, prevMonth: prevLabel })
+      : t('dashboard.hero_more_than', { delta: fmtDelta, prevMonth: prevLabel });
+  }, [isFuture, data.totalCents, prevTotalCents, selected, bounds.earliest, t]);
+
   const maxAmount = useMemo(() => {
     if (data.breakdown.top.length === 0) return 0;
     return Math.max(...data.breakdown.top.map((s) => s.amountCents));
@@ -123,17 +157,7 @@ export default function DashboardScreen(): React.JSX.Element {
   // ---------------------------------------------------------------------------
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']} accessibilityLabel="Dashboard screen">
-      {/* Gear icon — opens Settings stack route (D-06). Positioned top-right of safe area. */}
-      <Pressable
-        onPress={() => router.push('/settings')}
-        accessibilityRole="button"
-        accessibilityLabel={t('settings.open_a11y')}
-        style={[styles.gearButton, { top: insets.top + SPACING.sm }]}
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-      >
-        <GearIcon color={COLORS.textSecondary} size={24} />
-      </Pressable>
+    <SafeAreaView style={styles.safe} edges={['left', 'right']} accessibilityLabel="Dashboard screen">
       <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -141,60 +165,86 @@ export default function DashboardScreen(): React.JSX.Element {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-
-        <MonthSwiper
-          selected={selected}
-          onChange={setSelected}
-          earliest={bounds.earliest}
-          latestPlusOne={bounds.latestPlusOne}
-        />
-
-        <MonthlyTotalHero totalCents={data.totalCents} monthKey={selected} monthDirection={monthDirection} />
-
-        {data.error && (
-          <Pressable
-            onPress={data.refresh}
-            accessibilityRole="button"
-            accessibilityLabel={t('dashboard.error_load')}
-            style={styles.errorRow}
-            hitSlop={8}
-          >
-            <Text style={styles.errorText} allowFontScaling>
-              {t('dashboard.error_load')}
-            </Text>
-          </Pressable>
-        )}
-
-        {isFuture ? (
-          <EmptyState variant="future-month" onCtaPress={goAddTransaction} />
-        ) : data.totalCents === 0 ? (
-          <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
-        ) : (
-          <>
-            <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
-            {showDigest && (
-              <View style={styles.digestWrap}>
-                <DigestCard data={digest} />
-              </View>
-            )}
-            <View style={styles.rows}>
-              {data.breakdown.top.map((slice) => (
-                <CategoryRow
-                  key={`top-${String(slice.categoryId)}`}
-                  slice={slice}
-                  maxAmountCents={maxAmount}
-                />
-              ))}
-              {data.breakdown.other != null && (
-                <CategoryRow
-                  key="other"
-                  slice={data.breakdown.other}
-                  maxAmountCents={maxAmount}
-                />
-              )}
+        {/* Hero band (D4) — warm gradient wrapping swiper + monthly total. */}
+        <LinearGradient
+          colors={[...GRADIENTS.warm]}
+          start={{ x: 0.05, y: 0 }}
+          end={{ x: 0.95, y: 1 }}
+          style={[styles.heroBand, { paddingTop: insets.top + SPACING.sm }]}
+        >
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroSwiperWrap}>
+              <MonthSwiper
+                selected={selected}
+                onChange={setSelected}
+                earliest={bounds.earliest}
+                latestPlusOne={bounds.latestPlusOne}
+              />
             </View>
-          </>
-        )}
+            <Pressable
+              onPress={() => router.push('/settings')}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.open_a11y')}
+              style={styles.gearButton}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <GearIcon color={COLORS.textSecondary} size={24} />
+            </Pressable>
+          </View>
+          <MonthlyTotalHero
+            totalCents={data.totalCents}
+            monthKey={selected}
+            monthDirection={monthDirection}
+            subline={heroSubline}
+          />
+        </LinearGradient>
+
+        <View style={styles.belowHero}>
+          {data.error && (
+            <Pressable
+              onPress={data.refresh}
+              accessibilityRole="button"
+              accessibilityLabel={t('dashboard.error_load')}
+              style={styles.errorRow}
+              hitSlop={8}
+            >
+              <Text style={styles.errorText} allowFontScaling>
+                {t('dashboard.error_load')}
+              </Text>
+            </Pressable>
+          )}
+
+          {isFuture ? (
+            <EmptyState variant="future-month" onCtaPress={goAddTransaction} />
+          ) : data.totalCents === 0 ? (
+            <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
+          ) : (
+            <>
+              <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
+              {showDigest && (
+                <View style={styles.digestWrap}>
+                  <DigestCard data={digest} />
+                </View>
+              )}
+              <View style={styles.rows}>
+                {data.breakdown.top.map((slice) => (
+                  <CategoryRow
+                    key={`top-${String(slice.categoryId)}`}
+                    slice={slice}
+                    maxAmountCents={maxAmount}
+                  />
+                ))}
+                {data.breakdown.other != null && (
+                  <CategoryRow
+                    key="other"
+                    slice={data.breakdown.other}
+                    maxAmountCents={maxAmount}
+                  />
+                )}
+              </View>
+            </>
+          )}
+        </View>
       </Animated.ScrollView>
       {/* ChatLaunchFAB — absolute overlay; scroll-driven reveal via scrollY (Wave 2) */}
       <ChatLaunchFAB scrollY={scrollY} />
@@ -207,22 +257,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: SPACING.xxl,
+    gap: SPACING.lg,
+  },
+  heroBand: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  heroSwiperWrap: {
+    flex: 1,
+  },
   gearButton: {
-    position: 'absolute',
-    right: SPACING.md,
-    zIndex: 10,
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scroll: {
-    flex: 1,
-  },
-  content: {
+  belowHero: {
     paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.xxl,
+    paddingTop: SPACING.lg,
     gap: SPACING.lg,
   },
   errorRow: {

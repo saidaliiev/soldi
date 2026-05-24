@@ -95,6 +95,23 @@ export const TYPE = {
     lineHeight: 22,
     letterSpacing: 0,
   } satisfies TextStyle,
+
+  /** Hero band — tracked uppercase label above the monthly total. */
+  heroLabel: {
+    fontFamily: FONTS.ui.family,
+    fontWeight: FONTS.ui.weights.semibold,
+    fontSize: 13,
+    lineHeight: 16,
+    letterSpacing: 1.8,
+  } satisfies TextStyle,
+
+  /** Hero band — subline below the monthly total ("€312 less than April"). */
+  heroSubline: {
+    fontFamily: FONTS.ui.family,
+    fontWeight: FONTS.ui.weights.semibold,
+    fontSize: 15,
+    lineHeight: 20,
+  } satisfies TextStyle,
 } as const;
 
 export type TypeToken = keyof typeof TYPE;

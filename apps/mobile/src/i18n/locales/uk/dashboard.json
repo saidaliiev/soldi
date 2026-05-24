@@ -1,6 +1,11 @@
 {
   "this_month": "Цього місяця",
   "total_spent_in": "Витрачено в {{month}}",
+  "hero_spent_in_label": "Витрачено в {{month}}",
+  "hero_less_than": "На {{delta}} менше, ніж у {{prevMonth}}",
+  "hero_more_than": "На {{delta}} більше, ніж у {{prevMonth}}",
+  "hero_same_as": "Так само, як у {{prevMonth}}",
+  "hero_first_month": "Перший відстежений місяць",
   "transactions_count": "{{n}} транзакцій",
   "empty": "Поки немає транзакцій",
   "empty_month": "Цей місяць — чистий аркуш.",
