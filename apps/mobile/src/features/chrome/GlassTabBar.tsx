@@ -39,6 +39,7 @@ import {
   DashboardIcon,
   TransactionsIcon,
   JarsIcon,
+  ChatIcon,
 } from '@/src/design/icons/tabs';
 
 const MIN_TAP = 44; // spec R5 — minimum tap target (pt)
@@ -50,10 +51,13 @@ type IconCmp = (props: { color: string; size?: number }) => React.ReactNode;
 // route name (expo-router) → tab icon. Only registered routes render —
 // allow-list filter in the component below uses this map as the source
 // of truth. To add a new tab: register here AND in app/(tabs)/_layout.tsx.
+// HTML design (docs/design/soldify-screens.html §2): four tabs in this
+// order — Overview / Activity / Jars / Chat.
 const ICONS: Record<string, IconCmp> = {
   index: DashboardIcon,
   transactions: TransactionsIcon,
   jars: JarsIcon,
+  chat: ChatIcon,
 };
 
 export function GlassTabBar({

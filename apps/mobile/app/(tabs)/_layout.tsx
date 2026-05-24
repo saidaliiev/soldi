@@ -50,6 +50,13 @@ export default function TabLayout(): React.JSX.Element {
           tabBarAccessibilityLabel: t('dashboard.tab_jars'),
         }}
       />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: t('dashboard.tab_chat'),
+          tabBarAccessibilityLabel: t('dashboard.tab_chat'),
+        }}
+      />
     </Tabs>
   );
 }
