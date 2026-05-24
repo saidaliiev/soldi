@@ -48,9 +48,9 @@ export function ChatEmptyState({ onSubmitPrompt }: Props): React.JSX.Element {
   }));
 
   const prompts = [
-    t('chat:prompt_groceries_last_month'),
-    t('chat:prompt_compare_months'),
-    t('chat:prompt_top_merchants'),
+    t('chat.prompt_groceries_last_month'),
+    t('chat.prompt_compare_months'),
+    t('chat.prompt_top_merchants'),
   ] as const;
 
   return (
@@ -68,11 +68,11 @@ export function ChatEmptyState({ onSubmitPrompt }: Props): React.JSX.Element {
         accessibilityRole="text"
         allowFontScaling
       >
-        {t('chat:empty_phrase')}
+        {t('chat.empty_phrase')}
       </Text>
 
       <Text style={styles.subPhrase} allowFontScaling>
-        {t('chat:empty_subphrase')}
+        {t('chat.empty_subphrase')}
       </Text>
 
       <View style={styles.chips}>

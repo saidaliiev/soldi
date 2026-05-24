@@ -97,8 +97,8 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
         onPressOut={handlePressOut}
         onPress={handlePress}
         accessibilityRole="button"
-        accessibilityLabel={t('ai:fab_label')}
-        accessibilityHint={t('ai:fab_hint')}
+        accessibilityLabel={t('ai.fab_label')}
+        accessibilityHint={t('ai.fab_hint')}
         style={styles.pressable}
       >
         {/* Gradient fill: accentSoft (#B97A5A) to accent (#9C5B41) via two-stop View */}

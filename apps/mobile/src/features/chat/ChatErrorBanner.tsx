@@ -64,8 +64,8 @@ export function ChatErrorBanner({ visible }: Props): React.JSX.Element | null {
 
   const copy =
     retryCount >= 1
-      ? t('chat:error_unavailable_retry')
-      : t('chat:error_unavailable');
+      ? t('chat.error_unavailable_retry')
+      : t('chat.error_unavailable');
 
   const handlePress = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});

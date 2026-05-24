@@ -126,8 +126,8 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
           let timedOut = false;
           const timeoutHandle = setTimeout(() => {
             timedOut = true;
-            replaceTypingWithError(typingId, t('chat:error_timeout'));
-            setError(t('chat:error_timeout'));
+            replaceTypingWithError(typingId, t('chat.error_timeout'));
+            setError(t('chat.error_timeout'));
           }, TIMEOUT_MS);
 
           aiQuery({ message: messageText, history, factsPack })
@@ -148,13 +148,13 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
               clearTimeout(timeoutHandle);
               if (timedOut) return;
               const msg =
-                err instanceof Error ? err.message : t('chat:error_unavailable');
+                err instanceof Error ? err.message : t('chat.error_unavailable');
               replaceTypingWithError(typingId, msg);
               setError(msg);
             });
         })
         .catch((err: unknown) => {
-          const msg = err instanceof Error ? err.message : t('chat:error_unavailable');
+          const msg = err instanceof Error ? err.message : t('chat.error_unavailable');
           replaceTypingWithError(typingId, msg);
           setError(msg);
         });
@@ -185,7 +185,7 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
 
   const handleMicPress = (): void => {
     Haptics.selectionAsync().catch(() => {});
-    Alert.alert('', t('chat:voice_coming_soon'));
+    Alert.alert('', t('chat.voice_coming_soon'));
   };
 
   const bottomPad = Platform.OS === 'ios' ? insets.bottom : SPACING.sm;
@@ -197,7 +197,7 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
           ref={inputRef}
           value={text}
           onChangeText={setText}
-          placeholder={t('chat:input_placeholder')}
+          placeholder={t('chat.input_placeholder')}
           placeholderTextColor={COLORS.textMuted}
           style={styles.input}
           multiline
@@ -215,7 +215,7 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
           onPress={handleMicPress}
           hitSlop={2}
           accessibilityRole="button"
-          accessibilityLabel={t('chat:voice_a11y')}
+          accessibilityLabel={t('chat.voice_a11y')}
           accessibilityHint="Voice input is coming in a future update"
           accessibilityState={{ disabled: true }}
           style={styles.micButton}
@@ -232,7 +232,7 @@ export function ChatInputRow({ prefillText, onPrefillConsumed }: Props): React.J
             disabled={isDisabled}
             hitSlop={2}
             accessibilityRole="button"
-            accessibilityLabel={t('chat:send_a11y')}
+            accessibilityLabel={t('chat.send_a11y')}
             accessibilityState={{ disabled: isDisabled }}
             style={[
               styles.sendButton,

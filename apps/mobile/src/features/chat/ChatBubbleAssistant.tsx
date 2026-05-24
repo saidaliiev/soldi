@@ -77,7 +77,7 @@ export function ChatBubbleAssistant({ message, onRetry }: Props): React.JSX.Elem
   if (!message.isError && lastFactsPack) {
     isLeak = detectMerchantLeak(message.text, lastFactsPack);
     if (isLeak) {
-      displayText = t('chat:error_assistant_inline');
+      displayText = t('chat.error_assistant_inline');
       displayChart = undefined;
       // SENTRY P0: chat.merchant_leak_detected
       // Phase 5 wires the Sentry SDK — do not include prose or merchant_key in extras.
@@ -95,14 +95,14 @@ export function ChatBubbleAssistant({ message, onRetry }: Props): React.JSX.Elem
   // Accessibility label
   let a11yLabel: string;
   if (isError) {
-    a11yLabel = t('chat:bubble_label_error', { text: displayText });
+    a11yLabel = t('chat.bubble_label_error', { text: displayText });
   } else if (displayChart && message.chart && 'kpi' in message.chart && message.chart.kpi != null) {
-    a11yLabel = t('chat:bubble_label_assistant_kpi', {
+    a11yLabel = t('chat.bubble_label_assistant_kpi', {
       text: displayText,
       kpi: message.chart.kpi,
     });
   } else {
-    a11yLabel = t('chat:bubble_label_assistant', { text: displayText });
+    a11yLabel = t('chat.bubble_label_assistant', { text: displayText });
   }
 
   return (

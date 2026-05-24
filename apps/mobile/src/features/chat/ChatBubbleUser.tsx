@@ -73,7 +73,7 @@ export function ChatBubbleUser({ message }: Props): React.JSX.Element {
       <Pressable
         onPress={toggleTimestamp}
         accessibilityRole="text"
-        accessibilityLabel={t('chat:bubble_label_user', { text: message.text })}
+        accessibilityLabel={t('chat.bubble_label_user', { text: message.text })}
       >
         <View style={styles.bubble}>
           <Text style={styles.text} allowFontScaling>

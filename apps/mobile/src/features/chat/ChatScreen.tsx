@@ -58,7 +58,7 @@ export function ChatScreen(): React.JSX.Element {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe} accessibilityLabel={t('chat:sheet_title')}>
+    <SafeAreaView style={styles.safe} accessibilityLabel={t('chat.sheet_title')}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -66,7 +66,7 @@ export function ChatScreen(): React.JSX.Element {
       >
         <View style={styles.header} accessibilityRole="header">
           <Text style={styles.title} allowFontScaling numberOfLines={1}>
-            {t('chat:sheet_title')}
+            {t('chat.sheet_title')}
           </Text>
         </View>
 

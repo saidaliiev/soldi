@@ -89,7 +89,7 @@ export function ChatBottomSheet(): React.JSX.Element {
           close();
         }
       }}
-      accessibilityLabel={t('chat:sheet_title')}
+      accessibilityLabel={t('chat.sheet_title')}
     >
       <KeyboardAvoidingView
         style={styles.flex}
@@ -99,13 +99,13 @@ export function ChatBottomSheet(): React.JSX.Element {
         {/* Header */}
         <View style={styles.header} accessibilityRole="header">
           <Text style={styles.headerTitle} allowFontScaling>
-            {t('chat:sheet_title')}
+            {t('chat.sheet_title')}
           </Text>
           <Pressable
             onPress={close}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel={t('chat:close_a11y')}
+            accessibilityLabel={t('chat.close_a11y')}
             style={styles.closeButton}
           >
             <Text style={styles.closeIcon} allowFontScaling={false}>
