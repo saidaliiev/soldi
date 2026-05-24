@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mobile-mcp-wsl": {
+      "type": "stdio",
+      "command": "bash",
+      "args": ["/home/iskan/platform-tools/mobile-mcp-wsl.sh"]
+    }
+  }
+}
