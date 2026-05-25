@@ -97,7 +97,7 @@ export default function TransactionListScreen(): React.JSX.Element {
 
       <View style={styles.header}>
         <Text style={styles.title} allowFontScaling numberOfLines={1}>
-          {t('transactions.tab_title')}
+          {t('dashboard.tab_transactions')}
         </Text>
         <Pressable
           onPress={openSearch}
