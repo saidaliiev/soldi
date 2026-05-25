@@ -31,6 +31,7 @@ import { isEmptyFilter } from '@/src/features/transactions/filterCompose';
 import { DateHeader } from '@/src/features/transactions/DateHeader';
 import { TransactionRow } from '@/src/features/transactions/TransactionRow';
 import { FilterPillsRow } from '@/src/features/transactions/FilterPillsRow';
+import { ActivityDefaultFilters } from '@/src/features/transactions/ActivityDefaultFilters';
 import type { FeedItem } from '@/src/features/transactions/types';
 
 export default function TransactionListScreen(): React.JSX.Element {
@@ -111,6 +112,11 @@ export default function TransactionListScreen(): React.JSX.Element {
           </Text>
         </Pressable>
       </View>
+
+      {/* Sprint D6 (DEFAULT-SET): always-visible discovery row at top.
+          Hidden when no transactions exist — the empty_initial copy below
+          carries the screen's only message at that point. */}
+      {transactions.length > 0 && <ActivityDefaultFilters />}
 
       <FilterPillsRow />
 
