@@ -171,7 +171,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.md,
+    // Sprint E3: parity with the transaction-row inset (badge starts ~24pt in
+    // after padding+columnGap). Header was the lone screen element breaking
+    // the gutter — flush-left title vs right-hugging search icon read as
+    // misaligned against rows below.
+    paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.sm,
   },
