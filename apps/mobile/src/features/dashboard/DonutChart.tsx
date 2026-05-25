@@ -249,10 +249,14 @@ export function DonutChart({
 
   const a11yLabel = (() => {
     const top = breakdown.top[0];
-    if (top == null) return 'Spending donut chart. No data this month.';
+    if (top == null) return t('dashboard.donut_a11y_empty');
     const topPercent = Math.round(top.percentage * 100);
     const topAmount = formatMoney({ amountCents: top.amountCents, currency }, locale);
-    return `Spending donut chart. ${localizedCategoryName(top, locale)} ${topAmount}, ${topPercent}%. Double-tap a slice to see details.`;
+    return t('dashboard.donut_a11y_with_data', {
+      category: localizedCategoryName(top, locale),
+      amount: topAmount,
+      percent: topPercent,
+    });
   })();
 
   return (

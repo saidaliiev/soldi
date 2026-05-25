@@ -89,7 +89,7 @@ export default function TransactionListScreen(): React.JSX.Element {
   const filterActive = !isEmptyFilter(filterSnapshot);
 
   return (
-    <SafeAreaView style={styles.safe} accessibilityLabel="Transactions screen">
+    <SafeAreaView style={styles.safe} accessibilityLabel={t('transactions.screen_a11y')}>
       {/* Wave 3 T5: native header dropped — an in-body Oswald title with
           the SafeAreaView fill continuous from the status-bar edge through
           the title kills the two-tone seam (design-sync defect #1) by
@@ -103,7 +103,7 @@ export default function TransactionListScreen(): React.JSX.Element {
         <Pressable
           onPress={openSearch}
           accessibilityRole="button"
-          accessibilityLabel="Open search and filter"
+          accessibilityLabel={t('transactions.search_open_a11y')}
           hitSlop={12}
           style={styles.searchButton}
         >

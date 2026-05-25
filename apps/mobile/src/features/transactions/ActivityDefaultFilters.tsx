@@ -200,7 +200,7 @@ export function ActivityDefaultFilters(): React.JSX.Element | null {
   );
 
   return (
-    <View style={styles.root} accessibilityLabel="Default filters">
+    <View style={styles.root} accessibilityLabel={t('transactions.default_filters_a11y')}>
       {topCategories.length > 0 && (
         <ScrollView
           horizontal
