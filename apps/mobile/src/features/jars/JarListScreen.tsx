@@ -22,8 +22,8 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 

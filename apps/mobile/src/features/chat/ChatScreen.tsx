@@ -22,11 +22,11 @@ import React from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, SPACING } from '@design/tokens';

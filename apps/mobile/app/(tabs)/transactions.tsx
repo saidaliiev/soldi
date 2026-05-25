@@ -14,7 +14,8 @@
  */
 
 import React from 'react';
-import { SafeAreaView, View, Pressable, Text, StyleSheet } from 'react-native';
+import { View, Pressable, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams, Stack } from 'expo-router';

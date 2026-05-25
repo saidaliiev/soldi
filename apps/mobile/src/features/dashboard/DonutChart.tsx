@@ -285,7 +285,13 @@ export function DonutChart({
             <Text style={styles.totalLabel} allowFontScaling>
               {t('dashboard.donut_total_label')}
             </Text>
-            <Text style={styles.totalAmount} allowFontScaling>
+            <Text
+              style={styles.totalAmount}
+              allowFontScaling
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
               {totalFormatted}
             </Text>
           </>
