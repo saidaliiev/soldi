@@ -81,16 +81,22 @@ export function JarListScreen(): React.JSX.Element {
         <Text style={styles.title} accessibilityRole="header" allowFontScaling>
           {t('jars.title')}
         </Text>
-        <Pressable
-          onPress={handleCreate}
-          accessibilityRole="button"
-          accessibilityLabel={t('jars.create_cta')}
-          style={({ pressed }) => [styles.createBtn, pressed && styles.pressed]}
-        >
-          <Text style={styles.createBtnLabel} allowFontScaling>
-            {t('jars.create_cta')}
-          </Text>
-        </Pressable>
+        {/* Sprint E4: empty state IS the CTA — centred pill below carries the
+            single affordance. Showing the top-right create pill simultaneously
+            doubles the affordance for a screen whose only job is "create the
+            first jar". Reveal once jars exist. */}
+        {!isEmpty && (
+          <Pressable
+            onPress={handleCreate}
+            accessibilityRole="button"
+            accessibilityLabel={t('jars.create_cta')}
+            style={({ pressed }) => [styles.createBtn, pressed && styles.pressed]}
+          >
+            <Text style={styles.createBtnLabel} allowFontScaling>
+              {t('jars.create_cta')}
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       <ScrollView
