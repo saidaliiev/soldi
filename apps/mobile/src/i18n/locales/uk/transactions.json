@@ -27,6 +27,7 @@
   "scope_this_month": "Цей місяць",
   "scope_last_month": "Минулий місяць",
   "scope_custom": "Інший",
+  "scope_custom_hint": "Відкриває вибір періоду",
   "sign_group_a11y": "Фільтр за знаком",
   "scope_group_a11y": "Фільтр за періодом",
   "screen_a11y": "Активність",

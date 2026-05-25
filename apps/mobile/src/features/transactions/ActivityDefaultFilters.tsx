@@ -30,6 +30,7 @@ import { useFocusEffect, router } from 'expo-router';
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
+import { ChevronRight } from '@design/icons/chevrons/ChevronRight';
 import { getCategoryBreakdown } from '@data/dashboardRepo';
 import { localizedCategoryName } from '@data/categoriesRepo';
 
@@ -86,11 +87,15 @@ type PillProps = {
   readonly on: boolean;
   readonly onPress: () => void;
   readonly a11yLabel?: string;
+  readonly a11yHint?: string;
   // 'button' = multi-select (category strip — picking one doesn't deselect
   // others). 'radio' = mutually exclusive within a radiogroup (sign + scope
   // strips). VoiceOver reads "radio button, selected" so the user knows
   // picking a different one will deselect the current.
   readonly role?: PillRole;
+  // Trailing chevron affordance for pills that navigate to a modal instead
+  // of toggling inline (audit Finding H: signals modal navigation).
+  readonly trailingChevron?: boolean;
 };
 
 function Pill({
@@ -98,14 +103,18 @@ function Pill({
   on,
   onPress,
   a11yLabel,
+  a11yHint,
   role = 'button',
+  trailingChevron = false,
 }: PillProps): React.JSX.Element {
+  const fg = on ? COLORS.white : COLORS.textPrimary;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole={role}
       accessibilityState={{ selected: on }}
       accessibilityLabel={a11yLabel ?? label}
+      accessibilityHint={a11yHint}
       hitSlop={{ top: 8, bottom: 8 }}
       style={[styles.pill, on ? styles.pillOn : styles.pillOff]}
     >
@@ -116,6 +125,7 @@ function Pill({
       >
         {label}
       </Text>
+      {trailingChevron && <ChevronRight color={fg} size={14} />}
     </Pressable>
   );
 }
@@ -282,6 +292,8 @@ export function ActivityDefaultFilters(): React.JSX.Element | null {
             label={t('transactions.scope_custom')}
             on={dateScope === 'custom'}
             onPress={() => pickDateScope('custom')}
+            trailingChevron
+            a11yHint={t('transactions.scope_custom_hint')}
           />
         </ScrollView>
       </View>
@@ -304,8 +316,10 @@ const styles = StyleSheet.create({
     height: 32,
     paddingHorizontal: SPACING.md,
     borderRadius: RADIUS.pill,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    columnGap: SPACING.xs,
     minWidth: 44,
   },
   pillOff: {

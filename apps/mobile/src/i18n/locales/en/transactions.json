@@ -27,6 +27,7 @@
   "scope_this_month": "This month",
   "scope_last_month": "Last month",
   "scope_custom": "Custom",
+  "scope_custom_hint": "Opens date range picker",
   "sign_group_a11y": "Filter by sign",
   "scope_group_a11y": "Filter by date scope",
   "screen_a11y": "Activity",
