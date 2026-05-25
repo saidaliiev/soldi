@@ -15,6 +15,7 @@
 
 import React from 'react';
 import { SafeAreaView, View, Pressable, Text, StyleSheet } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -42,15 +43,21 @@ export default function TransactionListScreen(): React.JSX.Element {
   const setSign = useFilterStore((s) => s.setSign);
   const setDateRange = useFilterStore((s) => s.setDateRange);
   const clearAll = useFilterStore((s) => s.clearAll);
-  const filterSnapshot = useFilterStore((s) => ({
-    search: s.search,
-    categoryIds: s.categoryIds,
-    minCents: s.minCents,
-    maxCents: s.maxCents,
-    sign: s.sign,
-    dateFromISO: s.dateFromISO,
-    dateToISO: s.dateToISO,
-  }));
+  // useShallow: inline-object selector without shallow equality returns a
+  // fresh reference every render → useSyncExternalStore loops →
+  // "Maximum update depth exceeded". Wrap with useShallow so React's
+  // snapshot cache is keyed on structural equality.
+  const filterSnapshot = useFilterStore(
+    useShallow((s) => ({
+      search: s.search,
+      categoryIds: s.categoryIds,
+      minCents: s.minCents,
+      maxCents: s.maxCents,
+      sign: s.sign,
+      dateFromISO: s.dateFromISO,
+      dateToISO: s.dateToISO,
+    })),
+  );
 
   const locale = i18n.language === 'uk' ? 'uk-UA' : 'en-IE';
 

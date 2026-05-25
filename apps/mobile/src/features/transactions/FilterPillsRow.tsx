@@ -10,6 +10,7 @@
 
 import React from 'react';
 import { ScrollView, Pressable, Text, View, StyleSheet } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, RADIUS, SPACING } from '@design/tokens';
@@ -28,15 +29,20 @@ type PillSpec = {
 
 export function FilterPillsRow(): React.JSX.Element | null {
   const { t, i18n } = useTranslation();
-  const filter = useFilterStore((s) => ({
-    search: s.search,
-    categoryIds: s.categoryIds,
-    minCents: s.minCents,
-    maxCents: s.maxCents,
-    sign: s.sign,
-    dateFromISO: s.dateFromISO,
-    dateToISO: s.dateToISO,
-  }));
+  // useShallow: inline-object selector without shallow equality returns a
+  // fresh reference every render → useSyncExternalStore loops. See
+  // transactions.tsx for the same pattern.
+  const filter = useFilterStore(
+    useShallow((s) => ({
+      search: s.search,
+      categoryIds: s.categoryIds,
+      minCents: s.minCents,
+      maxCents: s.maxCents,
+      sign: s.sign,
+      dateFromISO: s.dateFromISO,
+      dateToISO: s.dateToISO,
+    })),
+  );
   const removeAxis = useFilterStore((s) => s.removeFilterAxis);
   const locale = i18n.language === 'uk' ? 'uk-UA' : 'en-IE';
 
