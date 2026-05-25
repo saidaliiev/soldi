@@ -43,8 +43,13 @@ import {
 } from '@/src/design/icons/tabs';
 
 const MIN_TAP = 44; // spec R5 — minimum tap target (pt)
-const BAR_HEIGHT = 56;
-const BAR_MARGIN = SPACING.md; // floating inset from screen edges
+// Exposed so screen ScrollViews can clear the floating tab bar (Sprint E2).
+// Total bottom clearance a content list needs = TAB_BAR_HEIGHT +
+// TAB_BAR_FLOATING_MARGIN + safe-area insets.bottom.
+export const TAB_BAR_HEIGHT = 56;
+export const TAB_BAR_FLOATING_MARGIN = SPACING.md;
+const BAR_HEIGHT = TAB_BAR_HEIGHT;
+const BAR_MARGIN = TAB_BAR_FLOATING_MARGIN; // floating inset from screen edges
 
 type IconCmp = (props: { color: string; size?: number }) => React.ReactNode;
 

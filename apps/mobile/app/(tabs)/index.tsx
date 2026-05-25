@@ -27,6 +27,10 @@ import { useTranslation } from 'react-i18next';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { ChatLaunchFAB } from '@/src/features/chat/ChatLaunchFAB';
 import { GearIcon } from '@/src/design/icons/system/GearIcon';
+import {
+  TAB_BAR_HEIGHT,
+  TAB_BAR_FLOATING_MARGIN,
+} from '@/src/features/chrome/GlassTabBar';
 
 import { COLORS, GRADIENTS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
@@ -160,7 +164,21 @@ export default function DashboardScreen(): React.JSX.Element {
     <SafeAreaView style={styles.safe} edges={['left', 'right']} accessibilityLabel="Dashboard screen">
       <Animated.ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          {
+            // Sprint E2: clear the floating tab bar so the last category row
+            // (e.g. "Clothing") isn't clipped. The tab bar is absolutely
+            // positioned with TAB_BAR_FLOATING_MARGIN + insets.bottom of
+            // bottom inset, so total clearance below content is
+            // height + margin + safe-area + breathing gap.
+            paddingBottom:
+              TAB_BAR_HEIGHT +
+              TAB_BAR_FLOATING_MARGIN +
+              insets.bottom +
+              SPACING.md,
+          },
+        ]}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -261,7 +279,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: SPACING.xxl,
     gap: SPACING.lg,
   },
   heroBand: {
