@@ -232,7 +232,20 @@ export function DonutChart({
     return breakdown.top.find((s) => s.categoryId === selectedId) ?? null;
   }, [selectedId, breakdown]);
 
-  const totalFormatted = formatMoney({ amountCents: totalCents, currency }, locale);
+  // Sprint E1: mantissa-only inside the ring — the hero band above already
+  // renders the full split-fraction amount at large register. Repeating the
+  // fraction here at a smaller register reads as duplicate noise. Eyebrow
+  // ("Total") stays as the ring summary.
+  const totalFormatted = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.abs(totalCents) / 100),
+    [totalCents, currency, locale],
+  );
 
   const a11yLabel = (() => {
     const top = breakdown.top[0];
