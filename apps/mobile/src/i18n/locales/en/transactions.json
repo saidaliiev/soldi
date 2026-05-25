@@ -27,6 +27,8 @@
   "scope_this_month": "This month",
   "scope_last_month": "Last month",
   "scope_custom": "Custom",
+  "sign_group_a11y": "Filter by sign",
+  "scope_group_a11y": "Filter by date scope",
   "filter_search_pill": "\"{{search}}\"",
   "filter_amount_pill": "{{min}}–{{max}}",
   "filter_date_pill": "{{from}}–{{to}}",

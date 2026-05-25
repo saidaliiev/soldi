@@ -27,6 +27,8 @@
   "scope_this_month": "Цей місяць",
   "scope_last_month": "Минулий місяць",
   "scope_custom": "Інший",
+  "sign_group_a11y": "Фільтр за знаком",
+  "scope_group_a11y": "Фільтр за періодом",
   "filter_search_pill": "\"{{search}}\"",
   "filter_amount_pill": "{{min}}–{{max}}",
   "filter_date_pill": "{{from}}–{{to}}",

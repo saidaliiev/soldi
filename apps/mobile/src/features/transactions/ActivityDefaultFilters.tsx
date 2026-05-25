@@ -79,18 +79,31 @@ function detectDateScope(
 // Pill atom
 // ---------------------------------------------------------------------------
 
+type PillRole = 'button' | 'radio';
+
 type PillProps = {
   readonly label: string;
   readonly on: boolean;
   readonly onPress: () => void;
   readonly a11yLabel?: string;
+  // 'button' = multi-select (category strip — picking one doesn't deselect
+  // others). 'radio' = mutually exclusive within a radiogroup (sign + scope
+  // strips). VoiceOver reads "radio button, selected" so the user knows
+  // picking a different one will deselect the current.
+  readonly role?: PillRole;
 };
 
-function Pill({ label, on, onPress, a11yLabel }: PillProps): React.JSX.Element {
+function Pill({
+  label,
+  on,
+  onPress,
+  a11yLabel,
+  role = 'button',
+}: PillProps): React.JSX.Element {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
+      accessibilityRole={role}
       accessibilityState={{ selected: on }}
       accessibilityLabel={a11yLabel ?? label}
       hitSlop={{ top: 8, bottom: 8 }}
@@ -213,49 +226,65 @@ export function ActivityDefaultFilters(): React.JSX.Element | null {
         </ScrollView>
       )}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('transactions.sign_group_a11y')}
       >
-        <Pill
-          label={t('transactions.sign_all')}
-          on={filter.sign === 'both'}
-          onPress={() => pickSign('both')}
-        />
-        <Pill
-          label={t('transactions.sign_expense')}
-          on={filter.sign === 'expense'}
-          onPress={() => pickSign('expense')}
-        />
-        <Pill
-          label={t('transactions.sign_income')}
-          on={filter.sign === 'income'}
-          onPress={() => pickSign('income')}
-        />
-      </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.row}
+        >
+          <Pill
+            role="radio"
+            label={t('transactions.sign_all')}
+            on={filter.sign === 'both'}
+            onPress={() => pickSign('both')}
+          />
+          <Pill
+            role="radio"
+            label={t('transactions.sign_expense')}
+            on={filter.sign === 'expense'}
+            onPress={() => pickSign('expense')}
+          />
+          <Pill
+            role="radio"
+            label={t('transactions.sign_income')}
+            on={filter.sign === 'income'}
+            onPress={() => pickSign('income')}
+          />
+        </ScrollView>
+      </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={t('transactions.scope_group_a11y')}
       >
-        <Pill
-          label={t('transactions.scope_this_month')}
-          on={dateScope === 'this-month'}
-          onPress={() => pickDateScope('this-month')}
-        />
-        <Pill
-          label={t('transactions.scope_last_month')}
-          on={dateScope === 'last-month'}
-          onPress={() => pickDateScope('last-month')}
-        />
-        <Pill
-          label={t('transactions.scope_custom')}
-          on={dateScope === 'custom'}
-          onPress={() => pickDateScope('custom')}
-        />
-      </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.row}
+        >
+          <Pill
+            role="radio"
+            label={t('transactions.scope_this_month')}
+            on={dateScope === 'this-month'}
+            onPress={() => pickDateScope('this-month')}
+          />
+          <Pill
+            role="radio"
+            label={t('transactions.scope_last_month')}
+            on={dateScope === 'last-month'}
+            onPress={() => pickDateScope('last-month')}
+          />
+          <Pill
+            role="radio"
+            label={t('transactions.scope_custom')}
+            on={dateScope === 'custom'}
+            onPress={() => pickDateScope('custom')}
+          />
+        </ScrollView>
+      </View>
     </View>
   );
 }
