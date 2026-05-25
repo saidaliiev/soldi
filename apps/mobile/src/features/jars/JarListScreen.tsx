@@ -90,6 +90,9 @@ export function JarListScreen(): React.JSX.Element {
             onPress={handleCreate}
             accessibilityRole="button"
             accessibilityLabel={t('jars.create_cta')}
+            // 42pt visual pill (HTML §6 mock metric) + 4pt vertical hitSlop
+            // = 50pt effective tap target ≥ 44pt platform floor.
+            hitSlop={{ top: 4, bottom: 4 }}
             style={({ pressed }) => [styles.createBtn, pressed && styles.pressed]}
           >
             <Text style={styles.createBtnLabel} allowFontScaling>
