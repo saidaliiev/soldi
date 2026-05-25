@@ -118,7 +118,11 @@ export default function TransactionListScreen(): React.JSX.Element {
           carries the screen's only message at that point. */}
       {transactions.length > 0 && <ActivityDefaultFilters />}
 
-      <FilterPillsRow />
+      {/* Sprint D6 follow-up: skip the axes ActivityDefaultFilters already
+          owns (category, sign, date) so we don't render duplicate × pills
+          for the same toggled state. Search + amount stay here — the
+          search modal is the only place they get set. */}
+      <FilterPillsRow excludeAxes={['categories', 'sign', 'date']} />
 
       {error && (
         <Pressable

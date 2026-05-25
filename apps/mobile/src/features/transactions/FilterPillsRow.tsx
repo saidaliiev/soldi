@@ -2,10 +2,17 @@
  * FilterPillsRow — horizontal strip of active-axis pills with × dismissals.
  *
  * UI-SPEC §FilterPillsRow: COLORS.accent bg, COLORS.white text, × icon.
- * Hidden when isEmptyFilter(filter) is true.
+ * Hidden when isEmptyFilter(filter) is true OR every active axis is in
+ * `excludeAxes` (nothing left to render).
  *
  * Pills built (in display order): search, categories, amount, sign, date.
  * Tapping × on a pill calls filterStore.removeFilterAxis(axisKey).
+ *
+ * `excludeAxes` (Sprint D6 follow-up): caller can suppress specific axes
+ * from this row. Used by the Activity tab to skip categories/sign/date
+ * because ActivityDefaultFilters above already shows + toggles those
+ * axes — listing them again here would be redundant chrome. The search
+ * modal omits the prop and gets the full row.
  */
 
 import React from 'react';
@@ -27,8 +34,16 @@ type PillSpec = {
   readonly label: string;
 };
 
-export function FilterPillsRow(): React.JSX.Element | null {
+type Props = {
+  readonly excludeAxes?: readonly FilterAxisKey[];
+};
+
+export function FilterPillsRow({ excludeAxes }: Props = {}): React.JSX.Element | null {
   const { t, i18n } = useTranslation();
+  const excluded = React.useMemo(
+    () => new Set<FilterAxisKey>(excludeAxes ?? []),
+    [excludeAxes],
+  );
   // useShallow: inline-object selector without shallow equality returns a
   // fresh reference every render → useSyncExternalStore loops. See
   // transactions.tsx for the same pattern.
@@ -50,14 +65,14 @@ export function FilterPillsRow(): React.JSX.Element | null {
 
   const pills: PillSpec[] = [];
 
-  if (filter.search.trim().length > 0) {
+  if (filter.search.trim().length > 0 && !excluded.has('search')) {
     pills.push({
       key: 'search',
       label: t('transactions.filter_search_pill', { search: filter.search }),
     });
   }
 
-  if (filter.categoryIds.length > 0) {
+  if (filter.categoryIds.length > 0 && !excluded.has('categories')) {
     let label = '';
     try {
       const cats = listCategoriesEnriched();
@@ -75,7 +90,7 @@ export function FilterPillsRow(): React.JSX.Element | null {
     pills.push({ key: 'categories', label });
   }
 
-  if (filter.minCents !== null || filter.maxCents !== null) {
+  if ((filter.minCents !== null || filter.maxCents !== null) && !excluded.has('amount')) {
     const min =
       filter.minCents !== null
         ? formatMoney({ amountCents: filter.minCents, currency: 'EUR' }, locale)
@@ -90,7 +105,7 @@ export function FilterPillsRow(): React.JSX.Element | null {
     });
   }
 
-  if (filter.sign !== 'both') {
+  if (filter.sign !== 'both' && !excluded.has('sign')) {
     pills.push({
       key: 'sign',
       label:
@@ -100,7 +115,7 @@ export function FilterPillsRow(): React.JSX.Element | null {
     });
   }
 
-  if (filter.dateFromISO !== null || filter.dateToISO !== null) {
+  if ((filter.dateFromISO !== null || filter.dateToISO !== null) && !excluded.has('date')) {
     const fmt = (iso: string | null): string => {
       if (iso === null) return '…';
       try {
@@ -121,6 +136,8 @@ export function FilterPillsRow(): React.JSX.Element | null {
       }),
     });
   }
+
+  if (pills.length === 0) return null;
 
   return (
     <ScrollView
