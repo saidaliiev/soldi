@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
   errorBanner: {
-    backgroundColor: `${COLORS.error}1A`,
+    backgroundColor: COLORS.errorSubtle,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },

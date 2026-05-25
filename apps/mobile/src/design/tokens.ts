@@ -46,7 +46,13 @@ export const COLORS = {
 
   // States
   error: '#97463A', // muted warm red, never bright
+  errorSubtle: '#97463A1A', // error @ 10% — banner backgrounds, never text
   success: '#586A45', // sage-derived
+
+  // Hairline / subtle border — textMuted @ 20% for surface separators and
+  // ghost-pill borders. Retires the `${COLORS.textMuted}33` alpha-on-hex
+  // template literal pattern (audit finding P2 #6).
+  borderSubtle: '#6E695F33',
 
   // Semantic aliases (keep in sync with accent/success above)
   income: '#586A45',

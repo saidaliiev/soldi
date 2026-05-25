@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   pillOff: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: `${COLORS.textMuted}33`,
+    borderColor: COLORS.borderSubtle,
   },
   pillOn: {
     backgroundColor: COLORS.accent,
