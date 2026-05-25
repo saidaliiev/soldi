@@ -21,6 +21,9 @@ import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { useMotion } from '@design/useMotion';
 import { ChatEmptyIllustration } from '@design/illustrations/chat-empty';
+import { getRelativeMonthLabel } from '@lib/relativeMonth';
+import { getCategoryBreakdown } from '@data/dashboardRepo';
+import { localizedCategoryName } from '@data/categoriesRepo';
 import { PromptSuggestionChip } from './PromptSuggestionChip';
 
 type Props = {
@@ -28,7 +31,7 @@ type Props = {
 };
 
 export function ChatEmptyState({ onSubmitPrompt }: Props): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { withMotion } = useMotion();
   const opacity = useSharedValue(0);
@@ -47,11 +50,41 @@ export function ChatEmptyState({ onSubmitPrompt }: Props): React.JSX.Element {
     transform: [{ translateY: translateY.value }],
   }));
 
-  const prompts = [
-    t('chat.prompt_groceries_last_month'),
-    t('chat.prompt_compare_months'),
-    t('chat.prompt_top_merchants'),
-  ] as const;
+  // Sprint E5 — parameterise suggestion pills so they don't read as
+  // abandonware on June 1. Pill #1 escapes the literal "groceries" assumption
+  // by deriving last month's top spending category; pill #2 resolves month
+  // names per locale. Both fall through to safe literals when there's no DB
+  // signal yet (cold-start, no transactions).
+  const locale = i18n.language === 'uk' ? 'uk-UA' : 'en-IE';
+  const prompts = React.useMemo(() => {
+    const today = new Date();
+    const thisMonthLabel = getRelativeMonthLabel(0, locale, today);
+    const prevMonthLabel = getRelativeMonthLabel(-1, locale, today);
+
+    let categoryPrompt: string;
+    try {
+      const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const breakdown = getCategoryBreakdown(prev.getFullYear(), prev.getMonth() + 1);
+      const top = breakdown.top[0];
+      if (top != null) {
+        const name = localizedCategoryName(top, i18n.language).toLowerCase();
+        categoryPrompt = t('chat.prompt_category_last_month', { category: name });
+      } else {
+        categoryPrompt = t('chat.prompt_category_last_month_fallback');
+      }
+    } catch {
+      categoryPrompt = t('chat.prompt_category_last_month_fallback');
+    }
+
+    return [
+      categoryPrompt,
+      t('chat.prompt_compare_months', {
+        thisMonth: thisMonthLabel,
+        prevMonth: prevMonthLabel,
+      }),
+      t('chat.prompt_top_merchants'),
+    ] as const;
+  }, [t, locale, i18n.language]);
 
   return (
     <Animated.View style={[styles.container, animStyle]}>
