@@ -57,7 +57,7 @@ Tokens are at `apps/mobile/src/design/tokens.ts`. Components must import from th
 - Neon gradients
 - Glassmorphism / floating blur cards ON CONTENT (lists, dashboard cards, chat bubbles) — still banned, AI-slop pattern
 - EXCEPTION: iOS 26 native Liquid Glass (`expo-glass-effect`) IS allowed on system chrome ONLY — tab bar, nav, bottom-sheet backgrounds — warm-tinted, with mandatory non-glass fallback for iOS<26. Never on content surfaces.
-- Emoji as UI icons (SVG only — tab bar, categories, jars)
+- Emoji as UI icons EXCEPT category icons (decision 2026-05-26 — single-grapheme curated set; tab bar + jars stay SVG)
 - Inline `style` objects with hex colors — must use tokens
 
 **Typography rules**:
