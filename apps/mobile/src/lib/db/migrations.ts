@@ -18,6 +18,7 @@ import {
   SCHEMA_003,
   SCHEMA_004_MERCHANT_OVERRIDES_V2,
   SCHEMA_005,
+  SCHEMA_006,
   SEED_DEFAULT_CATEGORIES,
 } from './schema.sql';
 
@@ -58,5 +59,12 @@ export const MIGRATIONS: readonly Migration[] = [
     // See SCHEMA_005 in schema.sql.ts.
     version: 5,
     sql: SCHEMA_005,
+  },
+  {
+    // 2026-05-26 emoji-category refactor — adds categories.emoji + backfills
+    // a curated single-grapheme emoji per seeded slug + alias. Retires the
+    // SVG icon registry under src/design/icons/categories/. See SCHEMA_006.
+    version: 6,
+    sql: SCHEMA_006,
   },
 ] as const;

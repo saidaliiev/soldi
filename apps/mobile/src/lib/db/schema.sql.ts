@@ -262,3 +262,62 @@ CREATE TABLE IF NOT EXISTS jar_contributions (
 CREATE INDEX IF NOT EXISTS idx_jar_contributions_jar ON jar_contributions(jar_id)
 `;
 
+// ---------------------------------------------------------------------------
+// SCHEMA_006: 2026-05-26 emoji-category refactor.
+//
+// Replaces the SVG icon registry (src/design/icons/categories/) with a single
+// curated emoji string per category. Adds the `emoji` column to the categories
+// table and backfills the 18 seeded rows + 5 historical aliases.
+//
+// Why: the hand-drawn Skia icons (D-20) were expensive to maintain, looked
+// inconsistent across the 30-icon set, and shipped only on iOS where Skia is
+// the rendering target. A curated single-grapheme emoji per category renders
+// natively, scales freely, and removes ~30 .tsx files from the bundle.
+//
+// CLAUDE.md emoji-ban override: documented in the same dated decision —
+// category icons are now the explicit exception (tab bar + jars still SVG).
+//
+// Same idempotency pattern as SCHEMA_002: gate on a schema_meta sentinel so
+// the migration is safe to retry. The DEFAULT '📌' covers any pre-existing
+// custom rows the user may have created post-002.
+// ---------------------------------------------------------------------------
+export const SCHEMA_006 = `
+INSERT OR IGNORE INTO schema_meta (key, value) VALUES ('migration_006_applied', '1');
+ALTER TABLE categories ADD COLUMN emoji TEXT NOT NULL DEFAULT '📌';
+UPDATE categories SET emoji = '🛒' WHERE slug = 'groceries';
+UPDATE categories SET emoji = '🚗' WHERE slug = 'transport';
+UPDATE categories SET emoji = '🍴' WHERE slug = 'eating-out';
+UPDATE categories SET emoji = '☕' WHERE slug = 'coffee';
+UPDATE categories SET emoji = '🏠' WHERE slug = 'rent';
+UPDATE categories SET emoji = '💡' WHERE slug = 'utilities';
+UPDATE categories SET emoji = '📱' WHERE slug = 'mobile';
+UPDATE categories SET emoji = '🎬' WHERE slug = 'entertainment';
+UPDATE categories SET emoji = '💊' WHERE slug = 'health';
+UPDATE categories SET emoji = '👕' WHERE slug = 'clothing';
+UPDATE categories SET emoji = '🎁' WHERE slug = 'gifts';
+UPDATE categories SET emoji = '📈' WHERE slug = 'transfers';
+UPDATE categories SET emoji = '💵' WHERE slug = 'salary';
+UPDATE categories SET emoji = '💵' WHERE slug = 'refunds';
+UPDATE categories SET emoji = '🐖' WHERE slug = 'savings';
+UPDATE categories SET emoji = '👪' WHERE slug = 'kids';
+UPDATE categories SET emoji = '🐾' WHERE slug = 'pets';
+UPDATE categories SET emoji = '📌' WHERE slug = 'misc';
+UPDATE categories SET emoji = '🍽️' WHERE slug = 'food';
+UPDATE categories SET emoji = '🍴' WHERE slug = 'restaurant';
+UPDATE categories SET emoji = '⛽' WHERE slug = 'fuel';
+UPDATE categories SET emoji = '🚌' WHERE slug = 'public-transport';
+UPDATE categories SET emoji = '✈️' WHERE slug = 'travel';
+UPDATE categories SET emoji = '🧾' WHERE slug = 'bills';
+UPDATE categories SET emoji = '🔁' WHERE slug = 'subscriptions';
+UPDATE categories SET emoji = '🛍️' WHERE slug = 'shopping';
+UPDATE categories SET emoji = '📱' WHERE slug = 'electronics';
+UPDATE categories SET emoji = '🎨' WHERE slug = 'hobbies';
+UPDATE categories SET emoji = '🏃' WHERE slug = 'fitness';
+UPDATE categories SET emoji = '💅' WHERE slug = 'beauty';
+UPDATE categories SET emoji = '📚' WHERE slug = 'education';
+UPDATE categories SET emoji = '💝' WHERE slug = 'charity';
+UPDATE categories SET emoji = '👪' WHERE slug = 'family';
+UPDATE categories SET emoji = '📊' WHERE slug = 'tax';
+UPDATE categories SET emoji = '📈' WHERE slug = 'investments'
+`;
+
