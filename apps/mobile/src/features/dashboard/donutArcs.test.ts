@@ -31,6 +31,10 @@ function makeSlice(
     nameEn: `Category ${id}`,
     nameUk: `Категорія ${id}`,
     color,
+    // 2026-05-26 emoji-category refactor — CategorySlice now carries an
+    // emoji glyph. Fixture uses the misc 📌 pin since these synthetic rows
+    // never round-trip through dashboardRepo.
+    emoji: '📌',
     amountCents,
     percentage: amountCents / total,
   };
@@ -101,6 +105,7 @@ test('buildDonutArcs: 5 top slices + Other — returns 6 arcs, Other color is mu
     nameEn: 'Other',
     nameUk: 'Інше',
     color: COLOR_OTHER_MUTED,
+    emoji: '📌',
     amountCents: 7,
     percentage: 7 / total,
   };

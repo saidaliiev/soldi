@@ -62,12 +62,18 @@ function makeRepo(seed: Category[], options: { duplicateSlugOnce?: boolean } = {
         const err = new Error('UNIQUE constraint failed: categories.slug');
         throw err;
       }
+      // 2026-05-26 emoji-category refactor: InsertCategoryInput exposes
+      // `emoji` (optional, defaults to misc 📌). The legacy `icon_name`
+      // schema column is mirror-filled with the same glyph by the prod
+      // repo; the mock keeps both fields aligned for parity.
+      const emoji = input.emoji ?? '📌';
       const cat: Category = {
         id: nextId++,
         slug: input.slug,
         nameEn: input.nameEn,
         nameUk: input.nameUk ?? input.nameEn,
-        iconName: input.iconSlug,
+        iconName: emoji,
+        emoji,
         color: input.color,
         isCustom: true,
       };
@@ -79,11 +85,15 @@ function makeRepo(seed: Category[], options: { duplicateSlugOnce?: boolean } = {
       const idx = rows.findIndex((r) => r.id === id);
       if (idx < 0) throw new Error('updateCategory: not found');
       const cur = rows[idx]!;
+      const nextEmoji = patch.emoji ?? cur.emoji;
       const updated: Category = {
         ...cur,
         nameEn: patch.nameEn ?? cur.nameEn,
         nameUk: patch.nameUk ?? cur.nameUk,
-        iconName: patch.iconSlug ?? cur.iconName,
+        // icon_name is the legacy NOT NULL column — keep it mirrored with
+        // emoji so future readers of either column observe the same glyph.
+        iconName: patch.emoji ?? cur.iconName,
+        emoji: nextEmoji,
         color: patch.color ?? cur.color,
         slug: patch.slug ?? cur.slug,
       };
@@ -122,15 +132,15 @@ function makeRepo(seed: Category[], options: { duplicateSlugOnce?: boolean } = {
 const SEED: Category[] = [
   {
     id: 1, slug: 'groceries', nameEn: 'Groceries', nameUk: 'Продукти',
-    iconName: 'groceries', color: '#9C5B41', isCustom: false,
+    iconName: 'groceries', emoji: '🛒', color: '#9C5B41', isCustom: false,
   },
   {
     id: 2, slug: 'coffee', nameEn: 'Coffee', nameUk: 'Кава',
-    iconName: 'coffee', color: '#7C4632', isCustom: false,
+    iconName: 'coffee', emoji: '☕', color: '#7C4632', isCustom: false,
   },
   {
     id: 99, slug: 'misc', nameEn: 'Other', nameUk: 'Інше',
-    iconName: 'misc', color: '#6A645A', isCustom: false,
+    iconName: 'misc', emoji: '📌', color: '#6A645A', isCustom: false,
   },
 ];
 
@@ -213,7 +223,7 @@ describe('createCategory', () => {
   it('inserts a new category and returns it', () => {
     const { repo, log } = makeRepo(SEED);
     const result = createCategory(
-      { name: 'Daily Coffee', iconSlug: 'coffee', color: '#9C5B41' },
+      { name: 'Daily Coffee', emoji: '☕', color: '#9C5B41' },
       repo,
     );
     assert.strictEqual(result.nameEn, 'Daily Coffee');
@@ -224,7 +234,7 @@ describe('createCategory', () => {
   it('throws VALIDATION:duplicate on duplicate name', () => {
     const { repo } = makeRepo(SEED);
     assert.throws(
-      () => createCategory({ name: 'Coffee', iconSlug: 'coffee', color: '#9C5B41' }, repo),
+      () => createCategory({ name: 'Coffee', emoji: '☕', color: '#9C5B41' }, repo),
       /VALIDATION:duplicate/,
     );
   });
@@ -232,7 +242,7 @@ describe('createCategory', () => {
   it('throws VALIDATION:invalid_chars on banned chars', () => {
     const { repo } = makeRepo(SEED);
     assert.throws(
-      () => createCategory({ name: 'Bad<script>', iconSlug: 'misc', color: '#9C5B41' }, repo),
+      () => createCategory({ name: 'Bad<script>', emoji: '📌', color: '#9C5B41' }, repo),
       /VALIDATION:invalid_chars/,
     );
   });
@@ -240,7 +250,7 @@ describe('createCategory', () => {
   it('retries with random suffix on UNIQUE slug collision', () => {
     const { repo, log } = makeRepo(SEED, { duplicateSlugOnce: true });
     const result = createCategory(
-      { name: 'Custom Cat', iconSlug: 'misc', color: '#9C5B41' },
+      { name: 'Custom Cat', emoji: '📌', color: '#9C5B41' },
       repo,
     );
     assert.strictEqual(log.inserts.length, 2);
@@ -297,7 +307,7 @@ describe('deleteCategory', () => {
   it('reassigns transactions BEFORE deleting the row', () => {
     const custom: Category = {
       id: 50, slug: 'custom-x', nameEn: 'Custom X', nameUk: 'Custom X',
-      iconName: 'misc', color: '#9C5B41', isCustom: true,
+      iconName: 'misc', emoji: '📌', color: '#9C5B41', isCustom: true,
     };
     const { repo, log } = makeRepo([...SEED, custom]);
     const r = deleteCategory(50, repo);
@@ -329,11 +339,11 @@ describe('mergeCategories', () => {
   it('reassigns then deletes (call order)', () => {
     const a: Category = {
       id: 51, slug: 'a', nameEn: 'A', nameUk: 'A',
-      iconName: 'misc', color: '#9C5B41', isCustom: true,
+      iconName: 'misc', emoji: '📌', color: '#9C5B41', isCustom: true,
     };
     const b: Category = {
       id: 52, slug: 'b', nameEn: 'B', nameUk: 'B',
-      iconName: 'misc', color: '#9C5B41', isCustom: true,
+      iconName: 'misc', emoji: '📌', color: '#9C5B41', isCustom: true,
     };
     const { repo, log } = makeRepo([...SEED, a, b]);
     const r = mergeCategories(51, 52, repo);
@@ -351,7 +361,7 @@ describe('mergeCategories', () => {
   it('preserves default rows on merge (does not delete)', () => {
     const custom: Category = {
       id: 60, slug: 'c', nameEn: 'C', nameUk: 'C',
-      iconName: 'misc', color: '#9C5B41', isCustom: true,
+      iconName: 'misc', emoji: '📌', color: '#9C5B41', isCustom: true,
     };
     const { repo, log } = makeRepo([...SEED, custom]);
     // Merge default Coffee (2) into custom C (60) — Coffee MUST stay (isCustom=false)

@@ -25,7 +25,7 @@ function tx(
     merchantName: merchant,
     categoryId: null,
     categoryName: null,
-    categoryIconSlug: null,
+    categoryEmoji: null,
     categoryColor: null,
     dateSec,
   };
