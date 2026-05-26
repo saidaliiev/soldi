@@ -10,6 +10,7 @@
 
 import { getDB } from '@lib/db';
 import { COLORS } from '@design/tokens';
+import { DEFAULT_CATEGORY_EMOJI, emojiForSlug } from '@data/categoryEmojis';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,6 +21,7 @@ export type CategoryRow = {
   name_en: string;
   name_uk: string;
   icon_name: string;
+  emoji: string;
   parent_id: number | null;
   is_custom: 0 | 1;
   created_at: number;
@@ -43,6 +45,7 @@ export type Category = {
   readonly nameEn: string;
   readonly nameUk: string;
   readonly iconName: string;
+  readonly emoji: string;
   readonly color: string;
   readonly isCustom: boolean;
 };
@@ -164,16 +167,20 @@ export function localizedCategoryName(
  */
 export function listCategories(): CategoryRow[] {
   const db = getDB();
-  const result = db.executeSync('SELECT id, name_en, name_uk, icon_name, parent_id, is_custom, created_at FROM categories ORDER BY id ASC');
-  return result.rows.map((row) => ({
-    id: row['id'] as number,
-    name_en: row['name_en'] as string,
-    name_uk: row['name_uk'] as string,
-    icon_name: row['icon_name'] as string,
-    parent_id: row['parent_id'] as number | null,
-    is_custom: row['is_custom'] as 0 | 1,
-    created_at: row['created_at'] as number,
-  }));
+  const result = db.executeSync('SELECT id, name_en, name_uk, icon_name, emoji, parent_id, is_custom, created_at FROM categories ORDER BY id ASC');
+  return result.rows.map((row) => {
+    const storedEmoji = row['emoji'] as string | null | undefined;
+    return {
+      id: row['id'] as number,
+      name_en: row['name_en'] as string,
+      name_uk: row['name_uk'] as string,
+      icon_name: row['icon_name'] as string,
+      emoji: storedEmoji != null && storedEmoji.length > 0 ? storedEmoji : DEFAULT_CATEGORY_EMOJI,
+      parent_id: row['parent_id'] as number | null,
+      is_custom: row['is_custom'] as 0 | 1,
+      created_at: row['created_at'] as number,
+    };
+  });
 }
 
 /**
@@ -217,7 +224,7 @@ export function getCategoryById(id: number): Category | null {
 
   const db = getDB();
   const result = db.executeSync(
-    'SELECT id, name_en, name_uk, icon_name, is_custom, slug, color FROM categories WHERE id = ? LIMIT 1',
+    'SELECT id, name_en, name_uk, icon_name, emoji, is_custom, slug, color FROM categories WHERE id = ? LIMIT 1',
     [id]
   );
   const row = result.rows[0];
@@ -228,12 +235,15 @@ export function getCategoryById(id: number): Category | null {
   const slug = storedSlug != null && storedSlug.length > 0 ? storedSlug : slugForCategoryName(nameEn);
   const storedColor = row['color'] as string | null | undefined;
   const color = storedColor != null && storedColor.length > 0 ? storedColor : colorForCategorySlug(slug);
+  const storedEmoji = row['emoji'] as string | null | undefined;
+  const emoji = storedEmoji != null && storedEmoji.length > 0 ? storedEmoji : emojiForSlug(slug);
   return {
     id: row['id'] as number,
     slug,
     nameEn,
     nameUk: row['name_uk'] as string,
     iconName: row['icon_name'] as string,
+    emoji,
     color,
     isCustom: ((row['is_custom'] as number) ?? 0) === 1,
   };
@@ -253,7 +263,7 @@ export function getCategoryById(id: number): Category | null {
 export function listCategoriesEnriched(): readonly Category[] {
   const db = getDB();
   const result = db.executeSync(
-    'SELECT id, name_en, name_uk, icon_name, parent_id, is_custom, slug, color, created_at FROM categories ORDER BY id ASC'
+    'SELECT id, name_en, name_uk, icon_name, emoji, parent_id, is_custom, slug, color, created_at FROM categories ORDER BY id ASC'
   );
   return result.rows.map((row) => {
     const nameEn = row['name_en'] as string;
@@ -261,12 +271,15 @@ export function listCategoriesEnriched(): readonly Category[] {
     const slug = storedSlug != null && storedSlug.length > 0 ? storedSlug : slugForCategoryName(nameEn);
     const storedColor = row['color'] as string | null | undefined;
     const color = storedColor != null && storedColor.length > 0 ? storedColor : colorForCategorySlug(slug);
+    const storedEmoji = row['emoji'] as string | null | undefined;
+    const emoji = storedEmoji != null && storedEmoji.length > 0 ? storedEmoji : emojiForSlug(slug);
     return {
       id: row['id'] as number,
       slug,
       nameEn,
       nameUk: row['name_uk'] as string,
       iconName: row['icon_name'] as string,
+      emoji,
       color,
       isCustom: ((row['is_custom'] as number) ?? 0) === 1,
     };
@@ -281,11 +294,16 @@ export function listCategoriesEnriched(): readonly Category[] {
 /**
  * Input shape for inserting a new (user-created) category. is_custom is forced
  * to 1 by this repo function — defaults are seeded only via migrations.
+ *
+ * `emoji` defaults to DEFAULT_CATEGORY_EMOJI ('📌') when omitted. The legacy
+ * `icon_name` schema column is filled with the same emoji string — the column
+ * is NOT NULL and retained only to avoid a destructive ALTER. Renderers no
+ * longer read it.
  */
 export type InsertCategoryInput = {
   readonly nameEn: string;
   readonly nameUk: string | null;
-  readonly iconSlug: string;
+  readonly emoji?: string;
   readonly color: string;
   readonly slug: string;
 };
@@ -300,9 +318,12 @@ export type InsertCategoryInput = {
 export function insertCategory(input: InsertCategoryInput): Category {
   const db = getDB();
   const now = Math.floor(Date.now() / 1000);
+  const emoji = input.emoji ?? DEFAULT_CATEGORY_EMOJI;
+  // icon_name is the legacy NOT NULL column — backfill it with the emoji so
+  // the constraint is satisfied without an extra migration; nothing reads it.
   db.executeSync(
-    'INSERT INTO categories (name_en, name_uk, icon_name, parent_id, is_custom, slug, color, usage_count, created_at) VALUES (?, ?, ?, NULL, 1, ?, ?, 0, ?)',
-    [input.nameEn, input.nameUk ?? input.nameEn, input.iconSlug, input.slug, input.color, now]
+    'INSERT INTO categories (name_en, name_uk, icon_name, emoji, parent_id, is_custom, slug, color, usage_count, created_at) VALUES (?, ?, ?, ?, NULL, 1, ?, ?, 0, ?)',
+    [input.nameEn, input.nameUk ?? input.nameEn, emoji, emoji, input.slug, input.color, now]
   );
   const rowidResult = db.executeSync('SELECT last_insert_rowid() AS id');
   const newId = rowidResult.rows[0]?.['id'] as number;
@@ -314,13 +335,14 @@ export function insertCategory(input: InsertCategoryInput): Category {
 }
 
 /**
- * Patches an existing category. `iconSlug` here corresponds to the new
- * icon_name column value (we keep the schema name `icon_name` for stability).
+ * Patches an existing category. Pass `emoji` to swap the rendered glyph;
+ * the (now-dead) `icon_name` column is updated in lockstep to keep legacy
+ * tooling consistent until a future migration drops the column.
  */
 export type UpdateCategoryPatch = {
   readonly nameEn?: string;
   readonly nameUk?: string | null;
-  readonly iconSlug?: string;
+  readonly emoji?: string;
   readonly color?: string;
   readonly slug?: string;
 };
@@ -339,9 +361,13 @@ export function updateCategory(id: number, patch: UpdateCategoryPatch): Category
     sets.push('name_uk = ?');
     values.push(patch.nameUk);
   }
-  if (patch.iconSlug !== undefined) {
+  if (patch.emoji !== undefined) {
+    sets.push('emoji = ?');
+    values.push(patch.emoji);
+    // Mirror into the legacy NOT NULL icon_name column so future readers of
+    // either column see the same glyph. Cheaper than a column drop migration.
     sets.push('icon_name = ?');
-    values.push(patch.iconSlug);
+    values.push(patch.emoji);
   }
   if (patch.color !== undefined) {
     sets.push('color = ?');

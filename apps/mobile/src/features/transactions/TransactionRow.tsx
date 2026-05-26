@@ -34,8 +34,7 @@ import Animated, {
 import { COLORS, SPACING } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
-import { Misc } from '@design/icons/categories/Misc';
-import { resolveIcon } from '@design/icons/categories';
+import { DEFAULT_CATEGORY_EMOJI } from '@data/categoryEmojis';
 import { useRowEnter } from '@design/useMotion';
 
 import { useRecategorizeStore } from './recategorizeStore';
@@ -70,7 +69,7 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
 
   const categoryName = tx.categoryName ?? 'Other';
   const categoryColor = tx.categoryColor ?? COLORS.textMuted;
-  const CategoryIcon = resolveIcon(tx.categoryIconSlug);
+  const categoryEmoji = tx.categoryEmoji ?? DEFAULT_CATEGORY_EMOJI;
 
   const goToDetail = React.useCallback(() => {
     router.push({ pathname: '/transactions/[id]', params: { id: String(tx.id) } });
@@ -132,7 +131,9 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
           accessibilityRole="button"
           accessibilityLabel={t('transactions.action_categorize')}
         >
-          <Misc color={COLORS.white} size={20} />
+          <Text style={styles.revealEmoji} allowFontScaling={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            {DEFAULT_CATEGORY_EMOJI}
+          </Text>
           <Text style={styles.revealLabel} allowFontScaling numberOfLines={1}>
             {t('transactions.action_categorize')}
           </Text>
@@ -155,7 +156,9 @@ export function TransactionRow({ tx, locale = 'en-IE' }: Props): React.JSX.Eleme
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           >
-            <CategoryIcon color={categoryColor} size={20} />
+            <Text style={styles.badgeEmoji} allowFontScaling={false}>
+              {categoryEmoji}
+            </Text>
           </View>
           <View style={styles.left}>
             <Text style={styles.merchant} numberOfLines={1} allowFontScaling>
@@ -224,6 +227,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  badgeEmoji: {
+    // Sized to match the previous 20pt SVG icon — leaves the tinted badge
+    // backdrop visible around the glyph.
+    fontSize: 20,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  revealEmoji: {
+    fontSize: 20,
+    lineHeight: 24,
+    textAlign: 'center',
   },
   left: {
     flex: 1,

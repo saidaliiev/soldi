@@ -17,6 +17,7 @@
 import { getDB } from '@lib/db';
 import { nowSeconds } from '@lib/time';
 import { slugForCategoryName } from '@data/categoriesRepo';
+import { emojiForSlug } from '@data/categoryEmojis';
 import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
 import { buildFilterSql } from '../features/transactions/filterCompose';
 import type { FilterState, Transaction } from '../features/transactions/types';
@@ -229,12 +230,30 @@ type JoinRow = Readonly<{
   merchant_name: string;
   category_id: number | null;
   category_name: string | null;
-  icon_slug: string | null;
+  category_slug: string | null;
+  category_emoji: string | null;
   color: string | null;
   date: number;
 }>;
 
 function joinRowToTransaction(row: JoinRow): Transaction {
+  // Resolve display emoji from the DB column first; fall back to the
+  // canonical emoji-for-slug map when the JOIN row predates migration 006
+  // (e.g. an in-flight cache populated before the user upgraded). When the
+  // slug is also missing we derive it from the English name as a last resort.
+  let emoji: string | null = null;
+  if (row.category_emoji != null && row.category_emoji.length > 0) {
+    emoji = row.category_emoji;
+  } else if (row.category_id != null) {
+    const slug =
+      row.category_slug != null && row.category_slug.length > 0
+        ? row.category_slug
+        : row.category_name != null
+          ? slugForCategoryName(row.category_name)
+          : null;
+    emoji = emojiForSlug(slug);
+  }
+
   return {
     id: row.id,
     amountCents: row.amount_cents,
@@ -242,15 +261,7 @@ function joinRowToTransaction(row: JoinRow): Transaction {
     merchantName: row.merchant_name,
     categoryId: row.category_id,
     categoryName: row.category_name,
-    // icon_slug is now the canonical `categories.slug` (migration 002). Pre-002
-    // rows (or a NULL slug) fall back to a name-derived slug so the icon never
-    // collapses to the Misc placeholder when a name is available.
-    categoryIconSlug:
-      row.icon_slug != null && row.icon_slug.length > 0
-        ? row.icon_slug
-        : row.category_name != null
-          ? slugForCategoryName(row.category_name)
-          : null,
+    categoryEmoji: emoji,
     categoryColor: row.color,
     dateSec: row.date,
   };
@@ -285,7 +296,8 @@ export function listByFilter(filter: FilterState): readonly Transaction[] {
             t.merchant_name AS merchant_name,
             t.category_id  AS category_id,
             c.name_en      AS category_name,
-            c.slug         AS icon_slug,
+            c.slug         AS category_slug,
+            c.emoji        AS category_emoji,
             c.color        AS color,
             t.date         AS date
        FROM transactions t
@@ -303,7 +315,8 @@ export function listByFilter(filter: FilterState): readonly Transaction[] {
       merchant_name: row['merchant_name'] as string,
       category_id: (row['category_id'] as number | null) ?? null,
       category_name: (row['category_name'] as string | null) ?? null,
-      icon_slug: (row['icon_slug'] as string | null) ?? null,
+      category_slug: (row['category_slug'] as string | null) ?? null,
+      category_emoji: (row['category_emoji'] as string | null) ?? null,
       color: (row['color'] as string | null) ?? null,
       date: row['date'] as number,
     })
@@ -360,7 +373,8 @@ export function getTransactionById(id: number): Transaction | null {
             t.merchant_name AS merchant_name,
             t.category_id  AS category_id,
             c.name_en      AS category_name,
-            c.slug         AS icon_slug,
+            c.slug         AS category_slug,
+            c.emoji        AS category_emoji,
             c.color        AS color,
             t.date         AS date
        FROM transactions t
@@ -378,7 +392,8 @@ export function getTransactionById(id: number): Transaction | null {
     merchant_name: row['merchant_name'] as string,
     category_id: (row['category_id'] as number | null) ?? null,
     category_name: (row['category_name'] as string | null) ?? null,
-    icon_slug: (row['icon_slug'] as string | null) ?? null,
+    category_slug: (row['category_slug'] as string | null) ?? null,
+    category_emoji: (row['category_emoji'] as string | null) ?? null,
     color: (row['color'] as string | null) ?? null,
     date: row['date'] as number,
   });

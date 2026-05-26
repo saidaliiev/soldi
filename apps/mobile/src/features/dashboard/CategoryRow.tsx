@@ -21,7 +21,6 @@ import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
 import { localizedCategoryName } from '@data/categoriesRepo';
-import { BaseCategoryIcon } from '@/src/design/icons/categories/BaseCategoryIcon';
 import { useCategoryEditorStore } from '@/src/features/categories/store';
 import type { CategorySlice } from './types';
 
@@ -66,7 +65,11 @@ export function CategoryRow({
     >
       <View style={styles.topLine}>
         <View style={[styles.dot, { backgroundColor: slice.color }]} />
-        <BaseCategoryIcon color={slice.color} size={20} />
+        {/* 2026-05-26 emoji-category refactor: glyph replaces the prior
+            BaseCategoryIcon SVG. Slice.emoji is hydrated by dashboardRepo. */}
+        <Text style={styles.emoji} allowFontScaling={false}>
+          {slice.emoji}
+        </Text>
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
           {displayName}
         </Text>
@@ -108,6 +111,13 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: RADIUS.pill,
     marginRight: SPACING.xs,
+  },
+  emoji: {
+    // Matches the previous 20pt BaseCategoryIcon footprint; line-height
+    // generous so the glyph isn't clipped on Android.
+    fontSize: 20,
+    lineHeight: 24,
+    textAlign: 'center',
   },
   name: {
     ...TYPE.uiBody,

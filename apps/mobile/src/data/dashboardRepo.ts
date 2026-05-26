@@ -27,6 +27,7 @@ import {
   colorForCategorySlug,
   slugForCategoryName,
 } from '@data/categoriesRepo';
+import { DEFAULT_CATEGORY_EMOJI, emojiForSlug } from '@data/categoryEmojis';
 import { monthStartEndUnixSec } from '../features/dashboard/monthMath';
 import type {
   CategoryBreakdown,
@@ -99,23 +100,34 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
     `SELECT t.category_id AS category_id,
             COALESCE(c.name_en, 'Other') AS name_en,
             COALESCE(c.name_uk, c.name_en, 'Other') AS name_uk,
+            c.slug                       AS slug,
+            c.emoji                      AS emoji,
             COALESCE(-SUM(t.amount_cents), 0) AS abs_total
      FROM transactions t
      LEFT JOIN categories c ON c.id = t.category_id
      WHERE t.amount_cents < 0
        AND t.date >= ? AND t.date < ?
-     GROUP BY t.category_id, c.name_en, c.name_uk
+     GROUP BY t.category_id, c.name_en, c.name_uk, c.slug, c.emoji
      ORDER BY abs_total DESC`,
     [b.startSec, b.endSec]
   );
 
   if (result.rows.length === 0) return empty;
 
-  type Agg = { categoryId: number; nameEn: string; nameUk: string; absTotal: number };
+  type Agg = {
+    categoryId: number;
+    nameEn: string;
+    nameUk: string;
+    storedSlug: string | null;
+    storedEmoji: string | null;
+    absTotal: number;
+  };
   const aggs: Agg[] = result.rows.map((row) => ({
     categoryId: (row['category_id'] as number | null) ?? -1,
     nameEn: ((row['name_en'] as string | null) ?? 'Other'),
     nameUk: ((row['name_uk'] as string | null) ?? 'Other'),
+    storedSlug: (row['slug'] as string | null) ?? null,
+    storedEmoji: (row['emoji'] as string | null) ?? null,
     absTotal: Math.max(0, (row['abs_total'] as number) ?? 0),
   }));
 
@@ -127,13 +139,25 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
   const remainder = aggs.slice(TOP_N);
 
   const top: CategorySlice[] = topAggs.map((a) => {
-    const slug = slugForCategoryName(a.nameEn);
+    // Prefer the DB-stored slug (categories.slug, migration-002 backfilled).
+    // Falls back to a name-derived slug so the colour palette still matches
+    // when the JOIN row pre-dates 002.
+    const slug =
+      a.storedSlug != null && a.storedSlug.length > 0
+        ? a.storedSlug
+        : slugForCategoryName(a.nameEn);
+    // Same precedence for emoji: DB column > slug → emoji map > misc pin.
+    const emoji =
+      a.storedEmoji != null && a.storedEmoji.length > 0
+        ? a.storedEmoji
+        : emojiForSlug(slug);
     return {
       categoryId: a.categoryId,
       slug,
       nameEn: a.nameEn,
       nameUk: a.nameUk,
       color: colorForCategorySlug(slug),
+      emoji,
       amountCents: a.absTotal,
       percentage: a.absTotal / total,
     };
@@ -151,6 +175,9 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
         // 'Other' literal with the seeded Ukrainian for the misc bucket.
         nameUk: 'Інше',
         color: COLORS.textMuted,
+        // Synthetic slice uses the canonical misc pin since it isn't a real
+        // categories row (no JOIN target for emoji).
+        emoji: DEFAULT_CATEGORY_EMOJI,
         amountCents: sumOther,
         percentage: sumOther / total,
       };

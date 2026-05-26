@@ -135,7 +135,11 @@ const defaultRepo: CategoryMutationsRepo = {
 
 export type CreateCategoryInput = {
   readonly name: string;
-  readonly iconSlug: string;
+  /**
+   * Curated single-grapheme emoji (2026-05-26 refactor — replaces iconSlug).
+   * Defaults to the misc `📌` pin when omitted via categoriesRepo.insertCategory.
+   */
+  readonly emoji?: string;
   readonly color: string;
 };
 
@@ -164,7 +168,7 @@ export function createCategory(
   const payload: InsertCategoryInput = {
     nameEn: trimmed,
     nameUk: trimmed,
-    iconSlug: input.iconSlug,
+    emoji: input.emoji,
     color: input.color,
     slug,
   };

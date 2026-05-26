@@ -62,7 +62,12 @@ export type Transaction = {
   readonly merchantName: string;
   readonly categoryId: number | null;
   readonly categoryName: string | null;
-  readonly categoryIconSlug: string | null;
+  /**
+   * Single-grapheme emoji rendered as the row's category glyph
+   * (2026-05-26 emoji-category refactor — replaces categoryIconSlug).
+   * Null when the transaction has no category assigned.
+   */
+  readonly categoryEmoji: string | null;
   readonly categoryColor: string | null;
   /** Unix seconds — same convention as transactions.date column. */
   readonly dateSec: number;

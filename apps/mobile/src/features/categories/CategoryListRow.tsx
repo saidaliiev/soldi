@@ -27,7 +27,6 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
 import { localizedCategoryName } from '@data/categoriesRepo';
 import { TYPE } from '@design/typography';
-import { resolveIcon } from '@design/icons/categories';
 import { ChevronRight } from '@design/icons/chevrons/ChevronRight';
 import type { Category } from './types';
 import { useDragMerge } from './DragMergeContext';
@@ -42,10 +41,8 @@ type Props = {
 export function CategoryListRow({ category, onPress }: Props): React.JSX.Element {
   const { i18n } = useTranslation();
   const displayName = localizedCategoryName(category, i18n.language);
-  // Resolve by canonical slug, not icon_name: the seed stored Lucide ids
-  // ("shopping-cart") in icon_name which never match ICON_REGISTRY (keyed by
-  // slug). category.slug is migration-002 backfilled / name-derived.
-  const Icon = resolveIcon(category.slug);
+  // 2026-05-26 emoji-category refactor: badge renders the DB-stored emoji
+  // directly. Pre-migration rows fall back inside the repo's emojiForSlug().
   const { draggingId, dropTargetId, setDraggingId, setDropTargetId, onDrop } = useDragMerge();
   const scale = useSharedValue(1);
 
@@ -95,12 +92,13 @@ export function CategoryListRow({ category, onPress }: Props): React.JSX.Element
           pressed && styles.pressed,
         ]}
       >
-        {/* W5 §5: icon-badge (40pt palette swatch behind icon) replaces
-            the prior dot + separate icon-well. Background = category color
-            at 12% alpha (matches HTML §5 .ico card tint), icon stroke =
-            category color at full alpha. */}
+        {/* W5 §5: icon-badge (40pt palette swatch behind glyph). Background
+            = category color at 12% alpha (matches HTML §5 .ico card tint).
+            2026-05-26 refactor: glyph is now the category's curated emoji. */}
         <View style={[styles.iconBadge, { backgroundColor: `${category.color}1F` }]}>
-          <Icon color={category.color} size={22} />
+          <Text style={styles.emoji} allowFontScaling={false}>
+            {category.emoji}
+          </Text>
         </View>
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>
           {displayName}
@@ -128,6 +126,13 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emoji: {
+    // 22pt glyph matches the previous SVG icon size; line-height >= fontSize
+    // so the emoji is not clipped on Android.
+    fontSize: 22,
+    lineHeight: 28,
+    textAlign: 'center',
   },
   name: {
     ...TYPE.uiBody,

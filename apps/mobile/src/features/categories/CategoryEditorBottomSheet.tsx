@@ -2,7 +2,8 @@
  * CategoryEditorBottomSheet — sheet handling both create and edit modes.
  * Mode driven by useCategoryEditorStore.targetId (undefined = create).
  *
- * UI-SPEC composition: Name input -> IconPicker -> ColorSwatchPicker -> CTA.
+ * UI-SPEC composition: Name input -> EmojiPicker -> ColorSwatchPicker -> CTA.
+ * (2026-05-26 emoji-category refactor — swapped from SVG IconPicker.)
  * Edit mode also surfaces "Delete category" destructive row.
  *
  * Drag-drop merge (D-19) lives on CategoriesScreen rows, not in this sheet.
@@ -21,7 +22,7 @@ import {
 } from '@/src/components/BottomSheet/BottomSheetPrimitive';
 import { ConfirmModal } from '@/src/components/BottomSheet/ConfirmModal';
 import { useCategoryEditorStore } from './store';
-import { IconPicker } from './IconPicker';
+import { EmojiPicker } from './EmojiPicker';
 import { ColorSwatchPicker, SWATCHES } from './ColorSwatchPicker';
 import {
   createCategory,
@@ -30,9 +31,8 @@ import {
 } from './categoryMutations';
 import { getCategoryById, localizedCategoryName } from '@data/categoriesRepo';
 import type { Category } from './types';
-import { type IconSlug, ICON_REGISTRY } from '@design/icons/categories/_iconRegistry';
+import { DEFAULT_CATEGORY_EMOJI } from '@data/categoryEmojis';
 
-const DEFAULT_ICON: IconSlug = 'misc';
 const DEFAULT_COLOR = SWATCHES[0].color;
 
 function validationKey(reason: 'empty' | 'too_long' | 'invalid_chars' | 'duplicate'): string {
@@ -52,7 +52,7 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
   const sheetRef = React.useRef<BottomSheetPrimitiveRef>(null);
 
   const [name, setName] = React.useState('');
-  const [iconSlug, setIconSlug] = React.useState<IconSlug>(DEFAULT_ICON);
+  const [emoji, setEmoji] = React.useState<string>(DEFAULT_CATEGORY_EMOJI);
   const [color, setColor] = React.useState<string>(DEFAULT_COLOR);
   const [errorKey, setErrorKey] = React.useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
@@ -67,17 +67,16 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
         if (c != null) {
           setCurrent(c);
           setName(c.nameEn);
-          // Preselect by canonical slug (icon_name holds legacy Lucide ids that
-          // never match ICON_REGISTRY). Alias-only slugs aren't pickable, so
-          // they correctly fall to DEFAULT_ICON here.
-          const slug = (c.slug in ICON_REGISTRY ? c.slug : DEFAULT_ICON) as IconSlug;
-          setIconSlug(slug);
+          // Preselect the row's stored emoji directly (migration 006 backfill
+          // guarantees a non-empty glyph). Fall back to the misc pin if a
+          // historical row somehow shipped an empty string.
+          setEmoji(c.emoji.length > 0 ? c.emoji : DEFAULT_CATEGORY_EMOJI);
           setColor(c.color);
         }
       } else {
         setCurrent(null);
         setName('');
-        setIconSlug(DEFAULT_ICON);
+        setEmoji(DEFAULT_CATEGORY_EMOJI);
         setColor(DEFAULT_COLOR);
       }
       setErrorKey(null);
@@ -92,7 +91,7 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
       if (isEditMode && current != null) {
         renameCategory(current.id, name);
       } else {
-        createCategory({ name, iconSlug, color });
+        createCategory({ name, emoji, color });
       }
       close();
     } catch (err) {
@@ -167,11 +166,7 @@ export function CategoryEditorBottomSheet(): React.JSX.Element {
           <Text style={styles.sectionLabel} allowFontScaling>
             {t('categories.section_icon')}
           </Text>
-          <IconPicker
-            selectedSlug={iconSlug}
-            iconColor={color}
-            onSelect={setIconSlug}
-          />
+          <EmojiPicker selectedEmoji={emoji} onSelect={setEmoji} />
 
           <Text style={styles.sectionLabel} allowFontScaling>
             {t('categories.section_color')}

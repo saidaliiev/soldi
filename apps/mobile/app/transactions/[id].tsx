@@ -209,9 +209,10 @@ export default function TransactionDetailScreen(): React.JSX.Element {
                   accessibilityLabel={`${t('transactions.field_category')} ${tx.categoryName ?? 'Other'}`}
                 >
                   <CategoryChip
-                    slug={tx.categoryIconSlug}
+                    slug={null}
                     name={tx.categoryName ?? 'Other'}
                     color={tx.categoryColor}
+                    emoji={tx.categoryEmoji}
                     size="md"
                   />
                 </Pressable>

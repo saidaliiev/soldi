@@ -33,7 +33,6 @@ import {
   upsertForMerchant,
   propagateCategoryToSimilar,
 } from '@data/merchantOverridesRepo';
-import { resolveIcon } from '@design/icons/categories';
 import type { Category } from '@data/categoriesRepo';
 
 import { useRecategorizeStore } from './recategorizeStore';
@@ -185,7 +184,7 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
                 accessibilityLabel={`Set category ${localizedCategoryName(cat, i18n.language)}`}
                 hitSlop={4}
               >
-                <CategoryChip slug={cat.slug} name={localizedCategoryName(cat, i18n.language)} color={cat.color} size="md" />
+                <CategoryChip slug={cat.slug} name={localizedCategoryName(cat, i18n.language)} color={cat.color} emoji={cat.emoji} size="md" />
               </Pressable>
             ))}
           </ScrollView>
@@ -200,7 +199,6 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
         data={categories}
         keyExtractor={(item) => `cat-${item.id}`}
         renderItem={({ item }) => {
-          const Icon = resolveIcon(item.slug);
           const isSelected = item.id === currentCategoryId;
           return (
             <Pressable
@@ -209,7 +207,9 @@ export function RecategorizeBottomSheet(): React.JSX.Element {
               accessibilityLabel={`Set category ${localizedCategoryName(item, i18n.language)}`}
               style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             >
-              <Icon color={item.color} size={20} />
+              <Text style={styles.rowEmoji} allowFontScaling={false}>
+                {item.emoji}
+              </Text>
               <Text style={styles.rowLabel} numberOfLines={1} allowFontScaling>
                 {localizedCategoryName(item, i18n.language)}
               </Text>
@@ -261,6 +261,12 @@ const styles = StyleSheet.create({
   },
   rowPressed: {
     backgroundColor: `${COLORS.textMuted}1A`,
+  },
+  rowEmoji: {
+    fontSize: 20,
+    lineHeight: 24,
+    width: 24,
+    textAlign: 'center',
   },
   rowLabel: {
     ...TYPE.uiBody,
