@@ -61,8 +61,9 @@ markColdStart();
 
 // T-05-16/17: Crash monitoring init — no-ops gracefully when EXPO_PUBLIC_SENTRY_DSN
 // is absent (P0 #7); idempotent; must run before the render gate so perf.ts
-// measurements can enrich into Sentry once keys are provided.
-initObservability();
+// measurements can enrich into Sentry once keys are provided. Return value
+// gates Sentry.wrap so the SDK never emits "wrap before init" on DSN-less builds.
+const _sentryActive = initObservability();
 
 // D-01: 5-minute background threshold — a code constant, not a user setting.
 const RESUME_LOCK_MS = 5 * 60 * 1000;
@@ -88,7 +89,7 @@ async function authenticateDevice(): Promise<boolean> {
   }
 }
 
-export default Sentry.wrap(function RootLayout() {
+function RootLayout() {
   // D-07: read persisted language for root key-bump remount.
   // When LanguageToggle calls setLanguage, this selector re-fires → language
   // changes → key on I18nextProvider changes → full subtree remount.
@@ -277,4 +278,8 @@ export default Sentry.wrap(function RootLayout() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-});
+}
+
+// Gate Sentry.wrap on actual init so the SDK never emits "wrap before init"
+// on DSN-less builds (EAS preview profile has no EXPO_PUBLIC_SENTRY_DSN).
+export default _sentryActive ? Sentry.wrap(RootLayout) : RootLayout;

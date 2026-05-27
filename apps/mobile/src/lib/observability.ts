@@ -15,16 +15,22 @@
 // T-05-17: idempotency guard — prevent double-init across React re-renders
 // or module hot-reloads.
 let _initialized = false;
+let _sentryActive = false;
 
 /**
  * Initialize Sentry crash monitoring.
  *
  * Safe to call unconditionally — exits immediately (no-op, no throw) when
  * EXPO_PUBLIC_SENTRY_DSN is absent or empty (T-05-16 / P0 #7).
+ *
+ * Returns true when Sentry.init was actually invoked, false on the
+ * graceful-absent / init-failure path. Callers gate Sentry.wrap on the return
+ * value so the SDK never emits "Sentry.wrap was called before Sentry.init"
+ * warnings on DSN-less builds (e.g. EAS preview profile).
  */
-export function initObservability(): void {
-  // T-05-17: idempotency — second call is always a no-op.
-  if (_initialized) return;
+export function initObservability(): boolean {
+  // T-05-17: idempotency — second call returns the cached result.
+  if (_initialized) return _sentryActive;
   _initialized = true;
 
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -32,8 +38,7 @@ export function initObservability(): void {
   // T-05-16: graceful absent path — never throw when DSN is missing.
   // Providing the DSN env var later (P0 #7) activates Sentry with no code change.
   if (!dsn || dsn.trim() === '') {
-    // No-op: Sentry stays uninitialised; perf.ts optional-chaining guards handle this.
-    return;
+    return _sentryActive;
   }
 
   // DSN is present — initialise Sentry with EU region config.
@@ -67,8 +72,10 @@ export function initObservability(): void {
         return breadcrumb;
       },
     });
+    _sentryActive = true;
   } catch {
     // Sentry native module absent or DSN malformed — stay silent, never crash.
     // T-05-16: no unconditional throw on the DSN-absent / init-failure path.
   }
+  return _sentryActive;
 }
