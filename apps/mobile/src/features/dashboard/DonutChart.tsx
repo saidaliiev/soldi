@@ -393,6 +393,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     ...TYPE.heroLabel,
     color: COLORS.textMuted,
+    textTransform: 'uppercase',
   },
   totalAmount: {
     ...TYPE.displayL,
