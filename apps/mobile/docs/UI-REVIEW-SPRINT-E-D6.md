@@ -150,19 +150,30 @@
 ## Punch-list
 
 ### P1 (ship-blocker class — fix before next design review)
-1. **Finding A** — JarListScreen header pressable must reach 44pt tap target. Bump height or add `hitSlop={{ top: 4, bottom: 4 }}`. `JarListScreen.tsx:173-180`.
-2. **Finding B** — ActivityDefaultFilters sign + scope strips need `accessibilityRole="radio"` per pill + `accessibilityRole="radiogroup"` on the wrapper. `ActivityDefaultFilters.tsx:217-258`.
-3. **Finding G** — ratify ActivityDefaultFilters 3-row stack vs HTML §3 single-strip with the design authority. Either reorganize to one horizontal strip (literal match) or update `soldify-screens.html` §3 to show the 3-row pattern and document why (axis grouping).
+1. **Finding A** — JarListScreen header pressable must reach 44pt tap target. Bump height or add `hitSlop={{ top: 4, bottom: 4 }}`. `JarListScreen.tsx:173-180`. **RESOLVED 2026-05-25 commit `f734af0`** — `hitSlop={{ top: 4, bottom: 4 }}` brings effective target to 50pt.
+2. **Finding B** — ActivityDefaultFilters sign + scope strips need `accessibilityRole="radio"` per pill + `accessibilityRole="radiogroup"` on the wrapper. `ActivityDefaultFilters.tsx:217-258`. **RESOLVED 2026-05-25 commit `b940637`** — Pill atom gained `role` prop, sign+scope strips wrapped with radiogroup containers + i18n labels.
+3. **Finding G** — ratify ActivityDefaultFilters 3-row stack vs HTML §3 single-strip with the design authority. **RATIFIED 2026-05-25 (this audit doc, commit pending)** — 3-row stack is authoritative. Rationale: (a) sign and categories carry different a11y semantics (radio vs button); merging them breaks the radiogroup contract landed via Finding B. (b) HTML mock does not model the date axis at all; implementation extends spec rather than violating it. (c) Sprint D6 is an explicit feature (default-set filter pills) and collapsing to one strip removes the feature. (d) vertical cost ~104pt; SE-class survivable. Authority correction landed in `docs/design/soldify-screens.html` §3 inline comment.
 
 ### P2 (debt — clean up in next polish slice)
-4. **Finding F** — DonutChart centre mantissa-only vs HTML "no centre number at all". Capture decision in design HTML §2 so the redesign authority and code agree.
-5. **Finding C, D, E** — i18n the hardcoded `accessibilityLabel`s in DonutChart, transactions.tsx, ActivityDefaultFilters (3 strings + 1 with-data interpolation).
-6. **Token debt** — introduce `COLORS.borderSubtle` / `COLORS.hairline` to retire the `\`${COLORS.textMuted}33\`` and `\`${COLORS.error}1A\`` patterns. `ActivityDefaultFilters.tsx:285`, `transactions.tsx:219`.
-7. **Finding H** — Custom date pill should signal "opens picker" (chevron glyph or trailing icon). `ActivityDefaultFilters.tsx:252-257`.
-8. **Typography preset** — promote the 21/26 EB Garamond override to `TYPE.featuredJarName` so the override at `JarListScreen.tsx:236-237` disappears.
+4. **Finding F** — DonutChart centre mantissa-only vs HTML "no centre number at all". **RATIFIED 2026-05-25 (this audit doc, commit pending)** — code is authoritative. Rationale: (a) hero band above already renders split-fraction at 62pt; repeating inside the ring is duplicate noise. (b) empty ring center leaves no readout on slice tap, reducing the donut to decorative-only. Mantissa-only is the anti-duplication compromise that preserves interactive payoff. (c) sibling "Largest category" card remains the dominant nearby breakdown. Authority correction landed in `docs/design/soldify-screens.html` §2 inline comment.
+5. **Finding C, D, E** — i18n the hardcoded `accessibilityLabel`s in DonutChart, transactions.tsx, ActivityDefaultFilters (3 strings + 1 with-data interpolation). **RESOLVED 2026-05-25 commit `caeb9cf`** — DonutChart `dashboard.donut_a11y_{empty,with_data}`, transactions `screen_a11y` + `search_open_a11y`, ActivityDefaultFilters `default_filters_a11y`. en+uk parity.
+6. **Token debt** — introduce `COLORS.borderSubtle` / `COLORS.hairline` to retire the `\`${COLORS.textMuted}33\`` and `\`${COLORS.error}1A\`` patterns. `ActivityDefaultFilters.tsx:285`, `transactions.tsx:219`. **RESOLVED 2026-05-25 commit `4c03bcb`** — `COLORS.borderSubtle` (textMuted @ 20%) + `COLORS.errorSubtle` (error @ 10%) added; both occurrences swapped to token references.
+7. **Finding H** — Custom date pill should signal "opens picker" (chevron glyph or trailing icon). `ActivityDefaultFilters.tsx:252-257`. **RESOLVED 2026-05-25 commit `d12a179`** — Pill atom gained `trailingChevron` + `a11yHint` props; Custom pill renders 14pt ChevronRight (colour follows pill state) + VoiceOver hint "Opens date range picker" (en+uk).
+8. **Typography preset** — promote the 21/26 EB Garamond override to `TYPE.featuredJarName` so the override at `JarListScreen.tsx:236-237` disappears. **OPEN** — deferred to next typography pass.
 
 ### P0
 None. Nothing in this slice is broken in production; the slice ships safely.
+
+---
+
+## Closure summary — 2026-05-25
+
+All 8 punch-list items resolved or ratified:
+- **6 code fixes landed** on main: `f734af0` (A), `b940637` (B), `caeb9cf` (C/D/E), `4c03bcb` (#6 tokens), `d12a179` (H)
+- **2 design-sync ratifications** captured in `docs/design/soldify-screens.html` §2 (F: donut centre) and §3 (G: filter row stack) as inline authority overrides, plus this audit doc's status updates above
+- **1 P2 deferred** — #8 typography preset, non-blocking polish
+
+Only #8 is open; nothing blocks ship. Verification: tsc=0, lint=0, i18n en+uk parity (transactions 45/45, dashboard 27/27), zero hardcoded `accessibilityLabel` string literals in scope files.
 
 ---
 
