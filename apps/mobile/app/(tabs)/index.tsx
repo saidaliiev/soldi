@@ -315,14 +315,13 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   // Pull the donut UP into the hero band's lower edge so the donut center
-  // sits on the band seam — turns the previous dead-space drift into a
-  // deliberate visual handshake between hero and breakdown (#P0-2,
-  // 2026-05-27). Donut canvas is 200pt with internal marginVertical:md;
-  // -xl shaves enough off the stacked heroBand.paddingBottom (xl) +
-  // belowHero.paddingTop (lg) to bring the donut close without overlapping
-  // the hero subline.
+  // sits on the band seam — deliberate visual handshake between hero and
+  // breakdown. Tightened from -xl to -md (Designer audit 2026-05-27): -32
+  // read as overlap bug at large-text accessibility scales; -16 preserves
+  // the handshake while leaving breathing room against the benchmark
+  // 24-32pt premium hero↔viz gap.
   donutBridge: {
-    marginTop: -SPACING.xl,
+    marginTop: -SPACING.md,
     marginBottom: -SPACING.sm,
   },
   digestWrap: {
