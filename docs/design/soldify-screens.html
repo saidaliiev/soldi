@@ -148,6 +148,21 @@
 <div class="col">
  <div class="device"><div class="notch"></div>
   <div class="screen">
+   <!-- DESIGN-SYNC RATIFICATION (2026-05-25, audit Finding F):
+        The DonutChart center label diverges from this mock by design.
+        Mock shows naked donut + sibling "Largest category" card; spec is
+        silent on interactive selected-slice state. Code renders:
+          - idle: TYPE.uiLabel eyebrow "Total" + mantissa-only total amount
+          - on slice tap: localized category name + amount (replaces total)
+        Rationale (locked):
+          (a) hero band above already shows split-fraction at 62pt — repeating
+              the fraction inside the ring is duplicate noise (Sprint E1)
+          (b) empty ring center leaves no readout on slice tap; donut becomes
+              decorative-only. Mantissa-only is an anti-duplication compromise
+              that preserves interactive payoff
+          (c) sibling "Largest category" card stays as the dominant nearby
+              breakdown; ring center serves the interactive layer only
+        This mock is NOT the authority for ring-center copy. Code is. -->
    <div class="sb"><span>9:41</span><div class="r">
      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="3" width="3" height="6" rx="1" fill="#221F1B"></rect><rect x="5" y="1" width="3" height="8" rx="1" fill="#221F1B"></rect><rect x="10" y="0" width="3" height="9" rx="1" fill="#221F1B"></rect><rect x="15" y="2" width="3" height="7" rx="1" fill="#221F1B" opacity=".4"></rect></svg>
      <svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#221F1B" opacity=".5"></rect><rect x="3" y="3" width="14" height="6" rx="1.5" fill="#221F1B"></rect></svg>
@@ -222,6 +237,25 @@
    <div class="body">
     <div class="pad" style="padding-top:12px">
      <div class="title" style="font-size:30px">Activity</div>
+     <!-- DESIGN-SYNC RATIFICATION (2026-05-25, audit Finding G):
+          Implementation renders ActivityDefaultFilters as a 3-row vertical
+          stack of horizontal ScrollViews, NOT this single interleaved strip:
+            Row 1: top-3 categories (multi-select, accessibilityRole=button)
+            Row 2: sign filter [All|Expense|Income] (radiogroup)
+            Row 3: date scope [This|Last|Custom→modal] (radiogroup)
+          Rationale (locked):
+          (a) sign and categories carry DIFFERENT a11y semantics (radio vs
+              button) — wrapping them in one ScrollView breaks the
+              radiogroup contract landed in audit Finding B
+          (b) this mock does not model the date axis at all; the
+              implementation EXTENDS the spec, does not violate it
+          (c) Sprint D6 was an explicit feature: default-set filter pills
+              with axis grouping. Collapsing back to one strip removes
+              the feature
+          (d) vertical cost ~104pt (3 × 32pt + 2 × gap) — SE-class
+              survivable; first transaction row stays above the fold
+          The mock strip below is preserved for visual reference only.
+          The 3-row stack is authoritative. -->
      <div class="row" style="gap:8px;margin:18px 0 4px;overflow:hidden">
        <div class="pill on">All</div><div class="pill">Expense</div><div class="pill">Income</div><div class="pill">Rent</div>
      </div>
