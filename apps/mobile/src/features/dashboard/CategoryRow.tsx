@@ -3,7 +3,6 @@
  *
  * Layout:
  *   [color dot] [icon] [name ........... amount]
- *   [-------- 2pt percent bar (proportional width) --------]
  *
  * Tap → navigates to /transactions?categoryId={id} (consumed by 02-03).
  * Long-press → opens the global CategoryEditorBottomSheet for this category
@@ -26,23 +25,18 @@ import type { CategorySlice } from './types';
 
 type Props = {
   readonly slice: CategorySlice;
-  readonly maxAmountCents: number; // denominator for the percent bar
   readonly locale?: string;
   readonly currency?: string;
 };
 
 export function CategoryRow({
   slice,
-  maxAmountCents,
   locale = 'en-IE',
   currency = 'EUR',
 }: Props): React.JSX.Element {
   const formatted = formatMoney({ amountCents: slice.amountCents, currency }, locale);
   const displayName = localizedCategoryName(slice, locale);
   const percentInt = Math.round(slice.percentage * 100);
-  const barWidth = maxAmountCents > 0 ? slice.amountCents / maxAmountCents : 0;
-  // 40% alpha appended via 8-bit hex suffix — same pattern as the tab-bar border.
-  const barColor = `${slice.color}66`;
 
   const handlePress = () => {
     if (slice.slug === 'other') return; // "Other" is not a single category — no drill-down
@@ -77,18 +71,6 @@ export function CategoryRow({
         <Text style={styles.amount} allowFontScaling>
           {formatted}
         </Text>
-      </View>
-      <View style={styles.barTrack}>
-        <View
-          style={[
-            styles.barFill,
-            {
-              backgroundColor: barColor,
-              // Express bar as a percentage; clamped to [0, 1] for safety.
-              width: `${Math.max(0, Math.min(1, barWidth)) * 100}%`,
-            },
-          ]}
-        />
       </View>
     </Pressable>
   );
@@ -133,14 +115,5 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontVariant: ['tabular-nums'],
     marginLeft: SPACING.sm,
-  },
-  barTrack: {
-    height: 2,
-    marginTop: SPACING.xs,
-    backgroundColor: 'transparent',
-  },
-  barFill: {
-    height: 2,
-    borderRadius: 1,
   },
 });

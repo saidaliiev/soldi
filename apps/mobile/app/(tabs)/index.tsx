@@ -142,11 +142,6 @@ export default function DashboardScreen(): React.JSX.Element {
       : t('dashboard.hero_more_than', { delta: fmtDelta, prevMonth: prevLabel });
   }, [isFuture, data.totalCents, prevTotalCents, selected, bounds.earliest, t]);
 
-  const maxAmount = useMemo(() => {
-    if (data.breakdown.top.length === 0) return 0;
-    return Math.max(...data.breakdown.top.map((s) => s.amountCents));
-  }, [data.breakdown.top]);
-
   // ---------------------------------------------------------------------------
   // Handlers
   // ---------------------------------------------------------------------------
@@ -255,14 +250,12 @@ export default function DashboardScreen(): React.JSX.Element {
                   <CategoryRow
                     key={`top-${String(slice.categoryId)}`}
                     slice={slice}
-                    maxAmountCents={maxAmount}
                   />
                 ))}
                 {data.breakdown.other != null && (
                   <CategoryRow
                     key="other"
                     slice={data.breakdown.other}
-                    maxAmountCents={maxAmount}
                   />
                 )}
               </View>
