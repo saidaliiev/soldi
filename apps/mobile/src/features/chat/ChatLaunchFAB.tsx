@@ -28,11 +28,16 @@ import Animated, {
   useDerivedValue,
   type SharedValue,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { COLORS, RADIUS, SHADOWS, SPACING } from '@design/tokens';
 import { useMotion } from '@design/useMotion';
 import { SparkQuill } from '@design/icons/system/SparkQuill';
+import {
+  TAB_BAR_HEIGHT,
+  TAB_BAR_FLOATING_MARGIN,
+} from '@/src/features/chrome/GlassTabBar';
 import { useChatStore } from './chatStore';
 
 type Props = {
@@ -52,6 +57,16 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
   const { t } = useTranslation();
   const open = useChatStore((s) => s.open);
   const { withMotion } = useMotion();
+  const insets = useSafeAreaInsets();
+
+  // Clear the floating tab bar — its top edge sits at
+  // `max(insets.bottom, TAB_BAR_FLOATING_MARGIN) + TAB_BAR_HEIGHT` from the
+  // screen bottom. Place the FAB SPACING.md above that so it never gets
+  // clipped behind the pill (verified Android emulator 2026-05-27).
+  const fabBottom =
+    Math.max(insets.bottom, TAB_BAR_FLOATING_MARGIN) +
+    TAB_BAR_HEIGHT +
+    SPACING.md;
 
   // Mount entrance: scale 0→1 delayed 200ms
   const mountScale = useSharedValue(0);
@@ -91,7 +106,10 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
   };
 
   return (
-    <Animated.View style={[styles.wrapper, animStyle]} pointerEvents="box-none">
+    <Animated.View
+      style={[styles.wrapper, { bottom: fabBottom }, animStyle]}
+      pointerEvents="box-none"
+    >
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -113,7 +131,9 @@ export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: SPACING.md,
+    // bottom is set dynamically from useSafeAreaInsets + TAB_BAR_HEIGHT in
+    // the component so the FAB clears the floating tab bar across notch and
+    // edge-to-edge devices.
     right: SPACING.md,
     zIndex: 10,
   },
