@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   slicePercent: {
-    ...TYPE.uiBody,
+    ...TYPE.uiLabel,
     color: COLORS.textSecondary,
   },
 });
