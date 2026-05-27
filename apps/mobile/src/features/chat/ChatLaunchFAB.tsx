@@ -50,7 +50,10 @@ type Props = {
   readonly scrollY?: SharedValue<number>;
 };
 
-const FAB_SIZE = 56;
+// Exposed so screens hosting the FAB can extend ScrollView contentContainerStyle
+// paddingBottom and reserve clearance under it — last list rows would otherwise
+// be obscured by the absolutely-positioned overlay.
+export const FAB_SIZE = 56;
 const SCROLL_HIDE_THRESHOLD = 40;
 
 export function ChatLaunchFAB({ scrollY }: Props): React.JSX.Element {

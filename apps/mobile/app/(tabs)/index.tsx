@@ -25,7 +25,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import { ChatLaunchFAB } from '@/src/features/chat/ChatLaunchFAB';
+import { ChatLaunchFAB, FAB_SIZE } from '@/src/features/chat/ChatLaunchFAB';
 import { GearIcon } from '@/src/design/icons/system/GearIcon';
 import {
   TAB_BAR_HEIGHT,
@@ -171,11 +171,15 @@ export default function DashboardScreen(): React.JSX.Element {
             // (e.g. "Clothing") isn't clipped. The tab bar is absolutely
             // positioned with TAB_BAR_FLOATING_MARGIN + insets.bottom of
             // bottom inset, so total clearance below content is
-            // height + margin + safe-area + breathing gap.
+            // height + margin + safe-area + breathing gap. Sprint F follow-up:
+            // also reserve FAB_SIZE so the right-aligned amounts on the last
+            // row aren't obscured by the ChatLaunchFAB overlay (Coffee
+            // €1,892.24 clipped on 2026-05-27 smoke).
             paddingBottom:
               TAB_BAR_HEIGHT +
               TAB_BAR_FLOATING_MARGIN +
               insets.bottom +
+              FAB_SIZE +
               SPACING.md,
           },
         ]}
