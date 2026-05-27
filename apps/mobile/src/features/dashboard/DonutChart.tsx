@@ -45,7 +45,9 @@ import { useMotion } from '@design/useMotion';
 import type { CategoryBreakdown, CategorySlice } from './types';
 
 const CANVAS_SIZE = 200;
-const STROKE_WIDTH = 10;
+// Sprint E1 follow-up — donut weight. 10pt looked thin against the new larger
+// hero band; +40% (→14pt) gives the ring enough presence to anchor the page.
+const STROKE_WIDTH = 14;
 const GAP_DEG = 2;
 // Task 10 Step 1 — mount stagger overlap. 0=fully sequential (too mechanical
 // the other way), 1=simultaneous (the pre-Task-10 behavior). 0.55 keeps slices
@@ -398,7 +400,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   sliceName: {
-    ...TYPE.displayM,
+    ...TYPE.displayL,
     color: COLORS.textPrimary,
     textAlign: 'center',
   },
@@ -408,7 +410,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   slicePercent: {
-    ...TYPE.uiLabel,
+    ...TYPE.uiBody,
     color: COLORS.textSecondary,
   },
 });
