@@ -400,12 +400,12 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   sliceName: {
-    ...TYPE.displayL,
+    ...TYPE.displayM,
     color: COLORS.textPrimary,
     textAlign: 'center',
   },
   sliceAmount: {
-    ...TYPE.displayL,
+    ...TYPE.displayM,
     color: COLORS.textPrimary,
     fontVariant: ['tabular-nums'],
   },
