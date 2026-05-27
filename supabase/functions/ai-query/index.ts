@@ -23,19 +23,7 @@ import {
 } from '../_shared/chat-schemas.ts';
 import { CHAT_SYSTEM_PROMPT } from '../_shared/chat-prompts.ts';
 import { QUERY_SHAPES, clampDateRange } from '../_shared/facts-runner.ts';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-function corsResponse(body: string, status: number): Response {
-  return new Response(body, {
-    status,
-    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-  });
-}
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 const QUERY_AGGREGATES_TOOL = {
   name: 'query_aggregates',
@@ -74,8 +62,15 @@ const QUERY_AGGREGATES_TOOL = {
 } as const;
 
 serve(async (req: Request): Promise<Response> => {
+  const cors = buildCorsHeaders(req);
+  const corsResponse = (body: string, status: number): Response =>
+    new Response(body, {
+      status,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: CORS_HEADERS });
+    return new Response('ok', { headers: cors });
   }
   if (req.method !== 'POST') {
     return corsResponse(JSON.stringify({ error: 'method_not_allowed' }), 405);

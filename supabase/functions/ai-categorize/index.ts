@@ -37,6 +37,7 @@ import {
 import { mccToCategorySlug } from '../_shared/mccMap.ts';
 import { normalizeMerchantKey } from '../_shared/normalize.ts';
 import { CATEGORIZE_SYSTEM_PROMPT, CATEGORY_SLUGS, categorizeUserMessage } from '../_shared/prompts.ts';
+import { buildCorsHeaders } from '../_shared/cors.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -48,11 +49,6 @@ const CONFIDENCE_AUTO_APPLY = 0.75;   // D-11
 const CONFIDENCE_PERSIST_OVERRIDE = 0.85; // D-12 (client-side persist)
 const DAILY_CAP_CENTS = 2000;         // $0.20 categorize cap per CONTEXT D-24
 
-const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-daily-spend-cents',
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -230,8 +226,15 @@ async function resolveTier3(
 // ---------------------------------------------------------------------------
 
 serve(async (req: Request): Promise<Response> => {
+  const cors = buildCorsHeaders(req, 'x-daily-spend-cents');
+  const jsonResponse = (body: unknown, status: number): Response =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'content-type': 'application/json', ...cors },
+    });
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers: cors });
   }
   if (req.method !== 'POST') {
     return jsonResponse({ error: 'method_not_allowed' }, 405);
@@ -382,9 +385,3 @@ export const __test_internals = {
   CONFIDENCE_PERSIST_OVERRIDE,
 };
 
-function jsonResponse(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', ...CORS_HEADERS },
-  });
-}
