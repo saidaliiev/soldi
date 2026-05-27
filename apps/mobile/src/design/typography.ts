@@ -18,7 +18,9 @@ type TextStyle = {
 };
 
 export const TYPE = {
-  /** Hero monthly total on the dashboard. */
+  /** Hero monthly total on the dashboard. Display-only — do not stack
+   *  inside the donut centre or other secondary surfaces. Use displayM (28pt)
+   *  for compositional anchors below the hero. */
   displayXL: {
     fontFamily: FONTS.display.family,
     fontWeight: FONTS.display.weights.medium,
@@ -27,6 +29,9 @@ export const TYPE = {
     letterSpacing: -1,
   } satisfies TextStyle,
 
+  /** Empty-state fallback total inside the donut. Hero-only otherwise — do
+   *  NOT stack displayL inside the donut centre (40pt loses side margin in
+   *  the 200pt ring). Use displayM there. (Designer audit 2026-05-27.) */
   displayL: {
     fontFamily: FONTS.display.family,
     fontWeight: FONTS.display.weights.medium,
