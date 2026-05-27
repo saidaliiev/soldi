@@ -89,10 +89,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: 10,
+    height: 10,
     borderRadius: RADIUS.pill,
-    marginRight: SPACING.xs,
+    marginRight: SPACING.sm,
   },
   emoji: {
     // Matches the previous 20pt BaseCategoryIcon footprint; line-height
