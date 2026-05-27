@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   totalLabel: {
-    ...TYPE.uiLabel,
+    ...TYPE.heroLabel,
     color: COLORS.textMuted,
   },
   totalAmount: {
