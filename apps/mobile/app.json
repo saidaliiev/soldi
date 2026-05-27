@@ -14,7 +14,11 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSFaceIDUsageDescription": "SOLDI uses Face ID to keep your spending data private when you open the app.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true
+        }
       }
     },
     "android": {
