@@ -242,7 +242,9 @@ export default function DashboardScreen(): React.JSX.Element {
             <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
           ) : (
             <>
-              <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
+              <View style={styles.donutBridge}>
+                <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
+              </View>
               {showDigest && (
                 <View style={styles.digestWrap}>
                   <DigestCard data={digest} />
@@ -318,6 +320,17 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: SPACING.sm,
+  },
+  // Pull the donut UP into the hero band's lower edge so the donut center
+  // sits on the band seam — turns the previous dead-space drift into a
+  // deliberate visual handshake between hero and breakdown (#P0-2,
+  // 2026-05-27). Donut canvas is 200pt with internal marginVertical:md;
+  // -xl shaves enough off the stacked heroBand.paddingBottom (xl) +
+  // belowHero.paddingTop (lg) to bring the donut close without overlapping
+  // the hero subline.
+  donutBridge: {
+    marginTop: -SPACING.xl,
+    marginBottom: -SPACING.sm,
   },
   digestWrap: {
     marginTop: SPACING.lg,
