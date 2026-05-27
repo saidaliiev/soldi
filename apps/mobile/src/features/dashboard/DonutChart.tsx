@@ -232,10 +232,18 @@ export function DonutChart({
     return breakdown.top.find((s) => s.categoryId === selectedId) ?? null;
   }, [selectedId, breakdown]);
 
-  // Sprint E1: mantissa-only inside the ring — the hero band above already
-  // renders the full split-fraction amount at large register. Repeating the
-  // fraction here at a smaller register reads as duplicate noise. Eyebrow
-  // ("Total") stays as the ring summary.
+  // Sprint E1 follow-up: the centre amount duplicates the hero band's
+  // €67,695.98 (rounded to €67,696 inside the ring). Two near-identical
+  // numbers on the same screen create cognitive noise. When data exists we
+  // now render the LARGEST category + its share — information the hero
+  // doesn't carry. The "Total €<amount>" form stays only for the truly empty
+  // / no-top-category fallback so the ring never appears blank.
+  const topSlice: CategorySlice | null = breakdown.top[0] ?? null;
+  const topPercentLabel = topSlice
+    ? `${Math.round(topSlice.percentage * 100)}%`
+    : null;
+
+  // Empty-month / no-top fallback only — hero handles the populated case.
   const totalFormatted = useMemo(
     () =>
       new Intl.NumberFormat(locale, {
@@ -298,20 +306,41 @@ export function DonutChart({
         importantForAccessibility="no-hide-descendants"
       >
         {selectedSlice == null ? (
-          <>
-            <Text style={styles.totalLabel} allowFontScaling>
-              {t('dashboard.donut_total_label')}
-            </Text>
-            <Text
-              style={styles.totalAmount}
-              allowFontScaling
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.6}
-            >
-              {totalFormatted}
-            </Text>
-          </>
+          topSlice != null && topPercentLabel != null ? (
+            <>
+              <Text style={styles.totalLabel} allowFontScaling>
+                {t('dashboard.donut_top_label')}
+              </Text>
+              <Text
+                style={styles.sliceName}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                allowFontScaling
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+              >
+                {localizedCategoryName(topSlice, locale)}
+              </Text>
+              <Text style={styles.slicePercent} allowFontScaling>
+                {topPercentLabel}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.totalLabel} allowFontScaling>
+                {t('dashboard.donut_total_label')}
+              </Text>
+              <Text
+                style={styles.totalAmount}
+                allowFontScaling
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+              >
+                {totalFormatted}
+              </Text>
+            </>
+          )
         ) : (
           <>
             <Text style={styles.sliceName} numberOfLines={1} ellipsizeMode="tail" allowFontScaling>

@@ -14,6 +14,7 @@
   "error_load": "Couldn't load data. Tap to retry.",
   "cta_add_transaction": "Add transaction",
   "donut_total_label": "Total",
+  "donut_top_label": "Largest",
   "donut_a11y_empty": "Spending donut chart. No data this month.",
   "donut_a11y_with_data": "Spending donut chart. {{category}} {{amount}}, {{percent}}%. Double-tap a slice to see details.",
   "digest_yesterday_label": "yesterday in money",
