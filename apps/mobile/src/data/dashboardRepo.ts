@@ -96,18 +96,24 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
   if (b == null) return empty;
 
   const db = getDB();
+  // Uncategorized transactions (category_id IS NULL) are bucketed into the
+  // seeded misc category instead of forming a phantom "Other" group key.
+  // Without the COALESCE coercion, NULL rows and the seeded misc row both
+  // render as "Other" (different totals, same display name) — the dashboard
+  // breakdown then shows two separate "Other" rows.
   const result = db.executeSync(
-    `SELECT t.category_id AS category_id,
+    `SELECT COALESCE(t.category_id, (SELECT id FROM categories WHERE slug='misc')) AS category_id,
             COALESCE(c.name_en, 'Other') AS name_en,
             COALESCE(c.name_uk, c.name_en, 'Other') AS name_uk,
             c.slug                       AS slug,
             c.emoji                      AS emoji,
             COALESCE(-SUM(t.amount_cents), 0) AS abs_total
      FROM transactions t
-     LEFT JOIN categories c ON c.id = t.category_id
+     LEFT JOIN categories c ON c.id = COALESCE(t.category_id, (SELECT id FROM categories WHERE slug='misc'))
      WHERE t.amount_cents < 0
        AND t.date >= ? AND t.date < ?
-     GROUP BY t.category_id, c.name_en, c.name_uk, c.slug, c.emoji
+     GROUP BY COALESCE(t.category_id, (SELECT id FROM categories WHERE slug='misc')),
+              c.name_en, c.name_uk, c.slug, c.emoji
      ORDER BY abs_total DESC`,
     [b.startSec, b.endSec]
   );
