@@ -190,6 +190,29 @@ export function getCategoryBreakdown(year: number, month: number): CategoryBreak
     }
   }
 
+  // Collision fix: the seeded "Other" (slug='misc', name_en='Other') and the
+  // synthetic top-N remainder both render as "Other" with the same 📌 emoji,
+  // producing two visually identical rows with different totals. When both
+  // surface for the same month, fold the synthetic remainder into the seeded
+  // misc row so a single "Other" represents all small-categories + misc.
+  if (other != null) {
+    const miscIdx = top.findIndex((s) => s.slug === 'misc');
+    if (miscIdx >= 0) {
+      const misc = top[miscIdx];
+      if (misc != null) {
+        const mergedAmount = misc.amountCents + other.amountCents;
+        top[miscIdx] = {
+          ...misc,
+          amountCents: mergedAmount,
+          percentage: mergedAmount / total,
+        };
+        other = null;
+        // Re-sort top — merged misc may have moved up.
+        top.sort((a, c) => c.amountCents - a.amountCents);
+      }
+    }
+  }
+
   return { top, other, totalExpenseCents: total };
 }
 
