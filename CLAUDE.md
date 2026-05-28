@@ -3,6 +3,12 @@
 > Premium iOS personal finance manager. Portfolio piece for Designer/Design Engineer + full-stack hiring signal.
 > Solo dev on Windows + WSL2 Ubuntu. React Native + Expo SDK 54. Ships to App Store free in ~13 weeks.
 
+## Project Memory
+
+**Read [docs/memory/INDEX.md](docs/memory/INDEX.md) at task start** — the map of durable project knowledge: live phase status (`.planning/STATE.md` is authoritative; the "Phase status" line below is stale), env/tooling gotchas (emulator dev-client, jest-CI broken, iOS-26 glass crash gate), and the decision log (incl. the human-blocked P0 list). When you learn a durable gotcha/decision, append it to `docs/memory/gotchas.md` / `decisions.md`.
+
+@docs/memory/INDEX.md
+
 ## Scope
 
 This is a **portfolio piece, not a regulated fintech startup.** No PSD2, no TrueLayer, no AISP licensing, no DPO. The full strategic context lives in `.planning/PROJECT.md` and `.planning/PLAN.md`. Re-read them when scope drifts. Read `.planning/STATE.md` first in every new session.
