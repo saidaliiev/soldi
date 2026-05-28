@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>soldify · app-icon directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;1,500&family=Oswald:wght@600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sand:#EDEAE3; --surface:#F7F5F0; --slate:#221F1B;
+    --sandstone:#B97A5A; --sandstone-mid:#9C5B41; --sandstone-deep:#7C4632;
+    --sage:#687653; --sage-dark:#586A45;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#cfcabf;color:var(--slate);font-family:'Manrope',sans-serif;padding:40px 32px 64px;}
+  h1{font-family:'Oswald';font-weight:600;font-size:26px;letter-spacing:.3px;margin-bottom:4px}
+  .sub{color:#5a554c;font-size:13px;margin-bottom:28px;max-width:680px;line-height:1.5}
+  table{border-collapse:separate;border-spacing:24px 18px;margin:0 auto}
+  th{font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#6E695F;padding-bottom:4px}
+  td.lbl{font-family:'Oswald';font-weight:600;font-size:15px;text-align:right;color:var(--slate);white-space:nowrap;vertical-align:middle}
+  td.lbl small{display:block;font-family:'Manrope';font-weight:500;font-size:11px;color:#6E695F;letter-spacing:0}
+  .tile{width:188px;height:188px;border-radius:42px;overflow:hidden;box-shadow:0 8px 26px rgba(34,31,27,.18);}
+  .tile svg{width:100%;height:100%;display:block}
+  .tile text{font-family:'EB Garamond',serif}     /* serif default */
+  .cap{text-align:center;font-size:11px;color:#6E695F;margin-top:6px;letter-spacing:.4px}
+</style>
+</head>
+<body>
+  <h1>soldify — app-icon directions</h1>
+  <div class="sub">Four directions × iOS-26 appearance variants (Default · Dark · Tinted/monochrome). Locked Slate&nbsp;&amp; Sand palette only — no fintech-blue, no neon, no gradient-mesh. Silhouette is held constant across variants (HIG rule); only tone changes. Squircle + drop-shadow here are simulated for preview — the real iOS-26 system supplies glass/lighting; the master art stays flat &amp; opaque.</div>
+
+  <!-- ===== reusable icon geometry as symbols (colors come from CSS vars on the <use> host) ===== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- 1 · Editorial Initial -->
+      <symbol id="ico-initial" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="var(--bg)"/>
+        <text x="512" y="512" text-anchor="middle" dominant-baseline="central"
+              font-size="820" font-weight="500" fill="var(--fg)" style="font-family:'EB Garamond',serif">S</text>
+      </symbol>
+      <!-- 2 · Sandstone Arc (donut echo) -->
+      <symbol id="ico-arc" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="var(--bg)"/>
+        <circle cx="512" cy="512" r="300" fill="none"
+                stroke="var(--arc, var(--fg))" stroke-width="104" stroke-linecap="round"
+                stroke-dasharray="1414 1885" transform="rotate(125 512 512)"/>
+      </symbol>
+      <!-- 3 · Stamped Coin -->
+      <symbol id="ico-coin" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="var(--bg)"/>
+        <circle cx="512" cy="512" r="358" fill="var(--disc, #9C5B41)"/>
+        <circle cx="512" cy="512" r="358" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="6"/>
+        <text x="512" y="520" text-anchor="middle" dominant-baseline="central"
+              font-size="430" font-weight="600" fill="var(--struck, #EDEAE3)" style="font-family:'EB Garamond',serif">S</text>
+      </symbol>
+      <!-- 4 · Negative-Space Ledger -->
+      <symbol id="ico-ledger" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="var(--bg)"/>
+        <text x="512" y="540" text-anchor="middle" dominant-baseline="central"
+              font-size="900" font-weight="700" fill="var(--fg)"
+              style="font-family:'Oswald',sans-serif;letter-spacing:-10px">S</text>
+      </symbol>
+    </defs>
+  </svg>
+
+  <table>
+    <tr><th></th><th>Default</th><th>Dark</th><th>Tinted</th></tr>
+
+    <!-- 1 Editorial Initial -->
+    <tr>
+      <td class="lbl">1 · Editorial Initial<small>serif S — masthead</small></td>
+      <td><div class="tile" style="--bg:#EDEAE3;--fg:#221F1B"><svg><use href="#ico-initial"/></svg></div></td>
+      <td><div class="tile" style="--bg:#221F1B;--fg:#EDEAE3"><svg><use href="#ico-initial"/></svg></div></td>
+      <td><div class="tile" style="--bg:#2a2723;--fg:#cfc8bd"><svg><use href="#ico-initial"/></svg></div></td>
+    </tr>
+    <!-- 4 Negative-space Ledger -->
+    <tr>
+      <td class="lbl">4 · Negative-Space<small>condensed S knockout</small></td>
+      <td><div class="tile" style="--bg:#9C5B41;--fg:#EDEAE3"><svg><use href="#ico-ledger"/></svg></div></td>
+      <td><div class="tile" style="--bg:#7C4632;--fg:#EDEAE3"><svg><use href="#ico-ledger"/></svg></div></td>
+      <td><div class="tile" style="--bg:#3a342e;--fg:#d8d2c8"><svg><use href="#ico-ledger"/></svg></div></td>
+    </tr>
+    <!-- 2 Sandstone Arc -->
+    <tr>
+      <td class="lbl">2 · Sandstone Arc<small>donut echo, no letter</small></td>
+      <td><div class="tile" style="--bg:#221F1B;--arc:#B97A5A"><svg><use href="#ico-arc"/></svg></div></td>
+      <td><div class="tile" style="--bg:#161310;--arc:#B97A5A"><svg><use href="#ico-arc"/></svg></div></td>
+      <td><div class="tile" style="--bg:#2a2723;--arc:#c9c2b7"><svg><use href="#ico-arc"/></svg></div></td>
+    </tr>
+    <!-- 3 Stamped Coin -->
+    <tr>
+      <td class="lbl">3 · Stamped Coin<small>struck S, depth</small></td>
+      <td><div class="tile" style="--bg:#EDEAE3;--disc:#9C5B41;--struck:#EDEAE3"><svg><use href="#ico-coin"/></svg></div></td>
+      <td><div class="tile" style="--bg:#221F1B;--disc:#9C5B41;--struck:#EDEAE3"><svg><use href="#ico-coin"/></svg></div></td>
+      <td><div class="tile" style="--bg:#2a2723;--disc:#7d756a;--struck:#2a2723"><svg><use href="#ico-coin"/></svg></div></td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>soldify · dashboard polish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;1,500&family=Oswald:wght@500;600&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sand:#EDEAE3;--surface:#F7F5F0;--slate:#221F1B;--text2:#6A645A;--muted:#6E695F;
+    --sandstone:#B97A5A;--sandstone-mid:#9C5B41;--sandstone-deep:#7C4632;
+    --sage:#687653;--sage-dark:#586A45;--hairline:#6E695F33;
+    --grad-warm:linear-gradient(135deg,#E6E1D4,#D9D2C0);
+    --grad-primary:linear-gradient(180deg,#B97A5A,#9C5B41);
+    --fontD:'Oswald',sans-serif;--fontE:'EB Garamond',serif;--fontU:'Manrope',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#cfcabf;font-family:var(--fontU);color:var(--slate);padding:40px;display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+  h1{font-family:var(--fontD);font-weight:600;font-size:24px;width:100%;text-align:center;margin-bottom:6px}
+  .note{width:100%;text-align:center;color:#5a554c;font-size:12.5px;margin-bottom:26px}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .col h2{font-family:var(--fontD);font-weight:600;font-size:16px;color:var(--slate)}
+  .col p{font-size:11.5px;color:#6E695F;max-width:330px;text-align:center;line-height:1.45}
+
+  .phone{width:360px;height:760px;background:var(--sand);border-radius:46px;box-shadow:0 18px 48px rgba(34,31,27,.22);overflow:hidden;position:relative;border:10px solid #1c1a17}
+  .status{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:12px;font-weight:600;color:var(--slate)}
+
+  /* hero band */
+  .hero{background:var(--grad-warm);padding:8px 24px 28px;}
+  .hero .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .hero .month{font-family:var(--fontD);font-weight:600;font-size:19px;letter-spacing:.2px}
+  .hero .chev,.hero .gear{color:var(--slate);opacity:.7;font-size:18px}
+  .hero .label{font-family:var(--fontU);font-weight:600;font-size:12px;letter-spacing:1.8px;color:var(--sandstone-deep);text-transform:uppercase;margin-bottom:2px}
+  .hero .total{font-family:var(--fontD);font-weight:600;line-height:1;color:var(--sandstone-deep)}
+  .hero .total .int{font-size:62px}
+  .hero .total .frac{font-size:30px;color:var(--sandstone)}
+  .hero .sub{font-family:var(--fontU);font-weight:600;font-size:14px;color:var(--muted);margin-top:8px}
+
+  /* +26pt positive bridge (was -16 overlap) */
+  .bridge{height:26px}
+  .donutWrap{display:flex;justify-content:center;align-items:center;height:214px;position:relative}
+  .donutWrap svg{width:214px;height:214px}
+  .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .center .clab{font-family:var(--fontU);font-weight:600;font-size:11px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}
+  .center .cval{font-family:var(--fontD);font-weight:600;font-size:30px;color:var(--slate);line-height:1.05}
+  .center .cfrac{font-size:16px;color:var(--text2)}
+
+  /* digest card */
+  .card{background:var(--surface);margin:24px 18px 0;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(34,31,27,.04)}
+  .card .ct{font-family:var(--fontU);font-weight:600;font-size:12px;letter-spacing:.3px;color:var(--muted)}
+  .card .cv{font-family:var(--fontD);font-weight:600;font-size:34px;color:var(--sandstone-deep);margin:2px 0 8px}
+  .card svg{display:block;width:100%;height:34px}
+  .card .cmom{font-family:var(--fontE);font-style:italic;font-size:14px;color:var(--text2);margin-top:8px}
+
+  /* category rows */
+  .rows{margin:18px 22px 0}
+  .row{display:flex;align-items:center;height:44px;border-bottom:1px solid var(--hairline)}
+  .row .dot{width:9px;height:9px;border-radius:50%;margin-right:10px;flex:none}
+  .row .emo{font-size:18px;margin-right:10px}
+  .row .nm{font-family:var(--fontU);font-weight:500;font-size:15px;color:var(--slate);flex:1}
+  .row .amt{font-family:var(--fontU);font-weight:600;font-size:15px;color:var(--slate);font-variant-numeric:tabular-nums}
+  .row.more{border-bottom:none;justify-content:flex-start}
+  .row.more .nm{font-size:13px;color:var(--muted);font-weight:500}
+
+  /* FAB + tab bar */
+  .fab{position:absolute;right:18px;bottom:86px;width:56px;height:56px;border-radius:999px;background:var(--grad-primary);box-shadow:0 8px 26px rgba(34,31,27,.22);display:flex;align-items:center;justify-content:center}
+  .fab svg{width:26px;height:26px}
+  .tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;width:320px;height:58px;background:rgba(247,245,240,.92);backdrop-filter:blur(18px);border-radius:999px;box-shadow:0 8px 26px rgba(34,31,27,.12);display:flex;align-items:center;justify-content:space-around;padding:0 12px}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--fontU);font-size:10px;font-weight:600}
+  .tab.act{color:var(--sandstone-mid)}.tab.ina{color:var(--muted)}
+  .tab svg{width:22px;height:22px}
+
+  .delta{max-width:340px;font-size:12px;color:#3f3a33;line-height:1.6;background:#f3f0ea;border-radius:12px;padding:14px 16px}
+  .delta b{font-family:var(--fontD);font-weight:600}
+  .delta li{margin:3px 0 3px 4px;list-style:none}
+  .delta .k{color:var(--sandstone-deep);font-weight:700}
+</style>
+</head>
+<body>
+  <h1>soldify — dashboard polish (current donut kept)</h1>
+  <div class="note">Applies the resolved decisions to the existing composition. Two donut-center options shown — pick one. Arcs render correctly (fixes CD's empty-ring bug). Glass tab bar is chrome-only.</div>
+
+  <!-- reusable bits -->
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6E1D4"/><stop offset="1" stop-color="#D9D2C0"/></linearGradient>
+  </defs></svg>
+
+  <!-- ============ Variant A: center = mirrored total ============ -->
+  <div class="col">
+    <h2>A · center = month total</h2>
+    <p>Quiet second anchor. Drops the weak "Other 56%". Reinforces the number.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ▣ ▮</span></div>
+      <div class="hero">
+        <div class="topbar"><span class="chev">‹</span><span class="month">May 2026</span><span class="chev">›&nbsp;&nbsp;⚙</span></div>
+        <div class="label">SPENT IN MAY 2026</div>
+        <div class="total"><span class="int">€67,695</span><span class="frac">.98</span></div>
+        <div class="sub">€38,962.01 less than April 2026</div>
+      </div>
+      <div class="bridge"></div>
+      <div class="donutWrap">
+        <svg viewBox="0 0 240 240">
+          <g transform="rotate(-90 120 120)" fill="none" stroke-width="26">
+            <circle cx="120" cy="120" r="100" stroke="#8A8378" stroke-dasharray="348 281" stroke-dashoffset="0"/>
+            <circle cx="120" cy="120" r="100" stroke="#9C5B41" stroke-dasharray="160 469" stroke-dashoffset="-352"/>
+            <circle cx="120" cy="120" r="100" stroke="#687653" stroke-dasharray="59 570" stroke-dashoffset="-516"/>
+            <circle cx="120" cy="120" r="100" stroke="#B97A5A" stroke-dasharray="27 602" stroke-dashoffset="-579"/>
+            <circle cx="120" cy="120" r="100" stroke="#7C4632" stroke-dasharray="15 614" stroke-dashoffset="-610"/>
+          </g>
+        </svg>
+        <div class="center">
+          <div class="clab">SPENT</div>
+          <div class="cval">€67,695<span class="cfrac">.98</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">yesterday in money</div>
+        <div class="cv">€0.00</div>
+        <svg viewBox="0 0 320 34" preserveAspectRatio="none"><path d="M0 22 L60 18 L110 24 L160 12 L210 20 L260 10 L320 22" fill="none" stroke="#9C5B41" stroke-width="2"/></svg>
+        <div class="cmom">– €1,048.00 below last month's daily average</div>
+      </div>
+      <div class="rows">
+        <div class="row"><span class="dot" style="background:#8A8378"></span><span class="emo">📌</span><span class="nm">Other</span><span class="amt">€37,767.44</span></div>
+        <div class="row"><span class="dot" style="background:#9C5B41"></span><span class="emo">👕</span><span class="nm">Clothing</span><span class="amt">€17,758.68</span></div>
+        <div class="row"><span class="dot" style="background:#687653"></span><span class="emo">🛒</span><span class="nm">Groceries</span><span class="amt">€7,095.06</span></div>
+        <div class="row"><span class="dot" style="background:#B97A5A"></span><span class="emo">🚗</span><span class="nm">Transport</span><span class="amt">€3,182.56</span></div>
+        <div class="row"><span class="dot" style="background:#7C4632"></span><span class="emo">☕</span><span class="nm">Coffee</span><span class="amt">€1,892.24</span></div>
+        <div class="row more"><span class="nm">+3 more categories</span></div>
+      </div>
+      <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C8 14 4 10 4 6 L12 3 L20 6 C20 10 16 14 12 20 Z M12 20 L12 8"/><circle cx="12" cy="22" r="1.4" fill="#fff" stroke="none"/></svg></div>
+      <div class="tabbar">
+        <div class="tab act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3.5" y="13.5" width="4" height="7" rx="1"/><rect x="10" y="9.5" width="4" height="11" rx="1"/><rect x="16.5" y="5.5" width="4" height="15" rx="1"/></svg>Overview</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="5" cy="7" r="1.2"/><line x1="9" y1="7" x2="20" y2="7"/><circle cx="5" cy="12" r="1.2"/><line x1="9" y1="12" x2="20" y2="12"/><circle cx="5" cy="17" r="1.2"/><line x1="9" y1="17" x2="20" y2="17"/></svg>Activity</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M7 9 h10 v9 a2 2 0 0 1-2 2 H9 a2 2 0 0 1-2-2 Z"/><path d="M8 9 V6.5 A1.5 1.5 0 0 1 9.5 5 h5 A1.5 1.5 0 0 1 16 6.5 V9"/></svg>Jars</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M5 7.5 C5 6 6 5 7.5 5 H16.5 C18 5 19 6 19 7.5 V13 C19 14.5 18 15.5 16.5 15.5 H10 L6 19 V15.5 C5.4 15.4 5 14.6 5 13 Z"/></svg>Chat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Variant B: center = empty/abstract ============ -->
+  <div class="col">
+    <h2>B · center = empty (Apple Card)</h2>
+    <p>Most restrained. Ring is pure data; slices tell the story; tap a slice → it morphs in.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ▣ ▮</span></div>
+      <div class="hero">
+        <div class="topbar"><span class="chev">‹</span><span class="month">May 2026</span><span class="chev">›&nbsp;&nbsp;⚙</span></div>
+        <div class="label">SPENT IN MAY 2026</div>
+        <div class="total"><span class="int">€67,695</span><span class="frac">.98</span></div>
+        <div class="sub">€38,962.01 less than April 2026</div>
+      </div>
+      <div class="bridge"></div>
+      <div class="donutWrap">
+        <svg viewBox="0 0 240 240">
+          <g transform="rotate(-90 120 120)" fill="none" stroke-width="26">
+            <circle cx="120" cy="120" r="100" stroke="#8A8378" stroke-dasharray="348 281" stroke-dashoffset="0"/>
+            <circle cx="120" cy="120" r="100" stroke="#9C5B41" stroke-dasharray="160 469" stroke-dashoffset="-352"/>
+            <circle cx="120" cy="120" r="100" stroke="#687653" stroke-dasharray="59 570" stroke-dashoffset="-516"/>
+            <circle cx="120" cy="120" r="100" stroke="#B97A5A" stroke-dasharray="27 602" stroke-dashoffset="-579"/>
+            <circle cx="120" cy="120" r="100" stroke="#7C4632" stroke-dasharray="15 614" stroke-dashoffset="-610"/>
+          </g>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="ct">yesterday in money</div>
+        <div class="cv">€0.00</div>
+        <svg viewBox="0 0 320 34" preserveAspectRatio="none"><path d="M0 22 L60 18 L110 24 L160 12 L210 20 L260 10 L320 22" fill="none" stroke="#9C5B41" stroke-width="2"/></svg>
+        <div class="cmom">– €1,048.00 below last month's daily average</div>
+      </div>
+      <div class="rows">
+        <div class="row"><span class="dot" style="background:#8A8378"></span><span class="emo">📌</span><span class="nm">Other</span><span class="amt">€37,767.44</span></div>
+        <div class="row"><span class="dot" style="background:#9C5B41"></span><span class="emo">👕</span><span class="nm">Clothing</span><span class="amt">€17,758.68</span></div>
+        <div class="row"><span class="dot" style="background:#687653"></span><span class="emo">🛒</span><span class="nm">Groceries</span><span class="amt">€7,095.06</span></div>
+        <div class="row"><span class="dot" style="background:#B97A5A"></span><span class="emo">🚗</span><span class="nm">Transport</span><span class="amt">€3,182.56</span></div>
+        <div class="row"><span class="dot" style="background:#7C4632"></span><span class="emo">☕</span><span class="nm">Coffee</span><span class="amt">€1,892.24</span></div>
+        <div class="row more"><span class="nm">+3 more categories</span></div>
+      </div>
+      <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C8 14 4 10 4 6 L12 3 L20 6 C20 10 16 14 12 20 Z M12 20 L12 8"/><circle cx="12" cy="22" r="1.4" fill="#fff" stroke="none"/></svg></div>
+      <div class="tabbar">
+        <div class="tab act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3.5" y="13.5" width="4" height="7" rx="1"/><rect x="10" y="9.5" width="4" height="11" rx="1"/><rect x="16.5" y="5.5" width="4" height="15" rx="1"/></svg>Overview</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="5" cy="7" r="1.2"/><line x1="9" y1="7" x2="20" y2="7"/><circle cx="5" cy="12" r="1.2"/><line x1="9" y1="12" x2="20" y2="12"/><circle cx="5" cy="17" r="1.2"/><line x1="9" y1="17" x2="20" y2="17"/></svg>Activity</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M7 9 h10 v9 a2 2 0 0 1-2 2 H9 a2 2 0 0 1-2-2 Z"/><path d="M8 9 V6.5 A1.5 1.5 0 0 1 9.5 5 h5 A1.5 1.5 0 0 1 16 6.5 V9"/></svg>Jars</div>
+        <div class="tab ina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M5 7.5 C5 6 6 5 7.5 5 H16.5 C18 5 19 6 19 7.5 V13 C19 14.5 18 15.5 16.5 15.5 H10 L6 19 V15.5 C5.4 15.4 5 14.6 5 13 Z"/></svg>Chat</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="delta">
+    <b>What changed vs current</b>
+    <ul>
+      <li><span class="k">①</span> Hero↔donut bridge <b>−16pt → +26pt</b> air (overlap-bug read gone)</li>
+      <li><span class="k">②</span> Donut canvas <b>200 → 214pt</b></li>
+      <li><span class="k">③</span> Center: dropped <b>"Other 56%"</b> → total (A) or empty (B)</li>
+      <li><span class="k">④</span> Rows capped <b>top 5 + "+3 more"</b></li>
+      <li><span class="k">⑤</span> FAB lifted <b>≥16pt above tab bar</b></li>
+      <li><span class="k">✓</span> Donut arcs render correctly (CD's bug fixed)</li>
+    </ul>
+  </div>
+</body>
+</html>
