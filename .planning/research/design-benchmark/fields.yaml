@@ -1,0 +1,189 @@
+topic: "Premium personal-finance iOS app dashboard design — field definitions"
+date_created: 2026-05-27
+
+field_categories:
+
+  - category: "A. Category-list legend patterns"
+    fields:
+      - name: legend_style
+        description: "How each category row binds visually to its donut slice color"
+        detail_level: detailed
+        values: [dot, bar, chip, row-fill, icon-tinted, none]
+        required: true
+      - name: color_proximity
+        description: "Where on the row the color cue sits"
+        detail_level: moderate
+        values: [adjacent-to-icon, leading-row, trailing-row, row-fill]
+        required: true
+      - name: icon_treatment
+        description: "How the category icon is rendered"
+        detail_level: detailed
+        values: [emoji, monochrome-svg, tinted-svg, illustrated, 3d, initial-letter]
+        required: true
+      - name: emoji_color_redundancy
+        description: "Does the row carry duplicate color cues (e.g. dot AND bar AND emoji)?"
+        detail_level: detailed
+        values: [yes, no, partial]
+        required: true
+        rationale: "Captures the soldify-specific concern flagged 2026-05-27"
+      - name: percent_indicator
+        description: "How percent share of total is shown"
+        detail_level: moderate
+        values: [bar-under-row, pill, inline-text, progress-arc, none]
+        required: true
+      - name: row_density
+        description: "Vertical complexity of each row"
+        detail_level: brief
+        values: [single-line, two-line, three-line, accordion]
+        required: true
+      - name: color_treatment_match    # added by research-supplement
+        description: "Is the row color the exact same hue as the slice, or a tinted derivative?"
+        detail_level: detailed
+        values: [identical, tinted-bg, dot-only, bar-only]
+        required: true
+        rationale: "Research finding: Copilot identical, Monarch tinted-bg"
+      - name: row_value_treatment       # added by research-supplement
+        description: "How the row amount is displayed"
+        detail_level: detailed
+        values: [right-aligned-tabular, inline-with-percent, stacked-amount-over-percent, amount-only, percent-only]
+        required: true
+        rationale: "Drives whether Manrope tabular-numerals must be enabled per row"
+
+  - category: "B. Donut / ring center label"
+    fields:
+      - name: center_default
+        description: "What is shown in the donut center on first render"
+        detail_level: detailed
+        values: [total, largest-category, period, hint, none]
+        required: true
+      - name: center_typography_scale
+        description: "Primary numeral size in pt"
+        detail_level: detailed
+        values: []  # numeric
+        required: true
+      - name: center_secondary
+        description: "What sits below the primary number/label"
+        detail_level: moderate
+        values: [percent, subline, nothing]
+        required: false
+      - name: on_tap_morph
+        description: "Does the center morph when a slice is tapped?"
+        detail_level: detailed
+        values: [yes, no]
+        required: true
+      - name: slice_tap_morph_target    # added by research-supplement
+        description: "If on_tap_morph=yes, what does the center morph into?"
+        detail_level: detailed
+        values: [category-total, category-percent, category-transactions-count, category-vs-budget, no-morph]
+        required: true
+        rationale: "Research finding: Copilot/Monarch/Emma all morph; target dimension critical for interactive vs static"
+      - name: empty_state_label
+        description: "Center text when no data"
+        detail_level: brief
+        values: []  # string
+        required: false
+      - name: fallback_chart_type       # added by research-supplement
+        description: "What does the visualization degrade to when <3 categories or 1 category?"
+        detail_level: detailed
+        values: [horizontal-bar, sparse-donut, vertical-bar, list-only, hide]
+        required: true
+        rationale: "Research finding: Monarch falls back to horizontal bar; Copilot keeps sparse donut; Lunch Money flips to bar"
+
+  - category: "C. Ring stroke geometry"
+    fields:
+      - name: canvas_size_pt
+        description: "Outer canvas square dimension in pt"
+        detail_level: detailed
+        values: []  # numeric
+        required: true
+      - name: stroke_width_pt
+        description: "Ring stroke thickness in pt"
+        detail_level: detailed
+        values: []  # numeric
+        required: true
+      - name: gap_between_slices_deg
+        description: "Angular gap between adjacent slices in degrees"
+        detail_level: moderate
+        values: []  # numeric
+        required: true
+      - name: stroke_cap
+        description: "How slice ends are rendered"
+        detail_level: brief
+        values: [round, butt, square]
+        required: true
+      - name: ring_to_canvas_ratio
+        description: "Stroke width as percentage of canvas diameter"
+        detail_level: detailed
+        values: []  # numeric percentage
+        required: true
+      - name: ring_canvas_to_screen_ratio    # added by research-supplement
+        description: "Donut canvas width as percentage of screen width"
+        detail_level: detailed
+        values: []  # numeric percentage
+        required: true
+        rationale: "Research finding: premium apps cluster 50-60% on 390pt iPhone (~200-235pt). soldify=200pt at band's low end"
+
+  - category: "D. Hero band typography"
+    fields:
+      - name: numeral_typeface
+        description: "Font family used for the monetary total"
+        detail_level: detailed
+        values: []  # string
+        required: true
+      - name: numeral_classification
+        description: "Type classification"
+        detail_level: detailed
+        values: [serif, sans, display-condensed, mono, condensed-gothic, display-sans]
+        required: true
+      - name: numeral_size_pt
+        description: "Monetary total font size in pt"
+        detail_level: detailed
+        values: []  # numeric
+        required: true
+      - name: secondary_label_treatment
+        description: "How the eyebrow above the total is styled"
+        detail_level: moderate
+        values: [tracked-uppercase, sentence, pill]
+        required: true
+      - name: subline_content
+        description: "What the subline below the total carries"
+        detail_level: moderate
+        values: [delta, range, period, nothing]
+        required: true
+
+  - category: "E. Hero ↔ visualization bridge"
+    fields:
+      - name: separation
+        description: "Distance between hero band and primary viz"
+        detail_level: detailed
+        values: []  # numeric pt OR keyword: overlap, shared-card, divider
+        required: true
+      - name: background_continuity
+        description: "Color/material relationship between hero and viz region"
+        detail_level: moderate
+        values: [same-tint, different-card, split]
+        required: true
+      - name: transition_motion
+        description: "How the relationship animates on scroll"
+        detail_level: brief
+        values: [scroll-pin, parallax, none]
+        required: true
+      - name: hero_to_donut_gap_pt          # added by research-supplement
+        description: "Specific pt gap between hero baseline and donut canvas top"
+        detail_level: detailed
+        values: []  # numeric pt
+        required: true
+        rationale: "Research finding: premium designs cluster 24-32pt — soldify currently uses negative bridge (-32 marginTop) per b254981"
+
+  - category: "F. Layout extension (framework gap surfaced by research)"
+    fields:
+      - name: secondary_chart_below_donut
+        description: "What sits between the donut and the category list"
+        detail_level: detailed
+        values: [bar-chart, sparkline, delta-pill, vs-last-month-card, nothing, other]
+        required: true
+        rationale: "Research finding: Monarch/YNAB stack secondary viz here; soldify uses yesterday card in this slot"
+
+uncertain:
+  # Reserved field — populated during /research-deep when an agent cannot confidently fill a field.
+  # Format: { item: <app_name>, field: <field_name>, reason: <why uncertain> }

@@ -1,0 +1,88 @@
+topic: "Premium personal-finance iOS app dashboard design — visual benchmark for soldify"
+date_created: 2026-05-27
+date_window: "since 2024"
+preliminary_research_skill_version: "research-en (Weizhena/Deep-Research-skills)"
+
+items:
+  - name: "Copilot Money"
+    platform: "iOS-first"
+    status: active
+    notes: "Apple Design Award finalist 2024 (Innovation). Donut + center total flagship pattern."
+  - name: "Monarch Money"
+    platform: "iOS+web"
+    status: active
+    notes: "Subscription PFM, design-led. Color-tinted category row backgrounds."
+  - name: "YNAB"
+    platform: "iOS+web"
+    status: active
+    notes: "Opinionated envelope UI. 2025 iOS redesign."
+  - name: "Lunch Money"
+    platform: "iOS+web"
+    status: active
+    notes: "Indie modern PFM, flips to bar chart at low cardinality."
+  - name: "Apple Wallet / Apple Card"
+    platform: "iOS native"
+    status: active
+    notes: "System-level money UI. SF Pro tight tracking."
+  - name: "Revolut"
+    platform: "iOS+Android+web"
+    status: active
+    notes: "EU/global neobank. Deep analytics dashboard."
+  - name: "Monzo"
+    platform: "iOS+Android"
+    status: active
+    notes: "UK neobank. Trends tab. Historical donut chart pioneer."
+  - name: "N26"
+    platform: "iOS+Android"
+    status: active
+    notes: "EU neobank. Sparse Insights tab."
+  - name: "Mint"
+    platform: "iOS+web"
+    status: discontinued
+    discontinued_date: 2024-03-23
+    notes: "Legacy reference only — folded into Credit Karma."
+  - name: "Cleo"
+    platform: "iOS+Android"
+    status: active
+    notes: "AI-chat-first PFM. Character UI."
+  - name: "Empower (Personal Capital)"
+    platform: "iOS+Android+web"
+    status: active
+    notes: "Wealth + spending dashboard."
+  - name: "Origin Financial"
+    platform: "iOS+web"
+    status: active
+    notes: "Holistic finance, advisor angle. Budget-by-Groups feature."
+  - name: "Rocket Money (Truebill)"
+    platform: "iOS+Android"
+    status: active
+    notes: "Subscription killer + spending."
+  - name: "Linum"
+    platform: "iOS"
+    status: active
+    notes: "Indie design-led PFM. Closest positioning to soldify."
+
+execution:
+  batch_size: 3              # 3 parallel agents in /research-deep wave
+  items_per_agent: 5         # 14 items → 3×5 = 15 slots, last agent gets 4
+  output_dir: "./results"
+  notes: "Defaults — saidaliiev deferred final choice; conservative for rate-limit safety."
+
+advisory:
+  swap_candidates:
+    - name: "Emma"
+      reason: "Active, EU multi-bank, explicit donut implementation with 10-slice cap + Other grouping. Strongest 2025-active swap for Mint."
+      confidence: HIGH
+  scope_extensions:
+    - name: "Quicken Simplifi"
+      reason: "Watchlist widget pattern (no donut). Useful negative-space reference."
+      confidence: MED
+    - name: "PocketSmith"
+      reason: "Calendar-based hero, forecast-led layout. Skip if scope is strictly spending breakdown."
+      confidence: LOW
+
+cross_links:
+  preliminary_outline: "./outline.yaml"
+  field_definitions: "./fields.yaml"
+  designer_deliverable: "./DESIGN-ORDER.md"   # produced by Designer agent in parallel
+  preliminary_research_findings_excerpt: "./RESEARCH-NOTES.md"
