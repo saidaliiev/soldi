@@ -13,7 +13,12 @@
   5. Sentry/PostHog EU, domain `soldi.app`, "SOLDI" trademark/App-Store conflict check.
 - **Apply:** do NOT attempt to "unblock" these with code. A separate GSD executor drives implementation; this is the standing blocker list. `eas build` is permission-DENIED in this repo — never work around it.
 
-## Palette = Slate & Sand (gender-neutral)  `[2026-05-19]`
+## Palette → Cold Minimal (Direction A)  `[2026-05-29, DESIGN-ONLY — not yet in code]`
+- **Decision:** user reviewed warm directions in Figma + the Claude Design pass, was unconvinced, and chose **Cold Minimal**: slate-blue `#34506E` + graphite `#1C2024` on cool near-white `#F4F5F7`. Typography drops to **2-family** (Oswald hero + Manrope UI); **EB Garamond retired**. Cards = hairline borders, no content shadows. This **supersedes** "Slate & Sand" for the app's visual identity — Slate & Sand was a warm terracotta/sand palette merely *relabelled* gender-neutral (2026-05-19); it never actually went cold. Cold Minimal is the genuine gender-neutral answer to the "for women only" flag.
+- **State:** captured in [spec](../superpowers/specs/2026-05-29-cold-minimal-redesign-design.md) + Figma file `mQkHqa6xfWyyQpmS5gyoby` page "Cold Minimal — Dashboard". **Code still ships Slate & Sand** — the token swap in `tokens.ts` is a pending port, Dashboard-first then 7 screens.
+- **Apply:** when porting, swap palette in `tokens.ts` (table §2 of spec) + drop `FONTS.editorial`/EB Garamond presets + flip `GLASS` tint warm→cool + update banned-color ESLint list & `contrast.ts` assertions in lockstep. Never reintroduce Oat&Ink or banned AI-slop hexes.
+
+## Palette = Slate & Sand (gender-neutral)  `[2026-05-19 — SUPERSEDED by Cold Minimal 2026-05-29 for visual identity; still the shipping code palette until port]`
 - **Decision:** "Slate & Sand" token palette. "Oat & Ink" was **rejected** ("for women only") → gender-neutral relock. `tokens.ts` COLORS/GLASS/GRADIENTS == HTML `:root` == design contracts. `textMuted` WCAG hard-floor `#6E695F` (4.54:1).
 - **Apply:** never reintroduce Oat&Ink or the banned AI-slop hexes (CLAUDE.md "Banned values"). Reference tokens, never literals.
 
