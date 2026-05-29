@@ -23,6 +23,8 @@
   "sign_all": "All",
   "sign_expense": "Expense",
   "sign_income": "Income",
+  "seg_expenses": "Expenses",
+  "seg_subs": "Subs",
   "sign_both": "Both",
   "scope_this_month": "This month",
   "scope_last_month": "Last month",

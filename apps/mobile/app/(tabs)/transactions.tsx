@@ -31,7 +31,7 @@ import { isEmptyFilter } from '@/src/features/transactions/filterCompose';
 import { DateHeader } from '@/src/features/transactions/DateHeader';
 import { TransactionRow } from '@/src/features/transactions/TransactionRow';
 import { FilterPillsRow } from '@/src/features/transactions/FilterPillsRow';
-import { ActivityDefaultFilters } from '@/src/features/transactions/ActivityDefaultFilters';
+import { ActivitySegmentedFilter } from '@/src/features/transactions/ActivitySegmentedFilter';
 import type { FeedItem } from '@/src/features/transactions/types';
 
 export default function TransactionListScreen(): React.JSX.Element {
@@ -113,15 +113,13 @@ export default function TransactionListScreen(): React.JSX.Element {
         </Pressable>
       </View>
 
-      {/* Sprint D6 (DEFAULT-SET): always-visible discovery row at top.
-          Hidden when no transactions exist — the empty_initial copy below
-          carries the screen's only message at that point. */}
-      {transactions.length > 0 && <ActivityDefaultFilters />}
+      {/* Cold Minimal (Figma 24:4): single segmented filter row replaces the
+          3-row discovery. Sign + Subs live here; hidden on an empty DB. */}
+      {transactions.length > 0 && <ActivitySegmentedFilter />}
 
-      {/* Sprint D6 follow-up: skip the axes ActivityDefaultFilters already
-          owns (category, sign, date) so we don't render duplicate × pills
-          for the same toggled state. Search + amount stay here — the
-          search modal is the only place they get set. */}
+      {/* Search + amount axes still surface as removable pills (set by the
+          standalone search modal); sign/categories/date are owned by the
+          segmented control above, so they're excluded here. */}
       <FilterPillsRow excludeAxes={['categories', 'sign', 'date']} />
 
       {error && (
