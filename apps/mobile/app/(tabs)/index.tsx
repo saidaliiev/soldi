@@ -21,7 +21,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
@@ -32,7 +31,7 @@ import {
   TAB_BAR_FLOATING_MARGIN,
 } from '@/src/features/chrome/GlassTabBar';
 
-import { COLORS, GRADIENTS, SPACING } from '@design/tokens';
+import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { getMonthlyExpenseTotal, getMonthsWithTransactions } from '@data/dashboardRepo';
 import { MonthSwiper } from '@/src/features/dashboard/MonthSwiper';
@@ -182,13 +181,8 @@ export default function DashboardScreen(): React.JSX.Element {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        {/* Hero band (D4) — warm gradient wrapping swiper + monthly total. */}
-        <LinearGradient
-          colors={[...GRADIENTS.warm]}
-          start={{ x: 0.05, y: 0 }}
-          end={{ x: 0.95, y: 1 }}
-          style={[styles.heroBand, { paddingTop: insets.top + SPACING.sm }]}
-        >
+        {/* Hero band — flat (Cold Minimal §4.1): no gradient, sits on page bg. */}
+        <View style={[styles.heroBand, { paddingTop: insets.top + SPACING.sm }]}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroSwiperWrap}>
               <MonthSwiper
@@ -214,7 +208,7 @@ export default function DashboardScreen(): React.JSX.Element {
             monthDirection={monthDirection}
             subline={heroSubline}
           />
-        </LinearGradient>
+        </View>
 
         <View style={styles.belowHero}>
           {data.error && (
@@ -237,28 +231,47 @@ export default function DashboardScreen(): React.JSX.Element {
             <EmptyState variant="current-month" onCtaPress={goAddTransaction} />
           ) : (
             <>
-              <View style={styles.donutBridge}>
+              {/* Donut in its own card (Cold Minimal §4.2): white, hairline, no overlap. */}
+              <View style={styles.donutCard}>
                 <DonutChart breakdown={data.breakdown} monthDirection={monthDirection} />
               </View>
+
+              {/* Category breakdown card (§4.3): CATEGORIES eyebrow + See all, hairline dividers. */}
+              <View style={styles.categoryCard}>
+                <View style={styles.categoryHead}>
+                  <Text style={styles.categoryEyebrow} allowFontScaling>
+                    {t('dashboard.categories_section')}
+                  </Text>
+                  <Pressable
+                    onPress={() => router.push('/categories')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('dashboard.see_all')}
+                    hitSlop={8}
+                  >
+                    <Text style={styles.seeAll} allowFontScaling>
+                      {t('dashboard.see_all')}
+                    </Text>
+                  </Pressable>
+                </View>
+                {data.breakdown.top.map((slice, i) => (
+                  <View key={`top-${String(slice.categoryId)}`}>
+                    {i > 0 && <View style={styles.divider} />}
+                    <CategoryRow slice={slice} />
+                  </View>
+                ))}
+                {data.breakdown.other != null && (
+                  <View key="other">
+                    {data.breakdown.top.length > 0 && <View style={styles.divider} />}
+                    <CategoryRow slice={data.breakdown.other} />
+                  </View>
+                )}
+              </View>
+
               {showDigest && (
                 <View style={styles.digestWrap}>
                   <DigestCard data={digest} />
                 </View>
               )}
-              <View style={styles.rows}>
-                {data.breakdown.top.map((slice) => (
-                  <CategoryRow
-                    key={`top-${String(slice.categoryId)}`}
-                    slice={slice}
-                  />
-                ))}
-                {data.breakdown.other != null && (
-                  <CategoryRow
-                    key="other"
-                    slice={data.breakdown.other}
-                  />
-                )}
-              </View>
             </>
           )}
         </View>
@@ -282,7 +295,7 @@ const styles = StyleSheet.create({
   },
   heroBand: {
     paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -300,8 +313,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   belowHero: {
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
     gap: SPACING.lg,
   },
   errorRow: {
@@ -311,21 +324,48 @@ const styles = StyleSheet.create({
     ...TYPE.uiLabel,
     color: COLORS.error,
   },
-  rows: {
-    gap: SPACING.sm,
+  // Donut card (Cold Minimal §4.2): white surface, 1px hairline, no shadow,
+  // donut centered. Replaces the prior negative-margin hero↔donut overlap —
+  // Figma 17:3 places the donut in its own discrete card below a flat hero.
+  donutCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
+    paddingVertical: SPACING.lg,
+    alignItems: 'center',
   },
-  // Pull the donut UP into the hero band's lower edge so the donut center
-  // sits on the band seam — deliberate visual handshake between hero and
-  // breakdown. Tightened from -xl to -md (Designer audit 2026-05-27): -32
-  // read as overlap bug at large-text accessibility scales; -16 preserves
-  // the handshake while leaving breathing room against the benchmark
-  // 24-32pt premium hero↔viz gap.
-  donutBridge: {
-    marginTop: -SPACING.md,
-    marginBottom: -SPACING.sm,
+  // Category breakdown card (§4.3): rows separated by hairlines (no gaps),
+  // headed by a CATEGORIES eyebrow + See all link.
+  categoryCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+  },
+  categoryHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.sm,
+  },
+  categoryEyebrow: {
+    ...TYPE.uiLabel,
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  seeAll: {
+    ...TYPE.uiLabel,
+    color: COLORS.accent,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.borderSubtle,
   },
   digestWrap: {
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.lg,
+    marginTop: 0,
   },
 });

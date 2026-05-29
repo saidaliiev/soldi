@@ -15,6 +15,8 @@
   "cta_add_transaction": "Додати транзакцію",
   "donut_total_label": "Разом",
   "donut_top_label": "Найбільше",
+  "categories_section": "Категорії",
+  "see_all": "Усі",
   "donut_a11y_empty": "Кільцева діаграма витрат. Цього місяця даних немає.",
   "donut_a11y_with_data": "Кільцева діаграма витрат. {{category}} {{amount}}, {{percent}}%. Подвійний дотик до сегмента — деталі.",
   "digest_yesterday_label": "учора витрачено",

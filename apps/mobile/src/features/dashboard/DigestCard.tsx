@@ -5,10 +5,10 @@
  *   1. Prefix label  (TYPE.uiLabel, COLORS.textMuted)         "yesterday in money"
  *   2. Yesterday €   (TYPE.displayL Oswald 40pt, COLORS.accent, tabular-nums)
  *   3. Sparkline     (32pt Skia line, COLORS.accent)
- *   4. MoM phrase    (TYPE.editorialBody italic, COLORS.textSecondary)
+ *   4. MoM phrase    (TYPE.editorialBody, COLORS.textSecondary)
  *
- * Container: RADIUS.lg, COLORS.surface bg, SHADOWS.card, SPACING.md padding,
- * full width inset by parent SPACING.md.
+ * Container: RADIUS.lg, COLORS.surface bg, 1px borderSubtle hairline (no shadow
+ * — Cold Minimal §1), SPACING.md padding, full width inset by parent SPACING.lg.
  *
  * D-08: this is a first-class dashboard section between the donut block and
  * the top-5 category rows — its own visual breath, not a footnote.
@@ -21,7 +21,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@lib/money';
 import { Sparkline } from './Sparkline';
@@ -86,7 +86,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
-    ...SHADOWS.card,
+    // Cold Minimal §1: hairline border, no shadow on content surfaces.
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
     gap: SPACING.xs,
   },
   prefix: {
@@ -101,7 +103,6 @@ const styles = StyleSheet.create({
   phrase: {
     ...TYPE.editorialBody,
     color: COLORS.textSecondary,
-    fontStyle: 'italic',
     marginTop: SPACING.sm,
   },
 });
