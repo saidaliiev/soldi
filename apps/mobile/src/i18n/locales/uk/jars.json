@@ -22,5 +22,10 @@
   "validation_name_empty": "Назва обов'язкова.",
   "validation_target_invalid": "Введіть коректну цільову суму.",
   "back": "Назад",
-  "to_go_label": "до цілі"
+  "to_go_label": "до цілі",
+  "new_jar": "+ Нова банка",
+  "saved_summary_one": "{{amount}} у 1 банці",
+  "saved_summary_few": "{{amount}} у {{count}} банках",
+  "saved_summary_many": "{{amount}} у {{count}} банках",
+  "saved_summary_other": "{{amount}} у {{count}} банках"
 }

@@ -22,5 +22,8 @@
   "validation_name_empty": "Name is required.",
   "validation_target_invalid": "Enter a valid target amount.",
   "back": "Back",
-  "to_go_label": "to go"
+  "to_go_label": "to go",
+  "new_jar": "+ New jar",
+  "saved_summary_one": "{{amount}} saved across 1 jar",
+  "saved_summary_other": "{{amount}} saved across {{count}} jars"
 }

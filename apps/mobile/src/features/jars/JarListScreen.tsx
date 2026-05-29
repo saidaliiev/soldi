@@ -27,13 +27,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { formatMoney } from '@/src/lib/money';
 import { listJars, jarBalanceCents } from './jarsRepo';
 import { useJarCreateStore } from './jarStore';
 import { JarRow } from './JarRow';
-import { JarRing } from './JarRing';
 import type { Jar } from './types';
 
 type JarWithBalance = {
@@ -67,13 +66,12 @@ export function JarListScreen(): React.JSX.Element {
   };
 
   const isEmpty = jarsWithBalance.length === 0;
-  const featured = jarsWithBalance[0];
-  const rest = jarsWithBalance.slice(1);
-
-  const remainingCents = featured != null
-    ? Math.max(0, featured.jar.targetCents - featured.balance)
-    : 0;
-  const remainingStr = formatMoney({ amountCents: remainingCents, currency: 'EUR' });
+  const count = jarsWithBalance.length;
+  const totalSavedCents = jarsWithBalance.reduce(
+    (sum, j) => sum + Math.max(0, j.balance),
+    0,
+  );
+  const savedStr = formatMoney({ amountCents: totalSavedCents, currency: 'EUR' });
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -81,24 +79,12 @@ export function JarListScreen(): React.JSX.Element {
         <Text style={styles.title} accessibilityRole="header" allowFontScaling>
           {t('jars.title')}
         </Text>
-        {/* Sprint E4: empty state IS the CTA — centred pill below carries the
-            single affordance. Showing the top-right create pill simultaneously
-            doubles the affordance for a screen whose only job is "create the
-            first jar". Reveal once jars exist. */}
+        {/* Figma 27:3 — saved-total summary subline (replaces header create
+            pill; creation now lives in the bottom full-width button). */}
         {!isEmpty && (
-          <Pressable
-            onPress={handleCreate}
-            accessibilityRole="button"
-            accessibilityLabel={t('jars.create_cta')}
-            // 42pt visual pill (HTML §6 mock metric) + 4pt vertical hitSlop
-            // = 50pt effective tap target ≥ 44pt platform floor.
-            hitSlop={{ top: 4, bottom: 4 }}
-            style={({ pressed }) => [styles.createBtn, pressed && styles.pressed]}
-          >
-            <Text style={styles.createBtnLabel} allowFontScaling>
-              {t('jars.create_cta')}
-            </Text>
-          </Pressable>
+          <Text style={styles.subline} allowFontScaling>
+            {t('jars.saved_summary', { amount: savedStr, count })}
+          </Text>
         )}
       </View>
 
@@ -128,27 +114,21 @@ export function JarListScreen(): React.JSX.Element {
           </View>
         ) : (
           <>
-            {featured != null && (
-              <View style={styles.featuredCard}>
-                <JarRing
-                  balanceCents={featured.balance}
-                  targetCents={featured.jar.targetCents}
-                  size={184}
-                  strokeWidth={14}
-                  palette="sage"
-                  showCenterLabel
-                />
-                <Text style={styles.featuredName} numberOfLines={1} allowFontScaling>
-                  {featured.jar.name}
-                </Text>
-                <Text style={styles.featuredSub} numberOfLines={1} allowFontScaling>
-                  {remainingStr} {t('jars.to_go_label')}
-                </Text>
-              </View>
-            )}
-            {rest.map(({ jar, balance }) => (
+            {/* Figma 27:6-29 — uniform jar rows (featured-hero card dropped). */}
+            {jarsWithBalance.map(({ jar, balance }) => (
               <JarRow key={jar.id} jar={jar} balanceCents={balance} />
             ))}
+            {/* Figma 27:30 — bottom full-width "+ New jar" ghost button. */}
+            <Pressable
+              onPress={handleCreate}
+              accessibilityRole="button"
+              accessibilityLabel={t('jars.create_cta')}
+              style={({ pressed }) => [styles.newJarBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.newJarLabel} allowFontScaling>
+                {t('jars.new_jar')}
+              </Text>
+            </Pressable>
           </>
         )}
       </ScrollView>
@@ -162,10 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.sm,
   },
@@ -173,23 +150,16 @@ const styles = StyleSheet.create({
     ...TYPE.displayM,
     color: COLORS.textPrimary,
   },
-  createBtn: {
-    height: 42,
-    paddingHorizontal: SPACING.md,
-    borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createBtnLabel: {
-    ...TYPE.uiButton,
-    color: COLORS.white,
+  subline: {
+    ...TYPE.uiBody,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
   },
   scroll: {
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.xl,
   },
   centerContent: {
@@ -225,26 +195,19 @@ const styles = StyleSheet.create({
     ...TYPE.uiButton,
     color: COLORS.white,
   },
-  featuredCard: {
-    alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.md,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surface,
-    ...SHADOWS.card,
-    marginVertical: SPACING.md,
-  },
-  featuredName: {
-    ...TYPE.editorialLead,
-    fontSize: 21,
-    lineHeight: 26,
-    color: COLORS.textPrimary,
+  newJarBtn: {
     marginTop: SPACING.md,
+    height: 52,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  featuredSub: {
-    ...TYPE.uiBody,
-    color: COLORS.textMuted,
-    marginTop: 4,
+  newJarLabel: {
+    ...TYPE.uiButton,
+    color: COLORS.accent,
   },
   pressed: {
     opacity: 0.7,
