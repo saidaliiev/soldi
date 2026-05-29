@@ -15,5 +15,6 @@
   "export_label": "Export CSV",
   "categories_section": "Categories",
   "manage_categories_label": "Manage categories",
-  "manage_categories_description": "Default and custom categories"
+  "manage_categories_description": "Default and custom categories",
+  "footer_version": "SOLDI v1.0 · made in Donegal"
 }

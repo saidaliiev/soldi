@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { COLORS, SPACING, RADIUS, SHADOWS } from '@design/tokens';
+import { COLORS, SPACING, RADIUS } from '@design/tokens';
 import { TYPE } from '@design/typography';
 import { LanguageToggle } from './LanguageToggle';
 import { BiometricToggle } from './BiometricToggle';
@@ -118,6 +118,11 @@ export function SettingsScreen(): React.JSX.Element {
           </Text>
         </Pressable>
       </View>
+
+      {/* Brand footer (Figma 29:52) — Donegal signature, premium portfolio touch. */}
+      <Text style={styles.footer} allowFontScaling accessibilityRole="text">
+        {t('settings.footer_version')}
+      </Text>
     </ScrollView>
   );
 }
@@ -128,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   backRow: {
     minHeight: 44,
@@ -152,7 +157,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     ...TYPE.uiLabel,
-    color: COLORS.sageDark,
+    color: COLORS.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginTop: SPACING.lg,
@@ -162,7 +167,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
-    ...SHADOWS.card,
+    // Cold Minimal §1: hairline border, no shadow on content.
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
   },
   row: {
     flexDirection: 'row',
@@ -189,5 +196,11 @@ const styles = StyleSheet.create({
     ...TYPE.displayM,
     fontSize: 22,
     color: COLORS.textMuted,
+  },
+  footer: {
+    ...TYPE.uiMeta,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginTop: SPACING.xl,
   },
 });

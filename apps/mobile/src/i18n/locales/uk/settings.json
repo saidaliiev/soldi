@@ -15,5 +15,6 @@
   "export_label": "Експорт CSV",
   "categories_section": "Категорії",
   "manage_categories_label": "Керування категоріями",
-  "manage_categories_description": "Стандартні та власні категорії"
+  "manage_categories_description": "Стандартні та власні категорії",
+  "footer_version": "SOLDI v1.0 · зроблено в Донеголі"
 }
