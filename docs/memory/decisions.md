@@ -13,12 +13,13 @@
   5. Sentry/PostHog EU, domain `soldi.app`, "SOLDI" trademark/App-Store conflict check.
 - **Apply:** do NOT attempt to "unblock" these with code. A separate GSD executor drives implementation; this is the standing blocker list. `eas build` is permission-DENIED in this repo — never work around it.
 
-## Palette → Cold Minimal (Direction A)  `[2026-05-29, DESIGN-ONLY — not yet in code]`
+## Palette → Cold Minimal (Direction A)  `[2026-05-29, FOUNDATION PORTED — commit 5a9d149]`
 - **Decision:** user reviewed warm directions in Figma + the Claude Design pass, was unconvinced, and chose **Cold Minimal**: slate-blue `#34506E` + graphite `#1C2024` on cool near-white `#F4F5F7`. Typography drops to **2-family** (Oswald hero + Manrope UI); **EB Garamond retired**. Cards = hairline borders, no content shadows. This **supersedes** "Slate & Sand" for the app's visual identity — Slate & Sand was a warm terracotta/sand palette merely *relabelled* gender-neutral (2026-05-19); it never actually went cold. Cold Minimal is the genuine gender-neutral answer to the "for women only" flag.
-- **State:** captured in [spec](../superpowers/specs/2026-05-29-cold-minimal-redesign-design.md) + Figma file `mQkHqa6xfWyyQpmS5gyoby` page "Cold Minimal — Dashboard". **Code still ships Slate & Sand** — the token swap in `tokens.ts` is a pending port, Dashboard-first then 7 screens.
-- **Apply:** when porting, swap palette in `tokens.ts` (table §2 of spec) + drop `FONTS.editorial`/EB Garamond presets + flip `GLASS` tint warm→cool + update banned-color ESLint list & `contrast.ts` assertions in lockstep. Never reintroduce Oat&Ink or banned AI-slop hexes.
+- **State:** **token foundation ported** (commit `5a9d149`): `tokens.ts` COLORS/GRADIENTS/GLASS cooled, EB Garamond presets remapped to Manrope, `contrast.ts` re-verified (auditTokenPairs live, 25/25 design tests, tsc+lint green). Components consume tokens → whole app reskinned. Design source: [spec](../superpowers/specs/2026-05-29-cold-minimal-redesign-design.md) + Figma `mQkHqa6xfWyyQpmS5gyoby` (pages "Cold Minimal — Dashboard" + "Cold Minimal — Screens"). **Pending:** per-screen STRUCTURAL alignment (flat hero band, slate donut hue-ramp, bento Categories grid); EB Garamond font-asset cleanup (token `FONTS.editorial` kept, just unused); `schema.sql.ts` seed category colors still warm.
+- **Apply:** never reintroduce Oat&Ink/Slate&Sand warm hexes or banned AI-slop hexes. Warm hexes were intentionally NOT added to BANNED_COLORS (test files contain `#EDEAE3`/`#221F1B` literals → would red the lint); the decision is enforced here + by the token values, not by lint.
+- **Known-unrelated:** 2 pre-existing schema-migration test failures on main (`getSchemaVersion===5` expects 5, actual 6) — NOT caused by this palette work; flagged for the data-layer owner.
 
-## Palette = Slate & Sand (gender-neutral)  `[2026-05-19 — SUPERSEDED by Cold Minimal 2026-05-29 for visual identity; still the shipping code palette until port]`
+## Palette = Slate & Sand (gender-neutral)  `[2026-05-19 — SUPERSEDED by Cold Minimal 2026-05-29; foundation ported 5a9d149]`
 - **Decision:** "Slate & Sand" token palette. "Oat & Ink" was **rejected** ("for women only") → gender-neutral relock. `tokens.ts` COLORS/GLASS/GRADIENTS == HTML `:root` == design contracts. `textMuted` WCAG hard-floor `#6E695F` (4.54:1).
 - **Apply:** never reintroduce Oat&Ink or the banned AI-slop hexes (CLAUDE.md "Banned values"). Reference tokens, never literals.
 
