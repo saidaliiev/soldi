@@ -16,7 +16,7 @@ test('ELEVATION: floating step exists and is heavier than modal', () => {
   assert.ok(ELEVATION.floating.shadowOpacity <= 0.12, 'keep editorial: opacity <= 0.12');
 });
 
-test('GLASS: warm tint constants present and are valid #RRGGBB', () => {
+test('GLASS: cool tint constants present and are valid #RRGGBB', () => {
   for (const key of ['chromeTint', 'sheetTint'] as const) {
     assert.match(GLASS[key], /^#[0-9A-Fa-f]{6}$/, `GLASS.${key} must be #RRGGBB`);
   }

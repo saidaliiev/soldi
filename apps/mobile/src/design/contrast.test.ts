@@ -42,10 +42,10 @@ test('contrastRatio: is symmetric', () => {
     `contrastRatio not symmetric: ${ab} vs ${ba}`);
 });
 
-test('contrastRatio: known reference pair (Slate & Sand background)', () => {
-  // textPrimary #221F1B on background #EDEAE3 — known ~13.7:1 (Slate & Sand)
-  const ratio = contrastRatio('#221F1B', '#EDEAE3');
-  assert.ok(ratio > 13 && ratio < 15, `expected ~13.7, got ${ratio}`);
+test('contrastRatio: known reference pair (Cold Minimal background)', () => {
+  // textPrimary #1C2024 on background #F4F5F7 — known ~14.7:1 (Cold Minimal)
+  const ratio = contrastRatio('#1C2024', '#F4F5F7');
+  assert.ok(ratio > 13 && ratio < 16, `expected ~14.7, got ${ratio}`);
 });
 
 test('contrastRatio: throws on malformed hex', () => {

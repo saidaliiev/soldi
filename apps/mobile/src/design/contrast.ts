@@ -9,7 +9,7 @@
  *
  * The audit table below enumerates every foreground/background token pair
  * that actually occurs in the app's rendered UI and asserts each clears AA
- * with the Slate & Sand palette in tokens.ts (WCAG-gated values).
+ * with the Cold Minimal palette in tokens.ts (WCAG-gated values).
  *
  * Colocated test: contrast.test.ts (node:test + node:assert — no jest needed).
  */
@@ -78,7 +78,7 @@ export type ContrastAuditEntry = {
 
 /**
  * Enumerate every foreground/background token pair that the app renders.
- * With the Slate & Sand palette every entry's `passes` must be true.
+ * With the Cold Minimal palette every entry's `passes` must be true.
  *
  * Threshold classification (WCAG 2.1 §1.4.3 + §1.4.11):
  *   body/label text     → 4.5:1  (fontSize < 18pt normal / < 14pt bold)
@@ -119,32 +119,32 @@ export function auditTokenPairs(): readonly ContrastAuditEntry[] {
     entry('textSecondary', COLORS.textSecondary, 'surface', SURF, 4.5),
 
     // ---- textMuted (uiLabel/uiMeta body text on all surfaces) --------------
-    // Slate & Sand WCAG gate: raw #8A8478 = 3.09:1 → #6E695F (4.54:1 bg,
-    // 5.01:1 surf). Hard AA floor — no headroom by design.
+    // Cold Minimal WCAG gate: textMuted #5C6270 = 5.47:1 bg / 6.11:1 surf.
+    // PASS body 4.5:1 with headroom.
     entry('textMuted', COLORS.textMuted, 'background', BG, 4.5),
     entry('textMuted', COLORS.textMuted, 'surface', SURF, 4.5),
 
     // ---- accent (used for expense amounts in TYPE.tabular = 16pt semibold,
     //      CTA button labels in TYPE.uiButton = 16pt semibold — qualifies as
     //      large text per WCAG 2.1 "14pt bold" threshold) --------------------
-    // Slate & Sand: accent #9C5B41 = 4.38:1 bg / 4.84:1 surf (graphic +
-    // large-text-only policy; never body text — use accentDeep #7C4632).
+    // Cold Minimal: accent #34506E = 7.4:1 bg / 8.0:1 surf — text-safe
+    // (body + large). Slate-blue: donut primary, CTA, FAB, selected states.
     entry('accent', COLORS.accent, 'background', BG, 3.0,
       'TYPE.tabular/uiButton = 16pt semibold (>=14pt bold = large text, §1.4.3)'),
     entry('accent', COLORS.accent, 'surface', SURF, 3.0,
       'TYPE.tabular/uiButton = 16pt semibold (>=14pt bold = large text, §1.4.3)'),
 
     // ---- sage (ring arc — graphic element only, §1.4.11 non-text contrast 3:1)
-    // sage MUST NOT be used for body/label text — use sageDark for text.
-    // Slate & Sand: sage #687653 = 4.06:1 bg / 4.48:1 surf (graphic only).
+    // Cold Minimal: sage #4A6B5A = 5.31:1 bg — positive amounts/graphics.
+    // sageDark is the deepest positive for dense body text.
     entry('sage', COLORS.sage, 'background', BG, 3.0,
       'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
     entry('sage', COLORS.sage, 'surface', SURF, 3.0,
       'Graphic only (ring arc fill/stroke); §1.4.11 non-text contrast 3:1'),
 
     // ---- sageDark (overFundedLabel in TYPE.uiLabel = 14pt medium = body text)
-    // CR-04: overFundedLabel was using sage (graphic) which fails §1.4.3 body 4.5:1.
-    // sageDark (#586A45) is 4.91:1 on background — PASS.
+    // CR-04: overFundedLabel must clear §1.4.3 body 4.5:1.
+    // sageDark (#3F5E4D) is 6.45:1 on background — PASS.
     entry('sageDark', COLORS.sageDark, 'background', BG, 4.5),
     entry('sageDark', COLORS.sageDark, 'surface', SURF, 4.5),
 

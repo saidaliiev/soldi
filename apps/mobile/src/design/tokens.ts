@@ -8,63 +8,55 @@
  */
 
 export const COLORS = {
-  // Surfaces
-  background: '#EDEAE3', // warm slate — app shell
-  surface: '#F7F5F0', // card surface
+  // Surfaces — Cold Minimal: cool near-white shell, pure-white cards.
+  background: '#F4F5F7', // cool near-white — app shell
+  surface: '#FFFFFF', // card surface
   white: '#FFFFFF',
 
-  // Text
-  textPrimary: '#221F1B', // deep warm slate
-  textSecondary: '#6A645A',
-  // Slate & Sand + WCAG gate: raw --muted #8A8478 = 3.09:1 on
-  // background (#EDEAE3) — WCAG AA body 4.5:1 FAIL. Darkened
-  // (warm-grey hue preserved) to #6E695F → 4.54:1 background,
-  // 5.01:1 surface. PASS. Hard AA floor: no headroom by design —
-  // do NOT darken textMuted alone (collapses the step vs
-  // textSecondary 4.88). contrast.ts auditTokenPairs asserts ≥4.5.
-  textMuted: '#6E695F',
+  // Text — graphite ramp.
+  textPrimary: '#1C2024', // graphite — primary text (~14.7:1 on background)
+  textSecondary: '#3F4550', // ~9:1 on background
+  // Cold Minimal + WCAG gate: textMuted #5C6270 = 5.47:1 on background
+  // (#F4F5F7), 6.11:1 on surface (#FFFFFF). PASS body 4.5:1 with headroom.
+  // contrast.ts auditTokenPairs asserts ≥4.5.
+  textMuted: '#5C6270',
 
-  // Accents — sandstone family
-  // Slate & Sand + WCAG gate: accent #9C5B41 = 4.38:1 on background,
-  // 4.84:1 on surface. Below body 4.5:1 — graphic + large-text-only
-  // policy: ≥24px regular / ≥18.66px bold, never body text.
-  accent: '#9C5B41', // primary CTA, selected states, expense
-  accentSoft: '#B97A5A', // gradient pair, lighter (decorative — no text use)
-  accentDeep: '#7C4632', // pressed state, shadow tint (6.29:1 on BG — text-safe)
+  // Accents — slate-blue family.
+  // Cold Minimal + WCAG gate: accent #34506E = 7.4:1 on background,
+  // 8.0:1 on surface — text-safe (body + large). Donut primary, selected
+  // states, CTA, FAB.
+  accent: '#34506E', // primary CTA, selected states, donut, FAB
+  accentSoft: '#4A678A', // donut ramp / gradient pair (decorative + large; white-on 5.8:1)
+  accentDeep: '#26405C', // pressed state, shadow tint (text-safe)
 
-  // Sage — success, savings, "money in"
-  // Slate & Sand + WCAG gate: sage #687653 = 4.06:1 on background.
-  // Below body 4.5:1 — graphic-only (ring arcs, decorative fills).
-  // sageDark (#586A45) is the text-safe positive variant — 4.91:1 on
-  // background (#EDEAE3). Use sageDark for all text rendered with
-  // TYPE.uiLabel/uiBody/uiMeta on background. Use sage only for
-  // graphic elements (ring arcs, decorative fills).
-  sage: '#687653',
-  sageDark: '#586A45', // text-safe sage — 4.91:1 on #EDEAE3 (WCAG AA body 4.5:1 ✓)
-  sageSoft: '#9AA585',
-  sageDeep: '#4F5C3C',
+  // Sage — success, savings, "money in" (cooled to sit beside slate).
+  // Cold Minimal + WCAG gate: sage #4A6B5A = 5.31:1 on background — text-safe,
+  // but reserve for positive amounts/graphics. sageDark is the deepest positive.
+  sage: '#4A6B5A',
+  sageDark: '#3F5E4D', // deeper positive — 6.45:1 on #F4F5F7 (WCAG AA body 4.5:1 ✓)
+  sageSoft: '#8AA295',
+  sageDeep: '#33493B',
 
   // States
-  error: '#97463A', // muted warm red, never bright
-  errorSubtle: '#97463A1A', // error @ 10% — banner backgrounds, never text
-  success: '#586A45', // sage-derived
+  error: '#8A4B45', // muted warm red, never bright (white label 6.62:1 — large)
+  errorSubtle: '#8A4B451A', // error @ 10% — banner backgrounds, never text
+  success: '#4A6B5A', // sage-derived (5.31:1 on background)
 
   // Hairline / subtle border — textMuted @ 20% for surface separators and
-  // ghost-pill borders. Retires the `${COLORS.textMuted}33` alpha-on-hex
-  // template literal pattern (audit finding P2 #6).
-  borderSubtle: '#6E695F33',
+  // ghost-pill borders. Cool slate hairline.
+  borderSubtle: '#5C627033',
 
   // Semantic aliases (keep in sync with accent/success above)
-  income: '#586A45',
-  expense: '#7C4632', // Slate & Sand: text-safe deep sandstone (accentDeep)
+  income: '#4A6B5A',
+  expense: '#26405C', // Cold Minimal: text-safe deep slate (accentDeep)
 } as const;
 
 export const GRADIENTS = {
-  primary: ['#B97A5A', '#9C5B41'] as const, // CTA, FAB, send button — white text 5.27:1
-  warm: ['#E6E1D4', '#D9D2C0'] as const, // header hero band (cohesive top region)
-  hero: ['#EDEAE3', '#E2DDD0'] as const, // subtle full-bleed hero background
-  sage: ['#9AA585', '#788566'] as const, // positive decorative sweep
-  dark: ['#2A2622', '#3A332C', '#322B25'] as const, // dark surfaces (dark-mode theme = future milestone; token value per spec §3)
+  primary: ['#4A678A', '#34506E'] as const, // CTA, FAB, send button — white text 5.8:1
+  warm: ['#FBFBFC', '#F4F5F7'] as const, // header band (cohesive top region — cool, key name kept)
+  hero: ['#F4F5F7', '#E9ECF1'] as const, // subtle full-bleed hero background (cool)
+  sage: ['#6E8A78', '#4A6B5A'] as const, // positive decorative sweep
+  dark: ['#1E2127', '#262A31', '#222630'] as const, // dark surfaces (dark-mode theme = future milestone; cool graphite)
 } as const;
 
 export const FONTS = {
@@ -135,16 +127,16 @@ export const ELEVATION = {
 } as const;
 
 /**
- * Warm Liquid Glass tint layer. Used by glass.ts: `*Tint` is overlaid on the
- * native GlassView (warm wash) and IS the fill on the non-glass fallback.
- * Values are warm cream/terracotta — never neutral grey glass (anti-AI-slop).
+ * Cool Liquid Glass tint layer. Used by glass.ts: `*Tint` is overlaid on the
+ * native GlassView (cool wash) and IS the fill on the non-glass fallback.
+ * Values are cool near-white — Cold Minimal chrome, never warm cream.
  */
 export const GLASS = {
-  chromeTint: '#F7F5F0', // == surface; tab bar / nav wash
-  sheetTint: '#EDEAE3', // == background; bottom-sheet wash
+  chromeTint: '#FFFFFF', // == surface; tab bar / nav wash
+  sheetTint: '#F4F5F7', // == background; bottom-sheet wash
   chromeTintAlpha: 0.62, // unchanged (spec §3)
   sheetTintAlpha: 0.55, // unchanged (spec §3)
-  fallbackChromeBg: '#F7F5F0', // solid fill when isLiquidGlassAvailable() === false
+  fallbackChromeBg: '#FFFFFF', // solid fill when isLiquidGlassAvailable() === false (== surface)
 } as const;
 
 /**

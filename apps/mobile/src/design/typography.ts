@@ -3,8 +3,11 @@
  * of inline fontSize/fontWeight to keep the editorial scale consistent.
  *
  * Display (Oswald): hero numbers, large titles, monthly totals.
- * Editorial (EB Garamond): chat, long-form insights, body copy with personality.
- * UI (Manrope): buttons, labels, pills, meta, tabular numbers in lists.
+ * UI (Manrope): buttons, labels, pills, meta, tabular numbers, chat + insights.
+ *
+ * Cold Minimal: 2-family system. EB Garamond (editorial serif) is RETIRED —
+ * the `editorialBody`/`editorialLead` presets are kept as stable keys but now
+ * map to Manrope (UI). Do not reintroduce a serif family.
  */
 
 import { FONTS } from './tokens';
@@ -47,17 +50,17 @@ export const TYPE = {
     lineHeight: 34,
   } satisfies TextStyle,
 
-  /** Long-form chat and insight body. */
+  /** Long-form chat and insight body. Cold Minimal: Manrope (EB Garamond retired). */
   editorialBody: {
-    fontFamily: FONTS.editorial.family,
-    fontWeight: FONTS.editorial.weights.regular,
+    fontFamily: FONTS.ui.family,
+    fontWeight: FONTS.ui.weights.medium,
     fontSize: 16,
     lineHeight: 24,
   } satisfies TextStyle,
 
   editorialLead: {
-    fontFamily: FONTS.editorial.family,
-    fontWeight: FONTS.editorial.weights.semibold,
+    fontFamily: FONTS.ui.family,
+    fontWeight: FONTS.ui.weights.semibold,
     fontSize: 20,
     lineHeight: 28,
   } satisfies TextStyle,
