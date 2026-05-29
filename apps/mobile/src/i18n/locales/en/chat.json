@@ -3,6 +3,8 @@
   "propagation_many": "Updated {{count}} similar transactions.",
   "propagation_undo": "Undo",
   "sheet_title": "Ask Soldify",
+  "header_title": "Soldi",
+  "header_subline": "Your money assistant",
   "close_a11y": "Close",
   "empty_phrase": "Ask anything about your spending.",
   "empty_subphrase": "Try one of these",

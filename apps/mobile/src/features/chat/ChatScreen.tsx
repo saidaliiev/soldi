@@ -66,7 +66,10 @@ export function ChatScreen(): React.JSX.Element {
       >
         <View style={styles.header} accessibilityRole="header">
           <Text style={styles.title} allowFontScaling numberOfLines={1}>
-            {t('chat.sheet_title')}
+            {t('chat.header_title')}
+          </Text>
+          <Text style={styles.subline} allowFontScaling numberOfLines={1}>
+            {t('chat.header_subline')}
           </Text>
         </View>
 
@@ -108,6 +111,11 @@ const styles = StyleSheet.create({
   title: {
     ...TYPE.displayM,
     color: COLORS.textPrimary,
+  },
+  subline: {
+    ...TYPE.uiBody,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs / 2,
   },
   body: {
     flex: 1,
